@@ -14,7 +14,7 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
   }
 
   if (key == GLFW_KEY_ESCAPE) {
-		gossip_emit(GOSSIP_BEDROCK_CLOSE);
+    gossip_emit(GOSSIP_BEDROCK_CLOSE);
   }
 }
 
@@ -23,11 +23,11 @@ void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
 }
 
 void should_close_callback(void) {
-	quit = 1;
+  quit = 1;
 }
 
 int bedrock_init() {
-	if (!glfwInit()) {
+  if (!glfwInit()) {
     printf("glfw fail\n");
     return -1;
   }
@@ -70,23 +70,23 @@ int bedrock_init() {
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
   glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);
 
-	gossip_subscribe(GOSSIP_BEDROCK_CLOSE, should_close_callback);
+  gossip_subscribe(GOSSIP_BEDROCK_CLOSE, should_close_callback);
 
-	return 1;
+  return 1;
 }
 
 void bedrock_kill() {
-	glfwTerminate();
+  glfwTerminate();
 }
 
 void bedrock_swap() {
-	glfwSwapBuffers(window);
+  glfwSwapBuffers(window);
 }
 
 void bedrock_poll() {
-	glfwPollEvents();
+  glfwPollEvents();
 }
 
 int bedrock_should_close() {
-	return glfwWindowShouldClose(window) || quit;
+  return glfwWindowShouldClose(window) || quit;
 }
