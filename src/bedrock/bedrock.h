@@ -55,7 +55,7 @@ void bedrock_occulus_print();
 
 // +Picasso
 typedef struct {
-	int dummy;
+	uint32_t program_id;
 } BPicassoProgram;
 
 BPicassoProgram* bedrock_picasso_program_create(const uint8_t* vert_source, size_t vert_length, const uint8_t* frag_source, size_t frag_length);

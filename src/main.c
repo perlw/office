@@ -14,6 +14,7 @@
 #include "bedrock/bedrock.h"
 
 // TODO: Errorchecks
+// TODO: Move to bedrock with structs
 uint8_t* read_file(const char* filepath, size_t* length) {
   FILE* file = fopen(filepath, "rb");
   fseek(file, 0, SEEK_END);
@@ -31,8 +32,41 @@ int main() {
     return -1;
   }
 
-  double last_tick = bedrock_kronos_time();
-  double current_second = 0;
+  uint32_t vao;
+  uint32_t vertex_buffer;
+  uint32_t coord_buffer;
+
+  {
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    int32_t vertex_data[] = {
+      0, 0,
+      640, 480,
+      0, 480,
+
+      0, 0,
+      640, 0,
+      640, 480,
+    };
+    float coord_data[] = {
+      0, 1,
+      1, 0,
+      0, 0,
+
+      0, 1,
+      1, 1,
+      1, 0,
+    };
+
+    glGenBuffers(1, &vertex_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(*vertex_data) * 12, vertex_data, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &coord_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, coord_buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(*coord_data) * 12, coord_data, GL_STATIC_DRAW);
+  }
 
   BPicassoProgram* p_program = NULL;
   {
@@ -45,6 +79,29 @@ int main() {
     free(vert_source);
     free(frag_source);
   }
+  glUseProgram(p_program->program_id);
+  {
+    int32_t vertex_attr = glGetAttribLocation(p_program->program_id, "vertex");
+    glEnableVertexAttribArray(vertex_attr);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    glVertexAttribPointer(vertex_attr, 2, GL_INT, GL_FALSE, 0, NULL);
+
+    int32_t coord_attr = glGetAttribLocation(p_program->program_id, "coord");
+    glEnableVertexAttribArray(coord_attr);
+    glBindBuffer(GL_ARRAY_BUFFER, coord_buffer);
+    glVertexAttribPointer(coord_attr, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+    mat4_t ortho = m4_ortho(0, 640, 0, 480, 1, 0);
+    mat4_t model = m4_identity();
+
+    int32_t pmatrix_uniform = glGetUniformLocation(p_program->program_id, "pMatrix");
+    int32_t mvmatrix_uniform = glGetUniformLocation(p_program->program_id, "mvMatrix");
+    glProgramUniformMatrix4fv(p_program->program_id, pmatrix_uniform, 1, GL_FALSE, (const GLfloat*)&ortho);
+    glProgramUniformMatrix4fv(p_program->program_id, mvmatrix_uniform, 1, GL_FALSE, (const GLfloat*)&model);
+  }
+
+  double last_tick = bedrock_kronos_time();
+  double current_second = 0;
 
   uint32_t frames = 0;
   glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
@@ -63,6 +120,8 @@ int main() {
       printf("FPS: %d\n", frames);
       frames = 0;
     }
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     bedrock_swap();
     bedrock_poll();
