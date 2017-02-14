@@ -1,10 +1,5 @@
 #include "bedrock.h"
 
-#include <stdio.h>
-
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
-
 int quit = 0;
 GLFWwindow* window = NULL;
 

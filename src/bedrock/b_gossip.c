@@ -1,8 +1,5 @@
 #include "bedrock.h"
 
-#include <stdio.h>
-#include <stdint.h>
-
 typedef struct {
 	size_t max_listeners;
 	size_t num_listeners;

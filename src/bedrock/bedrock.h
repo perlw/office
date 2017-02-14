@@ -1,6 +1,13 @@
 #ifndef __BEDROCK_H__
 #define __BEDROCK_H__
 
+#include <stdio.h>
+#include <malloc.h>
+#include <stdint.h>
+
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
+
 #ifdef BEDROCK_IMPLEMENTATION
 #include "b_internal.h"
 #endif
@@ -33,10 +40,6 @@ double bedrock_kronos_time();
 
 
 // +Occulus
-#include <stdio.h>
-#include <stdint.h>
-#include <malloc.h>
-
 void* bedrock_occulus_malloc(size_t size, const char* file, uint64_t line);
 void* bedrock_occulus_realloc(void* old_ptr, size_t size, const char* file, uint64_t line);
 void bedrock_occulus_free(void* ptr, const char* file, uint64_t line);

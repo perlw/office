@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "glad/glad.h"
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
