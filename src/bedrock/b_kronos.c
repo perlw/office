@@ -1,3 +1,5 @@
+#include "bedrock.h"
+
 #ifdef WIN32
 double bedrock_kronos_time() {
   static int initialized = 0;

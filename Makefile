@@ -2,7 +2,7 @@ CC=cl.exe /nologo
 DEF=/EHsc /MP8 $(CFLAGS)
 ERRS=/Wall
 DEPS_INC=/Ideps /Ideps\glfw\include /Ideps\lua-5.3.3\src
-DEPS_LIBS=obj\lualib533.lib shell32.lib gdi32.lib user32.lib opengl32.lib deps\glfw\src\glfw3.lib
+DEPS_LIBS=obj\lualib533.lib shell32.lib gdi32.lib user32.lib opengl32.lib deps\glfw\build\src\glfw3.lib
 BIN=office.exe
 
 LUA_OBJS=obj\lapi.obj obj\lcode.obj obj\lctype.obj obj\ldebug.obj obj\ldo.obj obj\ldump.obj obj\lfunc.obj obj\lgc.obj obj\llex.obj obj\lmem.obj obj\lobject.obj obj\lopcodes.obj obj\lparser.obj obj\lstate.obj obj\lstring.obj obj\ltable.obj obj\ltm.obj obj\lundump.obj obj\lvm.obj obj\lzio.obj obj\lauxlib.obj obj\lbaselib.obj obj\lbitlib.obj obj\lcorolib.obj obj\ldblib.obj obj\liolib.obj obj\lmathlib.obj obj\loslib.obj obj\lstrlib.obj obj\ltablib.obj obj\lutf8lib.obj obj\loadlib.obj obj\linit.obj
@@ -43,8 +43,8 @@ gdi32.lib:
 user32.lib:
 shell32.lib:
 
-build: .PHONY prepare deps $(OBJS) $(GLAD_OBJS)
-	link /nologo /machine:x64 /out:build/$(BIN)  /nodefaultlib:libcmtd $(DEPS_LIBS) $(GLAD_OBJS) $(OBJS)
+build: .PHONY prepare deps $(GLAD_OBJS) $(BEDROCK_OBJS) $(OBJS)
+	link /nologo /machine:x64 /out:build/$(BIN)  /nodefaultlib:libcmtd $(DEPS_LIBS) $(GLAD_OBJS) $(BEDROCK_OBJS) $(OBJS)
   xcopy /Y /E assets build
 
 run: build
