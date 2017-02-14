@@ -12,10 +12,7 @@
 #define MATH_3D_IMPLEMENTATION
 #include "arkanis/math_3d.h"
 
-#include "occulus.h"
-#include "bedrock.h"
-#include "gossip.h"
-#include "kronos.h"
+#include "bedrock/bedrock.h"
 
 int main() {
   if (!bedrock_init()) {
@@ -23,7 +20,7 @@ int main() {
     return -1;
   }
 
-  double last_tick = kronos_time();
+  double last_tick = bedrock_kronos_time();
   double current_second = 0;
 
   uint32_t frames = 0;
@@ -31,7 +28,7 @@ int main() {
   while (!bedrock_should_close()) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    double tick = kronos_time();
+    double tick = bedrock_kronos_time();
     double diff = tick - last_tick;
     last_tick = tick;
 
@@ -49,10 +46,9 @@ int main() {
   }
 
   bedrock_kill();
-  gossip_cleanup();
 
 #ifdef MEM_DEBUG
-  occulus_print();
+  bedrock_occulus_print();
 #endif
 
   return 0;

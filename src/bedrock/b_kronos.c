@@ -1,5 +1,5 @@
 #ifdef WIN32
-double kronos_time() {
+double bedrock_kronos_time() {
   static int initialized = 0;
   static uint64_t freq, start;
   uint64_t curr;
@@ -15,7 +15,7 @@ double kronos_time() {
 }
 #else
 #include <time.h>
-double kronos_time() {
+double bedrock_kronos_time() {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   return (float)ts.tv_sec + ((float)ts.tv_nsec / 1000000000.0f);

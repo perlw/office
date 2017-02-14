@@ -1,9 +1,9 @@
+#include "bedrock.h"
+
 #include <stdio.h>
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-
-#include "gossip.h"
 
 int quit = 0;
 GLFWwindow* window = NULL;
@@ -14,7 +14,7 @@ void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, in
   }
 
   if (key == GLFW_KEY_ESCAPE) {
-    gossip_emit(GOSSIP_BEDROCK_CLOSE);
+    bedrock_gossip_emit(BEDROCK_GOSSIP_ID_CLOSE);
   }
 }
 
@@ -70,13 +70,14 @@ int bedrock_init() {
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
   glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);
 
-  gossip_subscribe(GOSSIP_BEDROCK_CLOSE, should_close_callback);
+  bedrock_gossip_subscribe(BEDROCK_GOSSIP_ID_CLOSE, should_close_callback);
 
   return 1;
 }
 
 void bedrock_kill() {
   glfwTerminate();
+  bedrock_gossip_cleanup();
 }
 
 void bedrock_swap() {

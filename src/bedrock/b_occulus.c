@@ -16,7 +16,7 @@ uint64_t num_allocations = 0;
 uint64_t allocations_length = 0;
 Allocation* allocations = NULL;
 
-void* occulus_malloc(size_t size, const char* file, uint64_t line) {
+void* bedrock_occulus_malloc(size_t size, const char* file, uint64_t line) {
 	void* ptr = malloc(size);
 
 	if (num_allocations >= allocations_length) {
@@ -39,13 +39,13 @@ void* occulus_malloc(size_t size, const char* file, uint64_t line) {
 	return ptr;
 }
 
-void* occulus_realloc(void* old_ptr, size_t size, const char* file, uint64_t line) {
+void* bedrock_occulus_realloc(void* old_ptr, size_t size, const char* file, uint64_t line) {
 	void* ptr = realloc(old_ptr, size);
 	printf("%s:%lu> realloc(%lu) 0x%0lx->0x%0lx\n", file, line, size, (uint64_t)old_ptr, (uint64_t)ptr);
 	return ptr;
 }
 
-void occulus_free(void* ptr, const char* file, uint64_t line) {
+void bedrock_occulus_free(void* ptr, const char* file, uint64_t line) {
 	int found = 0;
 	for (uint64_t t = 0; t < num_allocations; t++) {
 		if (allocations[t].ptr == ptr) {
@@ -71,7 +71,7 @@ void occulus_free(void* ptr, const char* file, uint64_t line) {
 	free(ptr);
 }
 
-void occulus_print() {
+void bedrock_occulus_print() {
 	printf("MEM_DEBUG>\nMax: %lukb\tLeaked: %lukb\n", max_mem / 1024, mem_leaked / 1024);
 	for (uint64_t t = 0; t < num_allocations; t++) {
 		if (allocations[t].num_frees == 0) {
