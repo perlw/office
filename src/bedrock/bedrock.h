@@ -21,16 +21,16 @@ int bedrock_should_close();
 
 
 // +Gossip
-typedef void (*BedrockGossipCallbackType)(void);
+typedef void (*BGossipCallback)(void);
 
 typedef enum {
 	BEDROCK_GOSSIP_ID_CLOSE = 0x0001,
 
 	BEDROCK_GOSSIP_ID_MAX,
-} BedrockGossipID;
+} BGossipID;
 
-void bedrock_gossip_subscribe(BedrockGossipID id, BedrockGossipCallbackType callback);
-void bedrock_gossip_emit(BedrockGossipID id);
+void bedrock_gossip_subscribe(BGossipID id, BGossipCallback callback);
+void bedrock_gossip_emit(BGossipID id);
 // -Gossip
 
 
@@ -51,6 +51,16 @@ void bedrock_occulus_print();
 #define free(n) bedrock_occulus_free(n, __FILE__, __LINE__)
 #endif
 // -Occulus
+
+
+// +Picasso
+typedef struct {
+	int dummy;
+} BPicassoProgram;
+
+BPicassoProgram* bedrock_picasso_program_create(const uint8_t* vert_source, size_t vert_length, const uint8_t* frag_source, size_t frag_length);
+void bedrock_picasso_program_destroy(BPicassoProgram* program);
+// -Picasso
 
 
 #endif // __BEDROCK_H__

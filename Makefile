@@ -8,7 +8,7 @@ BIN=office.exe
 LUA_OBJS=obj\lapi.obj obj\lcode.obj obj\lctype.obj obj\ldebug.obj obj\ldo.obj obj\ldump.obj obj\lfunc.obj obj\lgc.obj obj\llex.obj obj\lmem.obj obj\lobject.obj obj\lopcodes.obj obj\lparser.obj obj\lstate.obj obj\lstring.obj obj\ltable.obj obj\ltm.obj obj\lundump.obj obj\lvm.obj obj\lzio.obj obj\lauxlib.obj obj\lbaselib.obj obj\lbitlib.obj obj\lcorolib.obj obj\ldblib.obj obj\liolib.obj obj\lmathlib.obj obj\loslib.obj obj\lstrlib.obj obj\ltablib.obj obj\lutf8lib.obj obj\loadlib.obj obj\linit.obj
 GLAD_OBJS=obj\glad.obj
 
-BEDROCK_OBJS=obj\b_main.obj obj\b_occulus.obj obj\b_kronos.obj obj\b_gossip.obj
+BEDROCK_OBJS=obj\b_main.obj obj\b_occulus.obj obj\b_kronos.obj obj\b_gossip.obj obj\b_picasso.obj
 OBJS=obj\main.obj
 
 .PHONY:

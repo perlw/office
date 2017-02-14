@@ -1,4 +1,6 @@
-#include "bedrock.h"
+#include <stdio.h>
+#include <malloc.h>
+#include <stdint.h>
 
 typedef struct {
 	void* ptr;

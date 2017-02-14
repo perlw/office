@@ -8,7 +8,7 @@ BIN=office
 LUA_OBJS=obj/lapi.o obj/lcode.o obj/lctype.o obj/ldebug.o obj/ldo.o obj/ldump.o obj/lfunc.o obj/lgc.o obj/llex.o obj/lmem.o obj/lobject.o obj/lopcodes.o obj/lparser.o obj/lstate.o obj/lstring.o obj/ltable.o obj/ltm.o obj/lundump.o obj/lvm.o obj/lzio.o obj/lauxlib.o obj/lbaselib.o obj/lbitlib.o obj/lcorolib.o obj/ldblib.o obj/liolib.o obj/lmathlib.o obj/loslib.o obj/lstrlib.o obj/ltablib.o obj/lutf8lib.o obj/loadlib.o obj/linit.o
 GLAD_OBJS=obj/glad.o
 
-BEDROCK_OBJS=obj/b_main.o obj/b_occulus.o obj/b_kronos.o obj/b_gossip.o
+BEDROCK_OBJS=obj/b_main.o obj/b_occulus.o obj/b_kronos.o obj/b_gossip.o obj/b_picasso.o
 OBJS=obj/main.o
 
 .PHONY:

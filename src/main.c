@@ -13,6 +13,18 @@
 
 #include "bedrock/bedrock.h"
 
+// TODO: Errorchecks
+uint8_t* read_file(const char* filepath, size_t* length) {
+  FILE* file = fopen(filepath, "rb");
+  fseek(file, 0, SEEK_END);
+  *length = ftell(file);
+  fseek(file, 0, SEEK_SET);
+  uint8_t* buffer = malloc(*length);
+  fread(buffer, *length, 1, file);
+  fclose(file);
+  return buffer;
+}
+
 int main() {
   if (!bedrock_init()) {
     printf("bedrock failed\n");
@@ -21,6 +33,18 @@ int main() {
 
   double last_tick = bedrock_kronos_time();
   double current_second = 0;
+
+  BPicassoProgram* p_program = NULL;
+  {
+    size_t vert_length = 0, frag_length = 0;
+    uint8_t* vert_source = read_file("shaders/dummy.vert", &vert_length);
+    uint8_t* frag_source = read_file("shaders/dummy.frag", &frag_length);
+
+    p_program = bedrock_picasso_program_create(vert_source, vert_length, frag_source, frag_length);
+
+    free(vert_source);
+    free(frag_source);
+  }
 
   uint32_t frames = 0;
   glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
@@ -43,6 +67,8 @@ int main() {
     bedrock_swap();
     bedrock_poll();
   }
+
+  bedrock_picasso_program_destroy(p_program);
 
   bedrock_kill();
 
