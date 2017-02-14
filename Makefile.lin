@@ -44,8 +44,6 @@ build: .PHONY prepare deps $(GLAD_OBJS) $(BEDROCK_OBJS) $(OBJS)
 run: build
 	clear
 	echo Running...
-	cd build
-	./$(BIN)
-	cd ..
+	cd build && ./$(BIN)
 
 all: clean prepare build
