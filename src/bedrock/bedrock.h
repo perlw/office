@@ -32,29 +32,29 @@ typedef enum {
   BEDROCK_GOSSIP_ID_MAX,
 } BGossipID;
 
-void bedrock_gossip_subscribe(BGossipID id, BGossipCallback callback);
-void bedrock_gossip_emit(BGossipID id);
+void b_gossip_subscribe(BGossipID id, BGossipCallback callback);
+void b_gossip_emit(BGossipID id);
 // -Gossip
 
 
 // +Kronos
-double bedrock_kronos_time();
+double b_kronos_time();
 // -Kronos
 
 
 // +Occulus
 #ifndef OCCULUS_IMPLEMENTATION
-void *bedrock_occulus_malloc(size_t size, const char *file, uint64_t line);
-void *bedrock_occulus_calloc(size_t num, size_t size, const char *file, uint64_t line);
-void *bedrock_occulus_realloc(void *old_ptr, size_t size, const char *file, uint64_t line);
-void bedrock_occulus_free(void *ptr, const char *file, uint64_t line);
-void bedrock_occulus_print();
+void *b_occulus_malloc(size_t size, const char *file, uint64_t line);
+void *b_occulus_calloc(size_t num, size_t size, const char *file, uint64_t line);
+void *b_occulus_realloc(void *old_ptr, size_t size, const char *file, uint64_t line);
+void b_occulus_free(void *ptr, const char *file, uint64_t line);
+void b_occulus_print();
 
 #ifdef MEM_DEBUG
-#define malloc(n) bedrock_occulus_malloc(n, __FILE__, __LINE__)
-#define calloc(n, s) bedrock_occulus_calloc(n, s, __FILE__, __LINE__)
-#define realloc(n, s) bedrock_occulus_realloc(n, s, __FILE__, __LINE__)
-#define free(n) bedrock_occulus_free(n, __FILE__, __LINE__)
+#define malloc(n) b_occulus_malloc(n, __FILE__, __LINE__)
+#define calloc(n, s) b_occulus_calloc(n, s, __FILE__, __LINE__)
+#define realloc(n, s) b_occulus_realloc(n, s, __FILE__, __LINE__)
+#define free(n) b_occulus_free(n, __FILE__, __LINE__)
 #endif // MEM_DEBUG
 #endif // OCCULUS_IMPLEMENTATION
 // -Occulus
@@ -65,13 +65,17 @@ void bedrock_occulus_print();
 typedef void BPicassoProgram;
 #endif
 
-BPicassoProgram *bedrock_picasso_program_create(const uint8_t *vert_source, size_t vert_length, const uint8_t *frag_source, size_t frag_length);
-void bedrock_picasso_program_destroy(BPicassoProgram *program);
+BPicassoProgram *b_picasso_program_create(const uint8_t *vert_source, size_t vert_length, const uint8_t *frag_source, size_t frag_length);
+void b_picasso_program_destroy(BPicassoProgram *program);
+void b_picasso_program_use(const BPicassoProgram *program);
+int32_t b_picasso_program_attrib_location(const BPicassoProgram *program, const char *name);
+int32_t b_picasso_program_uniform_location(const BPicassoProgram *program, const char *name);
+void b_picasso_program_mat4_set(const BPicassoProgram *program, int32_t uniform, float *mat);
 // -Picasso
 
 
 // +Archivist
-bool bedrock_archivist_read_file(const char *filepath, uint8_t **data, size_t *num_bytes);
+bool b_archivist_read_file(const char *filepath, uint8_t **data, size_t *num_bytes);
 // -Archivist
 
 

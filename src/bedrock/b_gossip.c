@@ -9,7 +9,7 @@ Gossiper gossipers[BEDROCK_GOSSIP_ID_MAX] = { { 0, 0, NULL } };
 
 #define LISTENER_CHUNK 4
 
-void bedrock_gossip_subscribe(BGossipID id, BGossipCallback callback) {
+void b_gossip_subscribe(BGossipID id, BGossipCallback callback) {
 	Gossiper* g = &gossipers[id];
 
 	if (!g->listeners) {
@@ -24,7 +24,7 @@ void bedrock_gossip_subscribe(BGossipID id, BGossipCallback callback) {
 	g->num_listeners += 1;
 }
 
-void bedrock_gossip_emit(BGossipID id) {
+void b_gossip_emit(BGossipID id) {
 	Gossiper* g = &gossipers[id];
 
 	for (size_t t = 0; t < g->num_listeners; t += 1) {
@@ -32,7 +32,7 @@ void bedrock_gossip_emit(BGossipID id) {
 	}
 }
 
-void bedrock_gossip_cleanup() {
+void b_gossip_cleanup() {
 	for (size_t t = 0; t < BEDROCK_GOSSIP_ID_MAX; t += 1) {
 		if (gossipers[t].listeners) {
 			free(gossipers[t].listeners);

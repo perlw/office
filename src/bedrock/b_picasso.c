@@ -19,7 +19,7 @@ uint32_t compile_shader(const uint8_t *source, size_t length, GLenum type) {
 }
 
 // TODO: Error handling
-BPicassoProgram *bedrock_picasso_program_create(const uint8_t *vert_source, size_t vert_length, const uint8_t *frag_source, size_t frag_length) {
+BPicassoProgram *b_picasso_program_create(const uint8_t *vert_source, size_t vert_length, const uint8_t *frag_source, size_t frag_length) {
   BPicassoProgram *p_program = calloc(1, sizeof(BPicassoProgram));
 
   uint32_t vertex_shader, fragment_shader;
@@ -40,7 +40,23 @@ BPicassoProgram *bedrock_picasso_program_create(const uint8_t *vert_source, size
   return p_program;
 }
 
-void bedrock_picasso_program_destroy(BPicassoProgram *program) {
+void b_picasso_program_destroy(BPicassoProgram *program) {
   glDeleteProgram(*program);
   free(program);
+}
+
+void b_picasso_program_use(const BPicassoProgram *program) {
+  glUseProgram(*program);
+}
+
+int32_t b_picasso_program_attrib_location(const BPicassoProgram *program, const char *name) {
+  return glGetAttribLocation(*program, name);
+}
+
+int32_t b_picasso_program_uniform_location(const BPicassoProgram *program, const char *name) {
+  return glGetUniformLocation(*program, name);
+}
+
+void b_picasso_program_mat4_set(const BPicassoProgram *program, int32_t uniform, float *mat) {
+  glProgramUniformMatrix4fv(*program, uniform, 1, GL_FALSE, (const GLfloat*)mat);
 }

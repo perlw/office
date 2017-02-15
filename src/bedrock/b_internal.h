@@ -2,7 +2,7 @@
 #define __BEDROCK_INTERNAL_H__
 
 // +Gossip
-void bedrock_gossip_cleanup();
+void b_gossip_cleanup();
 // -Gossip
 
 
