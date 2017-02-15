@@ -19,12 +19,12 @@ uint32_t compile_shader(const uint8_t* source, size_t length, GLenum type) {
 }
 
 BPicassoProgram* bedrock_picasso_program_create(const uint8_t* vert_source, size_t vert_length, const uint8_t* frag_source, size_t frag_length) {
-	BPicassoProgram* p_program = malloc(sizeof(BPicassoProgram));
+  BPicassoProgram* p_program = calloc(1, sizeof(BPicassoProgram));
 
   uint32_t vertex_shader, fragment_shader;
 
-	vertex_shader = compile_shader(vert_source, vert_length, GL_VERTEX_SHADER);
-	fragment_shader = compile_shader(frag_source, frag_length, GL_FRAGMENT_SHADER);
+  vertex_shader = compile_shader(vert_source, vert_length, GL_VERTEX_SHADER);
+  fragment_shader = compile_shader(frag_source, frag_length, GL_FRAGMENT_SHADER);
 
   uint32_t program = glCreateProgram();
   glAttachShader(program, vertex_shader);
@@ -34,11 +34,11 @@ BPicassoProgram* bedrock_picasso_program_create(const uint8_t* vert_source, size
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
 
-	p_program->program_id = program;
+  p_program->program_id = program;
   return p_program;
 }
 
 // TODO: Clean up program
 void bedrock_picasso_program_destroy(BPicassoProgram* program) {
-	free(program);
+  free(program);
 }

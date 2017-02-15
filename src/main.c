@@ -13,19 +13,6 @@
 
 #include "bedrock/bedrock.h"
 
-// TODO: Errorchecks
-// TODO: Move to bedrock with structs
-uint8_t* read_file(const char* filepath, size_t* length) {
-  FILE* file = fopen(filepath, "rb");
-  fseek(file, 0, SEEK_END);
-  *length = ftell(file);
-  fseek(file, 0, SEEK_SET);
-  uint8_t* buffer = malloc(*length);
-  fread(buffer, *length, 1, file);
-  fclose(file);
-  return buffer;
-}
-
 int main() {
   if (!bedrock_init()) {
     printf("bedrock failed\n");
@@ -70,9 +57,12 @@ int main() {
 
   BPicassoProgram* p_program = NULL;
   {
-    size_t vert_length = 0, frag_length = 0;
-    uint8_t* vert_source = read_file("shaders/dummy.vert", &vert_length);
-    uint8_t* frag_source = read_file("shaders/dummy.frag", &frag_length);
+    size_t vert_length = 0;
+    size_t frag_length = 0;
+    uint8_t* vert_source;
+    uint8_t* frag_source;
+    bedrock_archivist_read_file("shaders/dummy.vert", &vert_source, &vert_length);
+    bedrock_archivist_read_file("shaders/dummy.frag", &frag_source, &frag_length);
 
     p_program = bedrock_picasso_program_create(vert_source, vert_length, frag_source, frag_length);
 

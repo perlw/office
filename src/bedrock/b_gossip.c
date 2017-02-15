@@ -14,7 +14,7 @@ void bedrock_gossip_subscribe(BGossipID id, BGossipCallback callback) {
 
 	if (!g->listeners) {
 		g->max_listeners = LISTENER_CHUNK;
-		g->listeners = malloc(sizeof(BGossipCallback) * g->max_listeners);
+		g->listeners = calloc(1, sizeof(BGossipCallback) * g->max_listeners);
 	} else if (g->num_listeners == g->max_listeners) {
 		g->max_listeners += LISTENER_CHUNK;
 		g->listeners = realloc(g->listeners, sizeof(BGossipCallback) * g->max_listeners);

@@ -5,6 +5,8 @@ Doing
   * Shader management (need more work)
   * Buffer management
   * Image management
+* Archivist module
+  * File management (opening/reading)
 * Lua wrapper
 * Initial text rendering?
 
