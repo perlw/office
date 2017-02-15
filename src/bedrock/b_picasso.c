@@ -34,7 +34,8 @@ BPicassoProgram *bedrock_picasso_program_create(const uint8_t *vert_source, size
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
 
-  p_program->program_id = program;
+  *p_program = program;
+
   return p_program;
 }
 

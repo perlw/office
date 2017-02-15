@@ -32,7 +32,7 @@ obj/%.o: deps/glad/%.c
 	$(CC) $(ERRS) $(DEF) $(DEPS_INC) -c $< -o $@
 
 obj/%.o: src/bedrock/%.c
-	$(CC) $(ERRS) $(DEF) $(DEPS_INC) -DBEDROCK_IMPLEMENTATION -c $< -o $@
+	$(CC) $(ERRS) $(DEF) $(DEPS_INC) -DBEDROCK_INTERNAL -c $< -o $@
 
 obj/lualib533.a: $(LUA_OBJS)
 	ar rcs obj/lualib533.a $(LUA_OBJS)

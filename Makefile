@@ -33,7 +33,7 @@ deps: $(DEPS_LIBS)
   $(CC) $(DEF) $(DEPS_INC) /c /Foobj\ $<
 
 {src/bedrock/}.c{obj/}.obj:
-  $(CC) $(DEF) $(DEPS_INC) /DBEDROCK_IMPLEMENTATION /c /Foobj\ $<
+  $(CC) $(DEF) $(DEPS_INC) /DBEDROCK_INTERNAL /c /Foobj\ $<
 
 obj\lualib533.lib: $(LUA_OBJS)
 	lib /nologo /machine:x64 /out:obj/lualib533.lib $(LUA_OBJS)

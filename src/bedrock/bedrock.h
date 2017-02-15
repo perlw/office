@@ -10,7 +10,7 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
-#ifdef BEDROCK_IMPLEMENTATION
+#ifdef BEDROCK_INTERNAL
 #include "b_internal.h"
 #endif
 
@@ -61,9 +61,9 @@ void bedrock_occulus_print();
 
 
 // +Picasso
-typedef struct {
-  uint32_t program_id;
-} BPicassoProgram;
+#ifndef BEDROCK_INTERNAL
+typedef void BPicassoProgram;
+#endif
 
 BPicassoProgram *bedrock_picasso_program_create(const uint8_t *vert_source, size_t vert_length, const uint8_t *frag_source, size_t frag_length);
 void bedrock_picasso_program_destroy(BPicassoProgram *program);

@@ -67,14 +67,14 @@ int main() {
     free(vert_source);
     free(frag_source);
   }
-  glUseProgram(p_program->program_id);
+  glUseProgram(*((uint32_t*)p_program));
   {
-    int32_t vertex_attr = glGetAttribLocation(p_program->program_id, "vertex");
+    int32_t vertex_attr = glGetAttribLocation(*((uint32_t*)p_program), "vertex");
     glEnableVertexAttribArray(vertex_attr);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     glVertexAttribPointer(vertex_attr, 2, GL_INT, GL_FALSE, 0, NULL);
 
-    int32_t coord_attr = glGetAttribLocation(p_program->program_id, "coord");
+    int32_t coord_attr = glGetAttribLocation(*((uint32_t*)p_program), "coord");
     glEnableVertexAttribArray(coord_attr);
     glBindBuffer(GL_ARRAY_BUFFER, coord_buffer);
     glVertexAttribPointer(coord_attr, 2, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -82,10 +82,10 @@ int main() {
     mat4_t ortho = m4_ortho(0, 640, 0, 480, 1, 0);
     mat4_t model = m4_identity();
 
-    int32_t pmatrix_uniform = glGetUniformLocation(p_program->program_id, "pMatrix");
-    int32_t mvmatrix_uniform = glGetUniformLocation(p_program->program_id, "mvMatrix");
-    glProgramUniformMatrix4fv(p_program->program_id, pmatrix_uniform, 1, GL_FALSE, (const GLfloat*)&ortho);
-    glProgramUniformMatrix4fv(p_program->program_id, mvmatrix_uniform, 1, GL_FALSE, (const GLfloat*)&model);
+    int32_t pmatrix_uniform = glGetUniformLocation(*((uint32_t*)p_program), "pMatrix");
+    int32_t mvmatrix_uniform = glGetUniformLocation(*((uint32_t*)p_program), "mvMatrix");
+    glProgramUniformMatrix4fv(*((uint32_t*)p_program), pmatrix_uniform, 1, GL_FALSE, (const GLfloat*)&ortho);
+    glProgramUniformMatrix4fv(*((uint32_t*)p_program), mvmatrix_uniform, 1, GL_FALSE, (const GLfloat*)&model);
   }
 
   double last_tick = bedrock_kronos_time();
