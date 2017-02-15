@@ -62,7 +62,7 @@ void b_occulus_free(void *ptr, const char *file, uint64_t line) {
   for (uint64_t t = 0; t < num_allocations; t++) {
     if (allocations[t].ptr == ptr) {
       allocations[t].num_frees++;
-      if (allocations[t].num_frees == 2) {
+      if (allocations[t].num_frees > 1) {
         printf("%s:%lu> memory freed more than once, 0x%0lx\n", file, line, (uint64_t)ptr);
         return;
       } else {
