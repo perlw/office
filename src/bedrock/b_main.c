@@ -1,9 +1,9 @@
 #include "bedrock.h"
 
 int quit = 0;
-GLFWwindow* window = NULL;
+GLFWwindow *window = NULL;
 
-void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
   if (action == GLFW_REPEAT) {
     return;
   }

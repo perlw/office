@@ -1,7 +1,7 @@
 #include "bedrock.h"
 
-bool bedrock_archivist_read_file(const char* filepath, uint8_t** data, size_t* num_bytes) {
-  FILE* file = fopen(filepath, "rb");
+bool bedrock_archivist_read_file(const char *filepath, uint8_t **data, size_t *num_bytes) {
+  FILE *file = fopen(filepath, "rb");
   if (!file) {
     *data = NULL;
     *num_bytes = 0;

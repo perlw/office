@@ -14,6 +14,7 @@
 #include "b_internal.h"
 #endif
 
+
 int bedrock_init();
 void bedrock_kill();
 
@@ -43,10 +44,10 @@ double bedrock_kronos_time();
 
 // +Occulus
 #ifndef OCCULUS_IMPLEMENTATION
-void* bedrock_occulus_malloc(size_t size, const char* file, uint64_t line);
-void* bedrock_occulus_calloc(size_t num, size_t size, const char* file, uint64_t line);
-void* bedrock_occulus_realloc(void* old_ptr, size_t size, const char* file, uint64_t line);
-void bedrock_occulus_free(void* ptr, const char* file, uint64_t line);
+void *bedrock_occulus_malloc(size_t size, const char *file, uint64_t line);
+void *bedrock_occulus_calloc(size_t num, size_t size, const char *file, uint64_t line);
+void *bedrock_occulus_realloc(void *old_ptr, size_t size, const char *file, uint64_t line);
+void bedrock_occulus_free(void *ptr, const char *file, uint64_t line);
 void bedrock_occulus_print();
 
 #ifdef MEM_DEBUG
@@ -54,8 +55,8 @@ void bedrock_occulus_print();
 #define calloc(n, s) bedrock_occulus_calloc(n, s, __FILE__, __LINE__)
 #define realloc(n, s) bedrock_occulus_realloc(n, s, __FILE__, __LINE__)
 #define free(n) bedrock_occulus_free(n, __FILE__, __LINE__)
-#endif
-#endif
+#endif // MEM_DEBUG
+#endif // OCCULUS_IMPLEMENTATION
 // -Occulus
 
 
@@ -64,13 +65,13 @@ typedef struct {
   uint32_t program_id;
 } BPicassoProgram;
 
-BPicassoProgram* bedrock_picasso_program_create(const uint8_t* vert_source, size_t vert_length, const uint8_t* frag_source, size_t frag_length);
-void bedrock_picasso_program_destroy(BPicassoProgram* program);
+BPicassoProgram *bedrock_picasso_program_create(const uint8_t *vert_source, size_t vert_length, const uint8_t *frag_source, size_t frag_length);
+void bedrock_picasso_program_destroy(BPicassoProgram *program);
 // -Picasso
 
 
 // +Archivist
-bool bedrock_archivist_read_file(const char* filepath, uint8_t** data, size_t* num_bytes);
+bool bedrock_archivist_read_file(const char *filepath, uint8_t **data, size_t *num_bytes);
 // -Archivist
 
 

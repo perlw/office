@@ -55,12 +55,10 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(*coord_data) * 12, coord_data, GL_STATIC_DRAW);
   }
 
-  BPicassoProgram* p_program = NULL;
+  BPicassoProgram *p_program = NULL;
   {
-    size_t vert_length = 0;
-    size_t frag_length = 0;
-    uint8_t* vert_source;
-    uint8_t* frag_source;
+    size_t vert_length = 0, frag_length = 0;
+    uint8_t *vert_source, *frag_source;
     bedrock_archivist_read_file("shaders/dummy.vert", &vert_source, &vert_length);
     bedrock_archivist_read_file("shaders/dummy.frag", &frag_source, &frag_length);
 
