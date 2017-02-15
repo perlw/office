@@ -9,7 +9,7 @@ void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, in
   }
 
   if (key == GLFW_KEY_ESCAPE) {
-    b_gossip_emit(BEDROCK_GOSSIP_ID_CLOSE);
+    b_gossip_emit(B_GOSSIP_ID_CLOSE);
   }
 }
 
@@ -65,7 +65,7 @@ int bedrock_init() {
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
   glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);
 
-  b_gossip_subscribe(BEDROCK_GOSSIP_ID_CLOSE, should_close_callback);
+  b_gossip_subscribe(B_GOSSIP_ID_CLOSE, should_close_callback);
 
   return 1;
 }

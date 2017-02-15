@@ -27,9 +27,9 @@ int bedrock_should_close();
 typedef void (*BGossipCallback)(void);
 
 typedef enum {
-  BEDROCK_GOSSIP_ID_CLOSE = 0x0001,
+  B_GOSSIP_ID_CLOSE = 0x0001,
 
-  BEDROCK_GOSSIP_ID_MAX,
+  B_GOSSIP_ID_MAX,
 } BGossipID;
 
 void b_gossip_subscribe(BGossipID id, BGossipCallback callback);
