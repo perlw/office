@@ -1,10 +1,12 @@
 TODO
 ===
-* Input handling exposed via bedrock
-* Lua wrapper
+## Game
+The actual game
 * Initial text rendering?
-* Config via lua? or simple ini files
 * Ingame graphical debugging?
+
+## Bedrock
+The backing library
 
 ### Picasso
 * Shader management (need more work)
@@ -13,3 +15,9 @@ TODO
 
 ### Archivist module
 * File management (opening/reading)
+
+### LUA
+* Config via lua? or simple ini files
+* Lua wrapper
+
+### Input handling
