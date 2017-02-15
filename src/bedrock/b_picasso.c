@@ -18,6 +18,7 @@ uint32_t compile_shader(const uint8_t *source, size_t length, GLenum type) {
   return shader;
 }
 
+// TODO: Error handling
 BPicassoProgram *bedrock_picasso_program_create(const uint8_t *vert_source, size_t vert_length, const uint8_t *frag_source, size_t frag_length) {
   BPicassoProgram *p_program = calloc(1, sizeof(BPicassoProgram));
 
@@ -39,7 +40,7 @@ BPicassoProgram *bedrock_picasso_program_create(const uint8_t *vert_source, size
   return p_program;
 }
 
-// TODO: Clean up program
 void bedrock_picasso_program_destroy(BPicassoProgram *program) {
+  glDeleteProgram(*program);
   free(program);
 }
