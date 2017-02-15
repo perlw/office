@@ -6,10 +6,10 @@ TODO
 * Config via lua? or simple ini files
 * Ingame graphical debugging?
 
-# Picasso
+### Picasso
 * Shader management (need more work)
 * Buffer management
 * Image management
 
-# Archivist module
+### Archivist module
 * File management (opening/reading)
