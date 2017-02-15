@@ -34,16 +34,16 @@ void log_allocation(const void* ptr, size_t size, const char* file, uint64_t lin
   max_mem = (mem_leaked > max_mem ? mem_leaked : max_mem);
 }
 
-// TODO: Assert not null?
 void* bedrock_occulus_malloc(size_t size, const char* file, uint64_t line) {
   void* ptr = malloc(size);
+  assert(ptr);
   log_allocation(ptr, size, file, line);
   return ptr;
 }
 
-// TODO: Assert not null?
 void* bedrock_occulus_calloc(size_t num, size_t size, const char* file, uint64_t line) {
   void* ptr = calloc(num, size);
+  assert(ptr);
   log_allocation(ptr, num * size, file, line);
   return ptr;
 }
@@ -51,11 +51,13 @@ void* bedrock_occulus_calloc(size_t num, size_t size, const char* file, uint64_t
 // FIXME: Log allocation
 void* bedrock_occulus_realloc(void* old_ptr, size_t size, const char* file, uint64_t line) {
   void* ptr = realloc(old_ptr, size);
+  assert(ptr);
   printf("%s:%lu> realloc(%lu) 0x%0lx->0x%0lx\n", file, line, size, (uint64_t)old_ptr, (uint64_t)ptr);
   return ptr;
 }
 
 void bedrock_occulus_free(void* ptr, const char* file, uint64_t line) {
+  assert(ptr);
   int found = 0;
   for (uint64_t t = 0; t < num_allocations; t++) {
     if (allocations[t].ptr == ptr) {
