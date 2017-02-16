@@ -1,4 +1,9 @@
-#include "bedrock.h"
+#include <stdio.h>
+
+#include "gossip/gossip.h"
+
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
 
 int quit = 0;
 GLFWwindow *window = NULL;
@@ -9,7 +14,7 @@ void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, in
   }
 
   if (key == GLFW_KEY_ESCAPE) {
-    b_gossip_emit(B_GOSSIP_ID_CLOSE);
+    gossip_emit(GOSSIP_ID_CLOSE);
   }
 }
 
@@ -65,14 +70,14 @@ int bedrock_init() {
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
   glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);
 
-  b_gossip_subscribe(B_GOSSIP_ID_CLOSE, should_close_callback);
+  gossip_subscribe(GOSSIP_ID_CLOSE, should_close_callback);
 
   return 1;
 }
 
 void bedrock_kill() {
   glfwTerminate();
-  b_gossip_cleanup();
+  gossip_cleanup();
 }
 
 void bedrock_swap() {
@@ -86,3 +91,27 @@ void bedrock_poll() {
 int bedrock_should_close() {
   return glfwWindowShouldClose(window) || quit;
 }
+
+#ifdef WIN32
+double bedrock_time() {
+  static int initialized = 0;
+  static uint64_t freq, start;
+  uint64_t curr;
+
+  if (!initialized) {
+    initialized = 1;
+    QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
+    QueryPerformanceCounter((LARGE_INTEGER*)&start);
+  }
+  QueryPerformanceCounter((LARGE_INTEGER*)&curr);
+
+  return (double)(curr - start) / freq;
+}
+#else
+#include <time.h>
+double bedrock_time() {
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return (float)ts.tv_sec + ((float)ts.tv_nsec / 1000000000.0f);
+}
+#endif

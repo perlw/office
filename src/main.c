@@ -5,6 +5,8 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
+#include "glad/glad.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
@@ -55,26 +57,26 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(*coord_data) * 12, coord_data, GL_STATIC_DRAW);
   }
 
-  BPicassoProgram *p_program = NULL;
+  PicassoProgram *p_program = NULL;
   {
     size_t vert_length = 0, frag_length = 0;
     uint8_t *vert_source, *frag_source;
-    b_archivist_read_file("shaders/dummy.vert", &vert_source, &vert_length);
-    b_archivist_read_file("shaders/dummy.frag", &frag_source, &frag_length);
+    archivist_read_file("shaders/dummy.vert", &vert_source, &vert_length);
+    archivist_read_file("shaders/dummy.frag", &frag_source, &frag_length);
 
-    p_program = b_picasso_program_create(vert_source, vert_length, frag_source, frag_length);
+    p_program = picasso_program_create(vert_source, vert_length, frag_source, frag_length);
 
     free(vert_source);
     free(frag_source);
   }
-  b_picasso_program_use(p_program);
+  picasso_program_use(p_program);
   {
-    int32_t vertex_attr = b_picasso_program_attrib_location(p_program, "vertex");
+    int32_t vertex_attr = picasso_program_attrib_location(p_program, "vertex");
     glEnableVertexAttribArray(vertex_attr);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     glVertexAttribPointer(vertex_attr, 2, GL_INT, GL_FALSE, 0, NULL);
 
-    int32_t coord_attr = b_picasso_program_attrib_location(p_program, "coord");
+    int32_t coord_attr = picasso_program_attrib_location(p_program, "coord");
     glEnableVertexAttribArray(coord_attr);
     glBindBuffer(GL_ARRAY_BUFFER, coord_buffer);
     glVertexAttribPointer(coord_attr, 2, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -82,13 +84,13 @@ int main() {
     mat4_t ortho = m4_ortho(0, 640, 0, 480, 1, 0);
     mat4_t model = m4_identity();
 
-    int32_t pmatrix_uniform = b_picasso_program_uniform_location(p_program, "pMatrix");
-    int32_t mvmatrix_uniform = b_picasso_program_uniform_location(p_program, "mvMatrix");
-    b_picasso_program_mat4_set(p_program, pmatrix_uniform, (float*)&ortho);
-    b_picasso_program_mat4_set(p_program, mvmatrix_uniform, (float*)&model);
+    int32_t pmatrix_uniform = picasso_program_uniform_location(p_program, "pMatrix");
+    int32_t mvmatrix_uniform = picasso_program_uniform_location(p_program, "mvMatrix");
+    picasso_program_mat4_set(p_program, pmatrix_uniform, (float*)&ortho);
+    picasso_program_mat4_set(p_program, mvmatrix_uniform, (float*)&model);
   }
 
-  double last_tick = b_kronos_time();
+  double last_tick = bedrock_time();
   double current_second = 0;
 
   uint32_t frames = 0;
@@ -96,7 +98,7 @@ int main() {
   while (!bedrock_should_close()) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    double tick = b_kronos_time();
+    double tick = bedrock_time();
     double diff = tick - last_tick;
     last_tick = tick;
 
@@ -115,12 +117,12 @@ int main() {
     bedrock_poll();
   }
 
-  b_picasso_program_destroy(p_program);
+  picasso_program_destroy(p_program);
 
   bedrock_kill();
 
 #ifdef MEM_DEBUG
-  b_occulus_print();
+  occulus_print();
 #endif
 
   return 0;

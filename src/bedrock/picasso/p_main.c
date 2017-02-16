@@ -1,4 +1,4 @@
-#include "bedrock.h"
+#include "p_internal.h"
 
 uint32_t compile_shader(const uint8_t *source, size_t length, GLenum type) {
   uint32_t shader = glCreateShader(type);
@@ -19,44 +19,42 @@ uint32_t compile_shader(const uint8_t *source, size_t length, GLenum type) {
 }
 
 // TODO: Error handling
-BPicassoProgram *b_picasso_program_create(const uint8_t *vert_source, size_t vert_length, const uint8_t *frag_source, size_t frag_length) {
-  BPicassoProgram *p_program = calloc(1, sizeof(BPicassoProgram));
+PicassoProgram *picasso_program_create(const uint8_t *vert_source, size_t vert_length, const uint8_t *frag_source, size_t frag_length) {
+  PicassoProgram *program = calloc(1, sizeof(PicassoProgram));
 
   uint32_t vertex_shader, fragment_shader;
 
   vertex_shader = compile_shader(vert_source, vert_length, GL_VERTEX_SHADER);
   fragment_shader = compile_shader(frag_source, frag_length, GL_FRAGMENT_SHADER);
 
-  uint32_t program = glCreateProgram();
-  glAttachShader(program, vertex_shader);
-  glAttachShader(program, fragment_shader);
-  glLinkProgram(program);
+  *program = glCreateProgram();
+  glAttachShader(*program, vertex_shader);
+  glAttachShader(*program, fragment_shader);
+  glLinkProgram(*program);
   glUseProgram(0);
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
 
-  *p_program = program;
-
-  return p_program;
+  return program;
 }
 
-void b_picasso_program_destroy(BPicassoProgram *program) {
+void picasso_program_destroy(PicassoProgram *program) {
   glDeleteProgram(*program);
   free(program);
 }
 
-void b_picasso_program_use(const BPicassoProgram *program) {
+void picasso_program_use(const PicassoProgram *program) {
   glUseProgram(*program);
 }
 
-int32_t b_picasso_program_attrib_location(const BPicassoProgram *program, const char *name) {
+int32_t picasso_program_attrib_location(const PicassoProgram *program, const char *name) {
   return glGetAttribLocation(*program, name);
 }
 
-int32_t b_picasso_program_uniform_location(const BPicassoProgram *program, const char *name) {
+int32_t picasso_program_uniform_location(const PicassoProgram *program, const char *name) {
   return glGetUniformLocation(*program, name);
 }
 
-void b_picasso_program_mat4_set(const BPicassoProgram *program, int32_t uniform, float *mat) {
+void picasso_program_mat4_set(const PicassoProgram *program, int32_t uniform, float *mat) {
   glProgramUniformMatrix4fv(*program, uniform, 1, GL_FALSE, (const GLfloat*)mat);
 }

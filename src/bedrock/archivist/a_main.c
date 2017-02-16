@@ -1,6 +1,10 @@
-#include "bedrock.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-bool b_archivist_read_file(const char *filepath, uint8_t **data, size_t *num_bytes) {
+#include "occulus/occulus.h"
+
+bool archivist_read_file(const char *filepath, uint8_t **data, size_t *num_bytes) {
   FILE *file = fopen(filepath, "rb");
   if (!file) {
     *data = NULL;

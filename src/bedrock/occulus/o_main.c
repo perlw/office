@@ -1,5 +1,7 @@
-#define OCCULUS_IMPLEMENTATION
-#include "bedrock.h"
+#include <stdio.h>
+#include <malloc.h>
+#include <stdint.h>
+#include <assert.h>
 
 typedef struct {
   const void *ptr;
@@ -34,14 +36,14 @@ void log_allocation(const void *ptr, size_t size, const char *file, uint64_t lin
   max_mem = (mem_leaked > max_mem ? mem_leaked : max_mem);
 }
 
-void *b_occulus_malloc(size_t size, const char *file, uint64_t line) {
+void *occulus_malloc(size_t size, const char *file, uint64_t line) {
   void *ptr = malloc(size);
   assert(ptr);
   log_allocation(ptr, size, file, line);
   return ptr;
 }
 
-void *b_occulus_calloc(size_t num, size_t size, const char *file, uint64_t line) {
+void *occulus_calloc(size_t num, size_t size, const char *file, uint64_t line) {
   void *ptr = calloc(num, size);
   assert(ptr);
   log_allocation(ptr, num * size, file, line);
@@ -49,14 +51,14 @@ void *b_occulus_calloc(size_t num, size_t size, const char *file, uint64_t line)
 }
 
 // FIXME: Log allocation
-void *b_occulus_realloc(void *old_ptr, size_t size, const char *file, uint64_t line) {
+void *occulus_realloc(void *old_ptr, size_t size, const char *file, uint64_t line) {
   void *ptr = realloc(old_ptr, size);
   assert(ptr);
   printf("%s:%lu> realloc(%lu) 0x%0lx->0x%0lx\n", file, line, size, (uint64_t)old_ptr, (uint64_t)ptr);
   return ptr;
 }
 
-void b_occulus_free(void *ptr, const char *file, uint64_t line) {
+void occulus_free(void *ptr, const char *file, uint64_t line) {
   assert(ptr);
   int found = 0;
   for (uint64_t t = 0; t < num_allocations; t++) {
@@ -83,7 +85,7 @@ void b_occulus_free(void *ptr, const char *file, uint64_t line) {
   free(ptr);
 }
 
-void b_occulus_print() {
+void occulus_print() {
   printf("MEM_DEBUG>\nMax: %lukb\tLeaked: %lukb\n", max_mem / 1024, mem_leaked / 1024);
   for (uint64_t t = 0; t < num_allocations; t++) {
     if (allocations[t].num_frees == 0) {
