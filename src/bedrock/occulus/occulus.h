@@ -2,6 +2,7 @@
 #define __OCCULUS_H__
 
 #include <stdint.h>
+#include <stdlib.h>
 
 void *occulus_malloc(size_t size, const char *file, uint64_t line);
 void *occulus_calloc(size_t num, size_t size, const char *file, uint64_t line);

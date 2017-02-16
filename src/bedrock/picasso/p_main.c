@@ -38,6 +38,7 @@ PicassoProgram *picasso_program_create(const uint8_t *vert_source, size_t vert_l
   return program;
 }
 
+// FIXME: Crash on NULL
 void picasso_program_destroy(PicassoProgram *program) {
   glDeleteProgram(*program);
   free(program);

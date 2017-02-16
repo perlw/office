@@ -7,7 +7,7 @@
 typedef struct {
 	size_t max_listeners;
 	size_t num_listeners;
-	GossipCallback* listeners;
+	GossipCallback *listeners;
 } Gossiper;
 Gossiper gossipers[GOSSIP_ID_MAX] = { { 0, 0, NULL } };
 
@@ -18,7 +18,7 @@ void gossip_subscribe(GossipID id, GossipCallback callback) {
 
 	if (!g->listeners) {
 		g->max_listeners = LISTENER_CHUNK;
-		g->listeners = calloc(1, sizeof(GossipCallback) * g->max_listeners);
+		g->listeners = malloc(sizeof(GossipCallback) * g->max_listeners);
 	} else if (g->num_listeners == g->max_listeners) {
 		g->max_listeners += LISTENER_CHUNK;
 		g->listeners = realloc(g->listeners, sizeof(GossipCallback) * g->max_listeners);
