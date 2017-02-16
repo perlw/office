@@ -2,6 +2,7 @@
 #define __BEDROCK_H__
 
 #include "occulus/occulus.h"
+#include "muse/muse.h"
 #include "archivist/archivist.h"
 #include "gossip/gossip.h"
 #include "picasso/picasso.h"

@@ -1,10 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
 #include "glad/glad.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -15,7 +11,12 @@
 
 #include "bedrock/bedrock.h"
 
+Muse *muse;
+
 int main() {
+  muse = muse_init();
+  muse_call_simple(muse, "foobar");
+
   if (!bedrock_init()) {
     printf("bedrock failed\n");
     return -1;
@@ -120,6 +121,7 @@ int main() {
   picasso_program_destroy(p_program);
 
   bedrock_kill();
+  muse_kill(muse);
 
 #ifdef MEM_DEBUG
   occulus_print();
