@@ -1,55 +1,61 @@
-CC=cl.exe /nologo
-DEF=/EHsc /MP8 $(CFLAGS)
-ERRS=/Wall
-DEPS_INC=/Ideps /Ideps\glfw\include /Ideps\lua-5.3.3\src
-DEPS_LIBS=obj\lualib533.lib shell32.lib gdi32.lib user32.lib opengl32.lib deps\glfw\build\src\glfw3.lib
-BIN=office.exe
-
-LUA_OBJS=obj\lapi.obj obj\lcode.obj obj\lctype.obj obj\ldebug.obj obj\ldo.obj obj\ldump.obj obj\lfunc.obj obj\lgc.obj obj\llex.obj obj\lmem.obj obj\lobject.obj obj\lopcodes.obj obj\lparser.obj obj\lstate.obj obj\lstring.obj obj\ltable.obj obj\ltm.obj obj\lundump.obj obj\lvm.obj obj\lzio.obj obj\lauxlib.obj obj\lbaselib.obj obj\lbitlib.obj obj\lcorolib.obj obj\ldblib.obj obj\liolib.obj obj\lmathlib.obj obj\loslib.obj obj\lstrlib.obj obj\ltablib.obj obj\lutf8lib.obj obj\loadlib.obj obj\linit.obj
-GLAD_OBJS=obj\glad.obj
-
-BEDROCK_OBJS=obj\b_main.obj obj\b_occulus.obj obj\b_kronos.obj obj\b_gossip.obj obj\b_picasso.obj obj\b_archivist.obj
-OBJS=obj\main.obj
+CC=clang
+DEF=-std=gnu99 $(CFLAGS)
+ERRS=-Wall -Wno-missing-braces
+DEPS_INC=-Ideps -Ideps/glfw/include -Ideps/lua-5.3.3/src
+DEPS_LIBS=obj/lualib533.a deps/glfw/build/src/libglfw3.a
+BIN=office
 
 .PHONY:
 
 clean:
-  @if exist obj rmdir /S /Q obj
-  @if exist build rmdir /S /Q build
+	rm -rf obj build
 
 prepare:
-  @if not exist obj mkdir obj
-  @if not exist build mkdir build
+	mkdir -p ./obj
+	mkdir -p ./build
 
-deps: $(DEPS_LIBS)
+# +lua
+LUA_OBJS=obj/lapi.o obj/lcode.o obj/lctype.o obj/ldebug.o obj/ldo.o obj/ldump.o obj/lfunc.o obj/lgc.o obj/llex.o obj/lmem.o obj/lobject.o obj/lopcodes.o obj/lparser.o obj/lstate.o obj/lstring.o obj/ltable.o obj/ltm.o obj/lundump.o obj/lvm.o obj/lzio.o obj/lauxlib.o obj/lbaselib.o obj/lbitlib.o obj/lcorolib.o obj/ldblib.o obj/liolib.o obj/lmathlib.o obj/loslib.o obj/lstrlib.o obj/ltablib.o obj/lutf8lib.o obj/loadlib.o obj/linit.o
 
-{src/}.c{obj/}.obj:
-  $(CC) $(DEF) $(DEPS_INC) /c /Foobj\ $<
+$(LUA_OBJS): obj/%.o:deps/lua-5.3.3/src/%.c
+	$(CC) $(ERRS) $(DEF) $(DEPS_INC) -fPIC -c $< -o $@
 
-{deps/lua-5.3.3/src/}.c{obj/}.obj:
-  $(CC) $(DEF) $(DEPS_INC) /c /Foobj\ $<
+obj/lualib533.a: $(LUA_OBJS)
+	ar rcs obj/lualib533.a $(LUA_OBJS)
+# -lua
 
-{deps/glad/}.c{obj/}.obj:
-  $(CC) $(DEF) $(DEPS_INC) /c /Foobj\ $<
+GLAD_OBJS=obj/glad.o
+$(GLAD_OBJS): obj/%.o:deps/glad/%.c
+	$(CC) $(ERRS) $(DEF) $(DEPS_INC) -c $< -o $@
 
-{src/bedrock/}.c{obj/}.obj:
-  $(CC) $(DEF) $(DEPS_INC) /DBEDROCK_INTERNAL /c /Foobj\ $<
+# +bedrock
+BEDROCK_SRCS=$(wildcard src/bedrock/*.c src/bedrock/*/*.c)
+BEDROCK_RAWOBJS=$(subst /,-,$(BEDROCK_SRCS:src/%.c=%.o))
+BEDROCK_OBJS=$(BEDROCK_RAWOBJS:%.o=obj/%.o)
 
-obj\lualib533.lib: $(LUA_OBJS)
-	lib /nologo /machine:x64 /out:obj/lualib533.lib $(LUA_OBJS)
+$(BEDROCK_OBJS):
+	$(eval SRCFILE=$(subst obj/,src/,$@))
+	$(eval SRCFILE=$(subst -,/,$(SRCFILE)))
+	$(eval SRCFILE=$(subst .o,.c,$(SRCFILE)))
+	$(CC) $(ERRS) $(DEF) $(DEPS_INC) -Isrc/bedrock -c $(SRCFILE) -o $@
+# -bedrock
 
-opengl32.lib:
-gdi32.lib:
-user32.lib:
-shell32.lib:
+# +game
+OBJS=obj/main.o
 
-build: .PHONY prepare deps $(GLAD_OBJS) $(BEDROCK_OBJS) $(OBJS)
-	link /nologo /machine:x64 /out:build/$(BIN)  /nodefaultlib:libcmtd $(DEPS_LIBS) $(GLAD_OBJS) $(BEDROCK_OBJS) $(OBJS)
-  xcopy /Y /E assets build
+deps: $(DEPS_LIBS) $(GLAD_OBJS) $(BEDROCK_OBJS)
+
+$(OBJS): obj/%.o:src/%.c
+	$(CC) $(ERRS) $(DEF) $(DEPS_INC) -c $< -o $@
+
+build: .PHONY prepare deps $(OBJS)
+	$(CC) $(ERRS) $(DEF) -o build/$(BIN) $(OBJS) $(BEDROCK_OBJS) $(GLAD_OBJS) $(DEPS_LIBS) -lX11 -lXrandr -lXinerama -lXxf86vm -lXcursor -ldl -lGL -lm -lpthread -ldl -lrt
+	cp -r assets/* build
+# -game
 
 run: build
-  cls
-  @echo Running...
-  start /B /D build build/$(BIN)
+	clear
+	echo Running...
+	cd build && ./$(BIN)
 
 all: clean prepare build
