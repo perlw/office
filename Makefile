@@ -2,7 +2,7 @@ CC=clang
 DEF=-std=gnu99 $(CFLAGS)
 ERRS=-Wall -Wno-missing-braces
 DEPS_INC=-Ideps -Ideps/glfw/include -Ideps/lua-5.3.3/src
-DEPS_LIBS=obj/lualib533.a deps/glfw/build/src/libglfw3.a
+DEPS_LIBS=obj/bedrock.a obj/lualib533.a obj/glad.o deps/glfw/build/src/libglfw3.a
 BIN=office
 
 .PHONY:
@@ -24,8 +24,7 @@ obj/lualib533.a: $(LUA_OBJS)
 	ar rcs obj/lualib533.a $(LUA_OBJS)
 # -lua
 
-GLAD_OBJS=obj/glad.o
-$(GLAD_OBJS): obj/%.o:deps/glad/%.c
+obj/glad.o: obj/%.o:deps/glad/%.c
 	$(CC) $(ERRS) $(DEF) $(DEPS_INC) -c $< -o $@
 
 # +bedrock
@@ -38,18 +37,21 @@ $(BEDROCK_OBJS):
 	$(eval SRCFILE=$(subst -,/,$(SRCFILE)))
 	$(eval SRCFILE=$(subst .o,.c,$(SRCFILE)))
 	$(CC) $(ERRS) $(DEF) $(DEPS_INC) -Isrc/bedrock -c $(SRCFILE) -o $@
+
+obj/bedrock.a: $(BEDROCK_OBJS)
+	ar rcs obj/bedrock.a $(BEDROCK_OBJS)
 # -bedrock
 
 # +game
 OBJS=obj/main.o
 
-deps: $(DEPS_LIBS) $(GLAD_OBJS) $(BEDROCK_OBJS)
+deps: $(DEPS_LIBS)
 
 $(OBJS): obj/%.o:src/%.c
 	$(CC) $(ERRS) $(DEF) $(DEPS_INC) -c $< -o $@
 
 build: .PHONY prepare deps $(OBJS)
-	$(CC) $(ERRS) $(DEF) -o build/$(BIN) $(OBJS) $(BEDROCK_OBJS) $(GLAD_OBJS) $(DEPS_LIBS) -lX11 -lXrandr -lXinerama -lXxf86vm -lXcursor -ldl -lGL -lm -lpthread -ldl -lrt
+	$(CC) $(ERRS) $(DEF) -o build/$(BIN) $(OBJS) $(DEPS_LIBS) -lX11 -lXrandr -lXinerama -lXxf86vm -lXcursor -ldl -lGL -lm -lpthread -ldl -lrt
 	cp -r assets/* build
 # -game
 
