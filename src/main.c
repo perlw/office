@@ -11,11 +11,9 @@
 
 #include "bedrock/bedrock.h"
 
-Muse *muse;
-
 int main() {
-  muse = muse_init();
-  muse_call_simple(muse, "foobar");
+  muse_init();
+  muse_call_simple("foobar");
 
   if (!bedrock_init()) {
     printf("bedrock failed\n");
@@ -121,7 +119,7 @@ int main() {
   picasso_program_destroy(p_program);
 
   bedrock_kill();
-  muse_kill(muse);
+  muse_kill();
 
 #ifdef MEM_DEBUG
   occulus_print();

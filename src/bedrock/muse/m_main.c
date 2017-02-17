@@ -4,8 +4,6 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
-#include "m_internal.h"
-
 /*
    const luaL_Reg test_lib[] = {
    { "set_message", l_set_message },
@@ -30,25 +28,25 @@
    }
    */
 
+lua_State* state;
 
-Muse *muse_init(void) {
-  lua_State* muse = luaL_newstate();
-  luaL_openlibs(muse);
-  return muse;
+void muse_init(void) {
+  state = luaL_newstate();
+  luaL_openlibs(state);
 }
 
-void muse_kill(Muse *muse) {
-  lua_close(muse);
+void muse_kill(void) {
+  lua_close(state);
 }
 
 // TODO: Error handling
-void muse_call_simple(const Muse* muse, const char *name) {
-  lua_getglobal(muse, name);
-  int result = lua_pcall(muse, 0, 0, 0);
+void muse_call_simple(const char *name) {
+  lua_getglobal(state, name);
+  int result = lua_pcall(state, 0, 0, 0);
   if (result != LUA_OK) {
-    const char* message = lua_tostring(muse, -1);
+    const char* message = lua_tostring(state, -1);
     printf("%s: %s\n", __FUNCTION__, message);
-    lua_pop(muse, 1);
+    lua_pop(state, 1);
   }
 }
 
