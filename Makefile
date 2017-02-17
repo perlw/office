@@ -32,7 +32,7 @@ BEDROCK_SRCS=$(wildcard src/bedrock/*.c src/bedrock/*/*.c)
 BEDROCK_RAWOBJS=$(subst /,-,$(BEDROCK_SRCS:src/%.c=%.o))
 BEDROCK_OBJS=$(BEDROCK_RAWOBJS:%.o=obj/%.o)
 
-$(BEDROCK_OBJS):
+$(BEDROCK_OBJS): $(BEDROCK_SRCS)
 	$(eval SRCFILE=$(subst obj/,src/,$@))
 	$(eval SRCFILE=$(subst -,/,$(SRCFILE)))
 	$(eval SRCFILE=$(subst .o,.c,$(SRCFILE)))

@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <assert.h>
 
 typedef struct {
   const void *ptr;
   uint64_t size;
+	uint64_t num_allocs;
   uint64_t num_frees;
   char alloc_location[64];
   char free_location[64];
@@ -17,20 +19,35 @@ uint64_t num_allocations = 0;
 uint64_t allocations_length = 0;
 Allocation *allocations = NULL;
 
+// FIXME: Major issue when addresses are reused!
 void log_allocation(const void *ptr, size_t size, const char *file, uint64_t line) {
   if (num_allocations >= allocations_length) {
     allocations_length += ALLOC_CHUNK;
     allocations = realloc(allocations, allocations_length * sizeof(Allocation));
   }
-  allocations[num_allocations] = (Allocation){
-    .ptr = ptr,
-    .size = size,
-    .num_frees = 0,
-    .alloc_location = { 0 },
-    .free_location = { 0 },
-  };
-  sprintf(allocations[num_allocations].alloc_location, "%s:%lu", file, line);
-  num_allocations++;
+
+	bool found = false;
+	for (uint64_t t = 0; t < num_allocations; t++) {
+    if (allocations[t].ptr == ptr) {
+      allocations[t].size = size;
+      allocations[t].num_allocs += 1;
+			found = true;
+			break;
+		}
+	}
+
+	if (!found) {
+		allocations[num_allocations] = (Allocation){
+			.ptr = ptr,
+			.size = size,
+			.num_allocs = 1,
+			.num_frees = 0,
+			.alloc_location = { 0 },
+			.free_location = { 0 },
+		};
+		sprintf(allocations[num_allocations].alloc_location, "%s:%lu", file, line);
+		num_allocations += 1;
+	}
 
   mem_leaked += size;
   max_mem = (mem_leaked > max_mem ? mem_leaked : max_mem);
@@ -60,20 +77,19 @@ void *occulus_realloc(void *old_ptr, size_t size, const char *file, uint64_t lin
 
 void occulus_free(void *ptr, const char *file, uint64_t line) {
   assert(ptr);
-  int found = 0;
+  bool found = false;
   for (uint64_t t = 0; t < num_allocations; t++) {
     if (allocations[t].ptr == ptr) {
-      allocations[t].num_frees++;
-      if (allocations[t].num_frees > 1) {
+      allocations[t].num_frees += 1;
+      if (allocations[t].num_frees != allocations[t].num_allocs) {
         printf("%s:%lu> memory freed more than once, 0x%0lx\n", file, line, (uint64_t)ptr);
         return;
-      } else {
-        sprintf(allocations[num_allocations].alloc_location, "%s:%lu", file, line);
       }
 
+			sprintf(allocations[num_allocations].alloc_location, "%s:%lu", file, line);
       mem_leaked -= allocations[t].size;
 
-      found = 1;
+      found = true;
       break;
     }
   }
@@ -90,8 +106,8 @@ void occulus_print() {
   for (uint64_t t = 0; t < num_allocations; t++) {
     if (allocations[t].num_frees == 0) {
       printf("Memory at %s never freed!\n", allocations[t].alloc_location);
-    } else if (allocations[t].num_frees > 1) {
-      printf("Memory at %s freed %lu times!\n", allocations[t].alloc_location, allocations[t].num_frees);
+    } else if (allocations[t].num_frees != allocations[t].num_allocs) {
+			printf("Memory at %s alloced %lu times but freed %lu times!\n", allocations[t].alloc_location, allocations[t].num_allocs, allocations[t].num_frees);
     }
   }
   printf("<MEM_DEBUG\n");

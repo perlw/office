@@ -10,6 +10,8 @@ git submodule update
 ```
 
 ## Compiling on linux
+> Requires clang
+
 First build the glfw library.
 ```bash
 cd deps/glfw
@@ -21,6 +23,8 @@ make
 After this a, make -f Makefile.lin build will work.
 
 ## Compiling on windows
+> Requires VS Sdk or Visual Studio 14+
+
 First build the glfw library.
 ```bash
 cd deps\glfw

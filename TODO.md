@@ -2,7 +2,6 @@ TODO
 ===
 ## Game
 The actual game
-* Make buildable on windows again, go all in clang?
 * Initial text rendering?
 * Ingame graphical debugging?
 
@@ -27,3 +26,7 @@ Lua wrapper
 
 ### Synapse
 Networking
+
+### Occulus
+Memory introspector
+* Issue when reusing addresses!!
