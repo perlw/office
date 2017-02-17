@@ -1,22 +1,38 @@
 #include "p_internal.h"
 
-Shader *shader_create(GLenum type) {
-	Shader *shader = calloc(1, sizeof(Shader));
-	*shader = (Shader) {
-		.id = glCreateShader(type),
+GLenum picasso_shader_type_to_gl(PicassoShaderType type) {
+	switch (type) {
+		case PICASSO_SHADER_VERTEX:
+			return GL_VERTEX_SHADER;
+		case PICASSO_SHADER_FRAGMENT:
+			return GL_FRAGMENT_SHADER;
+		default:
+			return 0;
+	}
+}
+
+PicassoShader *picasso_shader_create(PicassoShaderType type) {
+	GLenum gl_type = picasso_shader_type_to_gl(type);
+	if (!gl_type) {
+		return NULL;
+	}
+
+	PicassoShader *shader = calloc(1, sizeof(PicassoShader));
+	*shader = (PicassoShader) {
+		.id = glCreateShader(gl_type),
 		.type = type,
 	};
 	return shader;
 }
 
-void shader_destroy(Shader *shader) {
+void picasso_shader_destroy(PicassoShader *shader) {
 	assert(shader);
 
 	glDeleteShader(shader->id);
 	free(shader);
 }
 
-PicassoShaderResult shader_compile(Shader* shader, const uint8_t *source, uintmax_t length) {
+PicassoShaderResult picasso_shader_compile(PicassoShader* shader, const uint8_t *source, uintmax_t length) {
 	assert(shader);
 
 	glShaderSource(shader->id, 1, (const GLchar* const*)&source, (const GLint*)&length);
@@ -33,30 +49,4 @@ PicassoShaderResult shader_compile(Shader* shader, const uint8_t *source, uintma
 	}
 
 	return PICASSO_SHADER_OK;
-}
-
-// Vertex interface
-PicassoVertexShader *picasso_shader_vertex_create(void) {
-	return shader_create(GL_VERTEX_SHADER);
-}
-
-void picasso_shader_vertex_destroy(PicassoVertexShader *shader) {
-	shader_destroy(shader);
-}
-
-PicassoShaderResult picasso_shader_vertex_compile(PicassoVertexShader* shader, const uint8_t *source, uintmax_t length) {
-	return shader_compile(shader, source, length);
-}
-
-// Fragment interface
-PicassoFragmentShader *picasso_shader_fragment_create(void) {
-	return shader_create(GL_FRAGMENT_SHADER);
-}
-
-void picasso_shader_fragment_destroy(PicassoFragmentShader *shader) {
-	shader_destroy(shader);
-}
-
-PicassoShaderResult picasso_shader_fragment_compile(PicassoFragmentShader* shader, const uint8_t *source, uintmax_t length) {
-	return shader_compile(shader, source, length);
 }

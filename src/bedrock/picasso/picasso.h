@@ -2,8 +2,9 @@
 #define __PICASSO_H__
 
 typedef enum {
-	PICASSO_PROGRAM_OK = 1,
-} PicassoProgramResult;
+	PICASSO_SHADER_VERTEX = 1,
+	PICASSO_SHADER_FRAGMENT,
+} PicassoShaderType;
 
 typedef enum {
 	PICASSO_SHADER_OK = 1,
@@ -11,20 +12,15 @@ typedef enum {
 } PicassoShaderResult;
 
 #ifndef PICASSO_INTERNAL
-typedef void PicassoVertexShader;
-typedef void PicassoFragmentShader;
+typedef void PicassoShader;
 typedef void PicassoProgram;
 #else
 #include "p_types.h"
 #endif
 
-PicassoVertexShader *picasso_shader_vertex_create(void);
-void picasso_shader_vertex_destroy(PicassoVertexShader *shader);
-PicassoShaderResult picasso_shader_vertex_compile(PicassoVertexShader* shader, const uint8_t *source, uintmax_t length);
-
-PicassoFragmentShader *picasso_shader_fragment_create(void);
-void picasso_shader_fragment_destroy(PicassoFragmentShader *shader);
-PicassoShaderResult picasso_shader_fragment_compile(PicassoFragmentShader* shader, const uint8_t *source, uintmax_t length);
+PicassoShader *picasso_shader_create(PicassoShaderType type);
+void picasso_shader_destroy(PicassoShader *shader);
+PicassoShaderResult picasso_shader_compile(PicassoShader* shader, const uint8_t *source, uintmax_t length);
 
 PicassoProgram *picasso_program_create(const uint8_t *vert_source, size_t vert_length, const uint8_t *frag_source, size_t frag_length);
 void picasso_program_destroy(PicassoProgram *program);
