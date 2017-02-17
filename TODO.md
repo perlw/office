@@ -6,12 +6,14 @@ The actual game
 * Ingame graphical debugging?
 
 ## Bedrock
+* Take a pass and ensure safe memory functions are used (string functions etc)
 
 ### Picasso
 Graphics, pipeline
 * Shader management (need more work)
 * Buffer management
 * Image management
+* Keep track of gl state, atleast for buffers, textures, shaders
 
 ### Archivist module
 File management
