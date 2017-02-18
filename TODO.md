@@ -31,4 +31,4 @@ Networking
 
 ### Occulus
 Memory introspector
-* Issue when reusing addresses!!
+* Issue when reusing addresses!! Rethink the simple addition of allocation logging
