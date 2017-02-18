@@ -20,10 +20,11 @@ typedef void PicassoProgram;
 
 PicassoShader *picasso_shader_create(PicassoShaderType type);
 void picasso_shader_destroy(PicassoShader *shader);
-PicassoShaderResult picasso_shader_compile(PicassoShader* shader, const uint8_t *source, uintmax_t length);
+PicassoShaderResult picasso_shader_compile(const PicassoShader* shader, const uint8_t *source, uintmax_t length);
 
-PicassoProgram *picasso_program_create(const uint8_t *vert_source, size_t vert_length, const uint8_t *frag_source, size_t frag_length);
+PicassoProgram *picasso_program_create(void);
 void picasso_program_destroy(PicassoProgram *program);
+void picasso_program_link_shaders(const PicassoProgram *program, uintmax_t num_shaders, const PicassoShader **shaders);
 void picasso_program_use(const PicassoProgram *program);
 int32_t picasso_program_attrib_location(const PicassoProgram *program, const char *name);
 int32_t picasso_program_uniform_location(const PicassoProgram *program, const char *name);
