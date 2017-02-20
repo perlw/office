@@ -69,7 +69,7 @@ int main() {
 		picasso_shader_compile(fragment_shader, frag_source, frag_length);
 
 		p_program = picasso_program_create();
-		picasso_program_link_shaders(p_program, 2, (PicassoShader*[2]){
+		picasso_program_link_shaders(p_program, 2, (const PicassoShader*[2]){
 			vertex_shader,
 			fragment_shader,
 		});
