@@ -4,10 +4,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-void *occulus_malloc(size_t size, const char *file, uint64_t line);
-void *occulus_calloc(size_t num, size_t size, const char *file, uint64_t line);
-void *occulus_realloc(void *old_ptr, size_t size, const char *file, uint64_t line);
-void occulus_free(void *ptr, const char *file, uint64_t line);
+void *occulus_malloc(size_t size, const char *file, uintmax_t line);
+void *occulus_calloc(size_t num, size_t size, const char *file, uintmax_t line);
+void *occulus_realloc(void *old_ptr, size_t size, const char *file, uintmax_t line);
+void occulus_free(void *ptr, const char *file, uintmax_t line);
 void occulus_print();
 
 #ifdef MEM_DEBUG
