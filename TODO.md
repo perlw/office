@@ -6,7 +6,6 @@ The actual game
 * Ingame graphical debugging?
 
 ## Bedrock
-* Take a pass and ensure safe memory functions are used (string functions etc)
 
 ### Picasso
 Graphics, pipeline
@@ -31,4 +30,3 @@ Networking
 
 ### Occulus
 Memory introspector
-* Issue when reusing addresses!! Rethink the simple addition of allocation logging

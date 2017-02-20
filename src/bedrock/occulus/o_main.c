@@ -4,14 +4,17 @@
 #include <stdbool.h>
 #include <assert.h>
 
+#define LOCATION_STRING_LENGTH 64
+#define ALLOC_CHUNK 100
+
 typedef struct {
   const void *ptr;
   uintmax_t size;
   bool freed;
-  char alloc_location[64];
-  char free_location[64];
+  char alloc_location[LOCATION_STRING_LENGTH];
+  char free_location[LOCATION_STRING_LENGTH];
 } Allocation;
-#define ALLOC_CHUNK 100
+
 uintmax_t max_mem = 0;
 uintmax_t mem_leaked = 0;
 uintmax_t num_allocations = 0;
@@ -31,7 +34,7 @@ void log_allocation(const void *ptr, size_t size, const char *file, uintmax_t li
     .alloc_location = { 0 },
     .free_location = { 0 },
   };
-  sprintf(allocations[num_allocations].alloc_location, "%s:%lu", file, line);
+  snprintf(allocations[num_allocations].alloc_location, LOCATION_STRING_LENGTH, "%s:%lu", file, line);
   num_allocations += 1;
 
   mem_leaked += size;
@@ -65,7 +68,7 @@ void occulus_free(void *ptr, const char *file, uintmax_t line) {
   bool found = false;
   for (uintmax_t t = 0; t < num_allocations; t++) {
     if (allocations[t].ptr == ptr && !allocations[t].freed) {
-			sprintf(allocations[num_allocations].free_location, "%s:%lu", file, line);
+      snprintf(allocations[num_allocations].free_location, LOCATION_STRING_LENGTH, "%s:%lu", file, line);
       mem_leaked -= allocations[t].size;
       allocations[t].freed = true;
       found = true;
