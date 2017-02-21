@@ -1,10 +1,22 @@
 cmake_minimum_required (VERSION 3.0)
 project (office C)
 
+# Force clang
+SET (CMAKE_C_COMPILER             "/usr/bin/clang")
+SET (CMAKE_C_FLAGS                "-std=gnu99 -Wall -Wno-missing-braces")
+SET (CMAKE_C_FLAGS_DEBUG          "-g")
+SET (CMAKE_C_FLAGS_MINSIZEREL     "-Os -DNDEBUG")
+SET (CMAKE_C_FLAGS_RELEASE        "-O4 -DNDEBUG")
+SET (CMAKE_C_FLAGS_RELWITHDEBINFO "-O2 -g")
+
+SET (CMAKE_AR      "/usr/bin/llvm-ar-3.8")
+SET (CMAKE_LINKER  "/usr/bin/llvm-ld-3.8")
+SET (CMAKE_NM      "/usr/bin/llvm-nm-3.8")
+SET (CMAKE_OBJDUMP "/usr/bin/llvm-objdump-3.8")
+SET (CMAKE_RANLIB  "/usr/bin/llvm-ranlib-3.8")
+
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 include_directories ("${PROJECT_SOURCE_DIR}/deps")
-include_directories ("${PROJECT_SOURCE_DIR}/deps/glfw/include")
-include_directories ("${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src")
 
 add_subdirectory (src/bedrock)
 
