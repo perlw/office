@@ -4,37 +4,6 @@ project (office C)
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 include_directories ("${PROJECT_SOURCE_DIR}/deps")
 
-
-# GLFW
-option (BUILD_SHARED_LIBS "Build shared libraries" OFF)
-option (GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
-option (GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
-option (GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
-option (GLFW_INSTALL "Generate installation target" OFF)
-if (MSVC)
-  option (USE_MSVC_RUNTIME_LIBRARY_DLL "Use MSVC runtime library DLL" OFF)
-endif (MSVC)
-include_directories ("${PROJECT_SOURCE_DIR}/deps/glfw/include")
-add_subdirectory ("${PROJECT_SOURCE_DIR}/deps/glfw")
-#GLFW
-
-
-if (UNIX AND NOT APPLE)
-  # Force clang
-  set (CMAKE_C_COMPILER             "/usr/bin/clang")
-  set (CMAKE_C_FLAGS                "-std=gnu99")
-  set (CMAKE_C_FLAGS_DEBUG          "-g")
-  set (CMAKE_C_FLAGS_MINSIZEREL     "-Os -DNDEBUG")
-  set (CMAKE_C_FLAGS_RELEASE        "-O4 -DNDEBUG")
-  set (CMAKE_C_FLAGS_RELWITHDEBINFO "-O2 -g")
-
-  set (CMAKE_AR      "/usr/bin/llvm-ar-3.8")
-  set (CMAKE_LINKER  "/usr/bin/llvm-ld-3.8")
-  set (CMAKE_NM      "/usr/bin/llvm-nm-3.8")
-  set (CMAKE_OBJDUMP "/usr/bin/llvm-objdump-3.8")
-  set (CMAKE_RANLIB  "/usr/bin/llvm-ranlib-3.8")
-endif (UNIX AND NOT APPLE)
-
 option (USE_OCCULUS "Use memory debugger" OFF)
 add_subdirectory (src/bedrock)
 
