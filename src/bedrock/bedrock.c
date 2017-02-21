@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "gossip/gossip.h"
+#include "occulus/occulus.h"
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
@@ -78,6 +79,10 @@ int bedrock_init() {
 void bedrock_kill() {
   glfwTerminate();
   gossip_cleanup();
+
+#ifdef MEM_DEBUG
+  occulus_print();
+#endif
 }
 
 void bedrock_swap() {
