@@ -18,6 +18,11 @@ SET (CMAKE_RANLIB  "/usr/bin/llvm-ranlib-3.8")
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 include_directories ("${PROJECT_SOURCE_DIR}/deps")
 
+option (USE_OCCULUS "Use memory debugger" OFF)
+if (USE_OCCULUS)
+  add_definitions (-DMEM_DEBUG)
+endif (USE_OCCULUS)
+
 add_subdirectory (src/bedrock)
 
 add_executable (office src/main.c)
