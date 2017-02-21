@@ -22,3 +22,4 @@ add_subdirectory (src/bedrock)
 
 add_executable (office src/main.c)
 target_link_libraries (office bedrock)
+add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets $<TARGET_FILE_DIR:office>)
