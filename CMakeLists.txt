@@ -4,6 +4,7 @@ project (office C)
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 include_directories ("${PROJECT_SOURCE_DIR}/deps")
 
+
 # GLFW
 option (BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option (GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
@@ -15,6 +16,8 @@ if (MSVC)
 endif (MSVC)
 include_directories ("${PROJECT_SOURCE_DIR}/deps/glfw/include")
 add_subdirectory ("${PROJECT_SOURCE_DIR}/deps/glfw")
+#GLFW
+
 
 if (UNIX AND NOT APPLE)
   # Force clang
@@ -31,7 +34,6 @@ if (UNIX AND NOT APPLE)
   set (CMAKE_OBJDUMP "/usr/bin/llvm-objdump-3.8")
   set (CMAKE_RANLIB  "/usr/bin/llvm-ranlib-3.8")
 endif (UNIX AND NOT APPLE)
-#GLFW
 
 option (USE_OCCULUS "Use memory debugger" OFF)
 add_subdirectory (src/bedrock)
