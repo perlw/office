@@ -10,7 +10,7 @@ add_subdirectory (src/bedrock)
 add_executable (office src/main.c)
 
 if (UNIX)
-  target_compile_options(office PRIVATE -Wall -Wno-missing-braces)
+  target_compile_options(bedrock PRIVATE -std=gnu99 -march=native -Wall)
 endif (UNIX)
 if (WIN32)
   if (MSVC)
