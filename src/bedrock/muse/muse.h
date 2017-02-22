@@ -14,6 +14,7 @@ typedef void Muse;
 #endif
 
 Muse *muse_init(void);
+Muse *muse_init_lite(void);
 void muse_kill(Muse *muse);
 MuseResult muse_call_simple(const Muse *muse, const char *name);
 MuseResult muse_load_file(const Muse *muse, const char *filename);

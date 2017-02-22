@@ -28,14 +28,19 @@
  luaL_loadfile(lua_state, "test.lua");
  */
 
-Muse *muse_init(void) {
+Muse *muse_init_lite(void) {
   Muse *muse = calloc(1, sizeof(Muse));
 
   *muse = (Muse){
     .state = luaL_newstate(),
   };
-  luaL_openlibs(muse->state);
 
+  return muse;
+}
+
+Muse *muse_init(void) {
+  Muse *muse = muse_init_lite();
+  luaL_openlibs(muse->state);
   return muse;
 }
 
