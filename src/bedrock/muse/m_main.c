@@ -1,8 +1,4 @@
-#include <stdio.h>
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
+#include "m_internal.h"
 
 /*
    const luaL_Reg test_lib[] = {
@@ -28,25 +24,57 @@
    }
    */
 
-lua_State* state;
+/*
+ luaL_loadfile(lua_state, "test.lua");
+ */
 
-void muse_init(void) {
-  state = luaL_newstate();
-  luaL_openlibs(state);
+Muse *muse_init(void) {
+  Muse *muse = calloc(1, sizeof(Muse));
+
+  *muse = (Muse){
+    .state = luaL_newstate(),
+  };
+  luaL_openlibs(muse->state);
+
+  return muse;
 }
 
-void muse_kill(void) {
-  lua_close(state);
+void muse_kill(Muse *muse) {
+  assert(muse);
+
+  lua_close(muse->state);
+  free(muse);
 }
 
 // TODO: Error handling
-void muse_call_simple(const char *name) {
-  lua_getglobal(state, name);
-  int result = lua_pcall(state, 0, 0, 0);
+MuseResult muse_call_simple(const Muse *muse, const char *name) {
+  assert(muse);
+
+  lua_getglobal(muse->state, name);
+  int result = lua_pcall(muse->state, 0, 0, 0);
   if (result != LUA_OK) {
-    const char* message = lua_tostring(state, -1);
+    const char* message = lua_tostring(muse->state, -1);
     printf("%s: %s\n", __FUNCTION__, message);
-    lua_pop(state, 1);
+    lua_pop(muse->state, 1);
+    return MUSE_RESULT_MISSING_FUNC;
   }
+
+  return MUSE_RESULT_OK;
 }
 
+// TODO: Error handling
+MuseResult muse_load_file(const Muse *muse, const char *filename) {
+  assert(muse);
+
+  luaL_loadfile(muse->state, filename);
+
+  int result = lua_pcall(muse->state, 0, LUA_MULTRET, 0);
+  if (result != LUA_OK) {
+    const char* message = lua_tostring(muse->state, -1);
+    printf("%s: %s\n", __FUNCTION__, message);
+    lua_pop(muse->state, 1);
+    return MUSE_RESULT_LOAD_CALL_FAILED;
+  }
+
+  return MUSE_RESULT_OK;
+}

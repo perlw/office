@@ -7,7 +7,7 @@ include_directories ("${PROJECT_SOURCE_DIR}/deps")
 option (USE_OCCULUS "Use memory debugger" OFF)
 add_subdirectory (src/bedrock)
 
-add_executable (office src/main.c)
+add_executable (office src/main.c src/config.c)
 
 if (UNIX)
   target_compile_options (bedrock PRIVATE -std=gnu99 -march=native -Wall)

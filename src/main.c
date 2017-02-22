@@ -11,9 +11,10 @@
 
 #include "bedrock/bedrock.h"
 
+void read_config(void);
+
 int main() {
-  muse_init();
-  muse_call_simple("foobar");
+  read_config();
 
   if (!bedrock_init()) {
     printf("bedrock failed\n");
@@ -130,7 +131,6 @@ int main() {
 
   picasso_program_destroy(p_program);
 
-  muse_kill();
   bedrock_kill();
 
   return 0;
