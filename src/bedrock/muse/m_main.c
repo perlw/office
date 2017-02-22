@@ -1,6 +1,8 @@
 #include "m_internal.h"
 
 /*
+ *lua_pushcfunction(lua_state, l_set_message);
+ +  lua_setglobal(lua_state, "set_message");
    const luaL_Reg test_lib[] = {
    { "set_message", l_set_message },
    { "set_ascii", l_set_ascii },
@@ -13,33 +15,34 @@
    luaL_setfuncs(lua_state, test_lib, 0);
    lua_setglobal(lua_state, "testlib");
    */
-
-/*
-   const int result = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
-   if (result != LUA_OK) {
-   const char* message = lua_tostring(lua_state, -1);
-   printf(message);
-   lua_pop(lua_state, 1);
-   return 0;
-   }
-   */
-
-/*
- luaL_loadfile(lua_state, "test.lua");
- */
+Muse* instances[256] = { NULL };
 
 Muse *muse_init_lite(void) {
-  Muse *muse = calloc(1, sizeof(Muse));
+  for (uint8_t t = 0; t < 256; t++) {
+    if (!instances[t]) {
+      Muse *muse = calloc(1, sizeof(Muse));
 
-  *muse = (Muse){
-    .state = luaL_newstate(),
-  };
+      *muse = (Muse){
+        .state = luaL_newstate(),
+        .instance_id = t,
+        .funcs = { NULL },
+      };
 
-  return muse;
+      instances[t] = muse;
+
+      return muse;
+    }
+  }
+
+  return NULL;
 }
 
 Muse *muse_init(void) {
   Muse *muse = muse_init_lite();
+  if (!muse) {
+    return NULL;
+  }
+
   luaL_openlibs(muse->state);
   return muse;
 }
@@ -47,12 +50,18 @@ Muse *muse_init(void) {
 void muse_kill(Muse *muse) {
   assert(muse);
 
+  for (uint8_t t = 0; t < 256; t++) {
+    if (instances[t] == muse) {
+      instances[t] = NULL;
+      break;
+    }
+  }
+
   lua_close(muse->state);
   free(muse);
 }
 
-// TODO: Error handling
-MuseResult muse_call_simple(const Muse *muse, const char *name) {
+MuseResult muse_call_simple(Muse *muse, const char *name) {
   assert(muse);
 
   lua_getglobal(muse->state, name);
@@ -67,8 +76,7 @@ MuseResult muse_call_simple(const Muse *muse, const char *name) {
   return MUSE_RESULT_OK;
 }
 
-// TODO: Error handling
-MuseResult muse_load_file(const Muse *muse, const char *filename) {
+MuseResult muse_load_file(Muse *muse, const char *filename) {
   assert(muse);
 
   luaL_loadfile(muse->state, filename);
@@ -82,4 +90,45 @@ MuseResult muse_load_file(const Muse *muse, const char *filename) {
   }
 
   return MUSE_RESULT_OK;
+}
+
+MuseResult muse_add_module(Muse *muse, uintmax_t num_funcs, const MuseFunctionDef *func_defs) {
+  assert(muse);
+  assert(num_funcs > 0);
+  assert(func_defs);
+
+  return MUSE_RESULT_OK;
+}
+
+static int lua_callback(lua_State *state) {
+  uint8_t instance_id = lua_tonumber(state, lua_upvalueindex(1));
+  uint8_t func_id = lua_tonumber(state, lua_upvalueindex(2));
+
+  printf("instance=%d, func=%d\n", instance_id, func_id);
+
+  assert(instances[instance_id]);
+  assert(instances[instance_id]->funcs[func_id]);
+
+  instances[instance_id]->funcs[func_id]();
+
+  return 0;
+}
+
+MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
+  assert(muse);
+  assert(func_def);
+
+  for (uint8_t t = 0; t < 256; t++) {
+    if (!muse->funcs[t]) {
+      muse->funcs[t] = func_def->func;
+      lua_pushnumber(muse->state, muse->instance_id);
+      lua_pushnumber(muse->state, t);
+      lua_pushcclosure(muse->state, &lua_callback, 2);
+      lua_setglobal(muse->state, func_def->name);
+
+      return MUSE_RESULT_OK;
+    }
+  }
+
+  return MUSE_RESULT_OUT_OF_IDS;
 }

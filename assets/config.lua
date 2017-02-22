@@ -1,1 +1,1 @@
-io.write("foobar")
+test_func()
