@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-void test_func(void) {
+void test_func(Muse *muse) {
   printf("WORKS\n");
 }
 

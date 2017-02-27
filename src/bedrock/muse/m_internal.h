@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "lua.h"
@@ -12,5 +13,5 @@
 struct Muse {
   lua_State* state;
   uint8_t instance_id;
-  MuseFunc funcs[256];
+  MuseFunctionDef *func_defs[256];
 };

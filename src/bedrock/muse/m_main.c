@@ -18,14 +18,14 @@
 Muse *instances[256] = { NULL };
 
 Muse *muse_init_lite(void) {
-  for (uint8_t t = 0; t < 256; t++) {
+  for (int t = 0; t < 256; t++) {
     if (!instances[t]) {
       Muse *muse = calloc(1, sizeof(Muse));
 
       *muse = (Muse){
         .state = luaL_newstate(),
         .instance_id = t,
-        .funcs = { NULL },
+        .func_defs = { NULL },
       };
 
       instances[t] = muse;
@@ -50,10 +50,18 @@ Muse *muse_init(void) {
 void muse_kill(Muse *muse) {
   assert(muse);
 
-  for (uint8_t t = 0; t < 256; t++) {
+  for (int t = 0; t < 256; t++) {
     if (instances[t] == muse) {
       instances[t] = NULL;
       break;
+    }
+  }
+
+  for (int t = 0; t < 256; t++) {
+    if (muse->func_defs[t]) {
+      free(muse->func_defs[t]->name);
+      free(muse->func_defs[t]);
+      muse->func_defs[t] = NULL;
     }
   }
 
@@ -107,9 +115,9 @@ static int lua_callback(lua_State *state) {
   printf("instance=%d, func=%d\n", instance_id, func_id);
 
   assert(instances[instance_id]);
-  assert(instances[instance_id]->funcs[func_id]);
+  assert(instances[instance_id]->func_defs[func_id]);
 
-  instances[instance_id]->funcs[func_id]();
+  instances[instance_id]->func_defs[func_id]->func(instances[instance_id]);
 
   return 0;
 }
@@ -118,13 +126,17 @@ MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
   assert(muse);
   assert(func_def);
 
-  for (uint8_t t = 0; t < 256; t++) {
-    if (!muse->funcs[t]) {
-      muse->funcs[t] = func_def->func;
+  for (int t = 0; t < 256; t++) {
+    if (!muse->func_defs[t]) {
+      muse->func_defs[t] = calloc(1, sizeof(MuseFunctionDef));
+      muse->func_defs[t]->name = calloc(strlen(func_def->name), sizeof(char));
+      strcpy(muse->func_defs[t]->name, func_def->name);
+      muse->func_defs[t]->func = func_def->func;
+
       lua_pushnumber(muse->state, muse->instance_id);
       lua_pushnumber(muse->state, t);
       lua_pushcclosure(muse->state, &lua_callback, 2);
-      lua_setglobal(muse->state, func_def->name);
+      lua_setglobal(muse->state, muse->func_defs[t]->name);
 
       return MUSE_RESULT_OK;
     }
