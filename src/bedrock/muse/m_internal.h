@@ -7,5 +7,10 @@
 
 #include "../occulus/occulus.h"
 
-#define MUSE_INTERNAL
 #include "muse.h"
+
+struct Muse {
+  lua_State* state;
+  uint8_t instance_id;
+  MuseFunc funcs[256];
+};

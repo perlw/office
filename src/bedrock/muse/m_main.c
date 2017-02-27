@@ -15,7 +15,7 @@
    luaL_setfuncs(lua_state, test_lib, 0);
    lua_setglobal(lua_state, "testlib");
    */
-Muse* instances[256] = { NULL };
+Muse *instances[256] = { NULL };
 
 Muse *muse_init_lite(void) {
   for (uint8_t t = 0; t < 256; t++) {
@@ -67,7 +67,7 @@ MuseResult muse_call_simple(Muse *muse, const char *name) {
   lua_getglobal(muse->state, name);
   int result = lua_pcall(muse->state, 0, 0, 0);
   if (result != LUA_OK) {
-    const char* message = lua_tostring(muse->state, -1);
+    const char *message = lua_tostring(muse->state, -1);
     printf("%s: %s\n", __FUNCTION__, message);
     lua_pop(muse->state, 1);
     return MUSE_RESULT_MISSING_FUNC;
@@ -83,7 +83,7 @@ MuseResult muse_load_file(Muse *muse, const char *filename) {
 
   int result = lua_pcall(muse->state, 0, LUA_MULTRET, 0);
   if (result != LUA_OK) {
-    const char* message = lua_tostring(muse->state, -1);
+    const char *message = lua_tostring(muse->state, -1);
     printf("%s: %s\n", __FUNCTION__, message);
     lua_pop(muse->state, 1);
     return MUSE_RESULT_LOAD_CALL_FAILED;

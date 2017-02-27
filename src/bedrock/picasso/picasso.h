@@ -11,12 +11,8 @@ typedef enum {
 	PICASSO_SHADER_COMPILE_FAILED,
 } PicassoShaderResult;
 
-#ifndef PICASSO_INTERNAL
-typedef void PicassoShader;
-typedef void PicassoProgram;
-#else
-#include "p_types.h"
-#endif
+typedef struct PicassoShader PicassoShader;
+typedef struct PicassoProgram PicassoProgram;
 
 PicassoShader *picasso_shader_create(PicassoShaderType type);
 void picasso_shader_destroy(PicassoShader *shader);

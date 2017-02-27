@@ -10,17 +10,14 @@ typedef enum {
   MUSE_RESULT_OUT_OF_IDS,
 } MuseResult;
 
-#ifndef MUSE_INTERNAL
 typedef void (*MuseFunc)(void);
-typedef void Muse;
-#else
-#include "m_types.h"
-#endif
 
 typedef struct {
   char *name;
   MuseFunc func;
 } MuseFunctionDef;
+
+typedef struct Muse Muse;
 
 Muse *muse_init(void);
 Muse *muse_init_lite(void);

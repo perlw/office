@@ -6,5 +6,13 @@
 
 #include "occulus/occulus.h"
 
-#define PICASSO_INTERNAL
 #include "picasso.h"
+
+struct PicassoShader {
+	uint32_t id;
+	GLenum type;
+};
+
+struct PicassoProgram {
+	uint32_t id;
+};
