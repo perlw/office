@@ -13,7 +13,6 @@ typedef enum {
 typedef enum {
   MUSE_ARGUMENT_NUMBER = 1,
   MUSE_ARGUMENT_STRING,
-  MUSE_ARGUMENT_LIST,
 } MuseArgumentType;
 
 typedef struct Muse Muse;

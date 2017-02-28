@@ -112,6 +112,7 @@ MuseResult muse_add_module(Muse *muse, uintmax_t num_funcs, const MuseFunctionDe
 }
 
 // FIXME: Finish error checks
+// TODO: Lists, functions?
 static int lua_callback(lua_State *state) {
   uint8_t instance_id = lua_tonumber(state, lua_upvalueindex(1));
   uint8_t func_id = lua_tonumber(state, lua_upvalueindex(2));
