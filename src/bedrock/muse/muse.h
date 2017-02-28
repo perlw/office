@@ -10,6 +10,10 @@ typedef enum {
   MUSE_RESULT_OUT_OF_IDS,
 } MuseResult;
 
+typedef enum {
+  MUSE_ARGUMENT_NUMBER = 1,
+} MuseArgumentType;
+
 typedef struct Muse Muse;
 
 typedef void (*MuseFunc)(Muse*);
@@ -17,6 +21,8 @@ typedef void (*MuseFunc)(Muse*);
 typedef struct {
   char *name;
   MuseFunc func;
+  uintmax_t num_arguments;
+  MuseArgumentType *arguments;
 } MuseFunctionDef;
 
 Muse *muse_init(void);

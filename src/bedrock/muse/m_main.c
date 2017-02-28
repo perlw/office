@@ -132,6 +132,13 @@ MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
       muse->func_defs[t]->name = calloc(strlen(func_def->name), sizeof(char));
       strcpy(muse->func_defs[t]->name, func_def->name);
       muse->func_defs[t]->func = func_def->func;
+      if (func_def->num_arguments > 0) {
+        muse->func_defs[t]->arguments = calloc(func_def->num_arguments, sizeof(MuseArgumentType));
+        memcpy(muse->func_defs[t]->arguments, func_def->arguments, func_def->num_arguments * sizeof(MuseArgumentType));
+      } else {
+        muse->func_defs[t]->num_arguments = 0;
+        muse->func_defs[t]->arguments = NULL;
+      }
 
       lua_pushnumber(muse->state, muse->instance_id);
       lua_pushnumber(muse->state, t);
