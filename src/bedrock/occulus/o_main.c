@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
 
@@ -83,11 +84,25 @@ void occulus_free(void *ptr, const char *file, uintmax_t line) {
   free(ptr);
 }
 
-void occulus_print() {
-  printf("MEM_DEBUG>\nMax: %lukb\tLeaked: %lukb\n", max_mem / 1024, mem_leaked / 1024);
-  for (uintmax_t t = 0; t < num_allocations; t++) {
-    if (!allocations[t].freed) {
-      printf("Memory at %s never freed!\n", allocations[t].alloc_location);
+// FIXME: Prettify and merge stats
+// Filepath NumAlloc MaxSize Leaked
+// ...
+// AppMaxSize AppLeaked
+void occulus_print(bool detailed) {
+  printf("MEM_DEBUG>\nMax: %.2fkb\tLeaked: %.2fkb\n", (double)max_mem / 1024.0, (double)mem_leaked / 1024.0);
+  if (detailed) {
+    for (uintmax_t t = 0; t < num_allocations; t++) {
+      if (allocations[t].freed) {
+        printf("%s #%.2fkb\n", allocations[t].alloc_location, (double)allocations[t].size / 1024.0);
+      } else {
+        printf("%s\t%.2fkb NOT FREED\n", allocations[t].alloc_location, (double)allocations[t].size / 1024.0);
+      }
+    }
+  } else {
+    for (uintmax_t t = 0; t < num_allocations; t++) {
+      if (!allocations[t].freed) {
+        printf("Memory at %s never freed and leaked %.2fkb!\n", allocations[t].alloc_location, (double)allocations[t].size / 1024.0);
+      }
     }
   }
   printf("<MEM_DEBUG\n");

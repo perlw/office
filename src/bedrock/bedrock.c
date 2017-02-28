@@ -79,10 +79,6 @@ int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height) {
 void bedrock_kill() {
   glfwTerminate();
   gossip_cleanup();
-
-#ifdef MEM_DEBUG
-  occulus_print();
-#endif
 }
 
 void bedrock_swap() {
