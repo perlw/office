@@ -27,7 +27,7 @@ void should_close_callback(void) {
   quit = 1;
 }
 
-int bedrock_init() {
+int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height) {
   if (!glfwInit()) {
     printf("glfw fail\n");
     return -1;
@@ -39,7 +39,7 @@ int bedrock_init() {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  window = glfwCreateWindow(640, 480, "Office", NULL, NULL);
+  window = glfwCreateWindow(res_width, res_height, title, NULL, NULL);
   if (!window) {
     printf("glfw window fail\n");
     glfwTerminate();
@@ -65,7 +65,7 @@ int bedrock_init() {
   glEnable(GL_DEPTH_TEST);
   glClearDepth(1);
   glDepthFunc(GL_LESS);
-  glViewport(0, 0, 640, 480);
+  glViewport(0, 0, res_width, res_height);
 
   glEnable(GL_DEBUG_OUTPUT);
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);

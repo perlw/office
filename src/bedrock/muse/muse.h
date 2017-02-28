@@ -1,5 +1,4 @@
-#ifndef __MUSE_H__
-#define __MUSE_H__
+#pragma once
 
 #include <stdint.h>
 
@@ -38,5 +37,3 @@ MuseResult muse_call_simple(Muse *muse, const char *name);
 MuseResult muse_load_file(Muse *muse, const char *filename);
 MuseResult muse_add_module(Muse *muse, uintmax_t num_funcs, const MuseFunctionDef *funcs);
 MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func);
-
-#endif // __MUSE_H__

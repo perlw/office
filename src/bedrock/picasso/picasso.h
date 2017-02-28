@@ -1,5 +1,4 @@
-#ifndef __PICASSO_H__
-#define __PICASSO_H__
+#pragma once
 
 typedef enum {
 	PICASSO_SHADER_VERTEX = 1,
@@ -25,5 +24,3 @@ void picasso_program_use(const PicassoProgram *program);
 int32_t picasso_program_attrib_location(const PicassoProgram *program, const char *name);
 int32_t picasso_program_uniform_location(const PicassoProgram *program, const char *name);
 void picasso_program_mat4_set(const PicassoProgram *program, int32_t uniform, float *mat);
-
-#endif // __PICASSO_H__

@@ -1,5 +1,4 @@
-#ifndef __GOSSIP_H__
-#define __GOSSIP_H__
+#pragma once
 
 typedef void (*GossipCallback)(void);
 
@@ -12,5 +11,3 @@ typedef enum {
 void gossip_subscribe(GossipID id, GossipCallback callback);
 void gossip_emit(GossipID id);
 void gossip_cleanup();
-
-#endif // __GOSSIP_H__

@@ -1,5 +1,4 @@
-#ifndef __BEDROCK_H__
-#define __BEDROCK_H__
+#pragma once
 
 #include "occulus/occulus.h"
 #include "muse/muse.h"
@@ -7,12 +6,10 @@
 #include "gossip/gossip.h"
 #include "picasso/picasso.h"
 
-int bedrock_init();
+int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height);
 void bedrock_kill();
 
 void bedrock_swap();
 void bedrock_poll();
 int bedrock_should_close();
 double bedrock_time();
-
-#endif // __BEDROCK_H__

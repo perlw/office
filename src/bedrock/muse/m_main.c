@@ -79,7 +79,7 @@ MuseResult muse_call_simple(Muse *muse, const char *name) {
   int result = lua_pcall(muse->state, 0, 0, 0);
   if (result != LUA_OK) {
     const char *message = lua_tostring(muse->state, -1);
-    printf("%s: %s\n", __FUNCTION__, message);
+    printf("MUSE: %s: %s\n", __FUNCTION__, message);
     lua_pop(muse->state, 1);
     return MUSE_RESULT_MISSING_FUNC;
   }
@@ -95,7 +95,7 @@ MuseResult muse_load_file(Muse *muse, const char *filename) {
   int result = lua_pcall(muse->state, 0, LUA_MULTRET, 0);
   if (result != LUA_OK) {
     const char *message = lua_tostring(muse->state, -1);
-    printf("%s: %s\n", __FUNCTION__, message);
+    printf("MUSE: %s: %s\n", __FUNCTION__, message);
     lua_pop(muse->state, 1);
     return MUSE_RESULT_LOAD_CALL_FAILED;
   }
@@ -117,7 +117,7 @@ static int lua_callback(lua_State *state) {
   uint8_t instance_id = lua_tonumber(state, lua_upvalueindex(1));
   uint8_t func_id = lua_tonumber(state, lua_upvalueindex(2));
 
-  printf("instance=%d, func=%d\n", instance_id, func_id);
+  printf("MUSE: instance=%d, func=%d\n", instance_id, func_id);
 
   assert(instances[instance_id]);
   assert(instances[instance_id]->func_defs[func_id]);
@@ -128,7 +128,7 @@ static int lua_callback(lua_State *state) {
   MuseFunctionDef *func_def = muse->func_defs[func_id];
   if (func_def->num_arguments > 0) {
     if (lua_gettop(muse->state) != func_def->num_arguments) {
-      printf("incorrect amount of args\n");
+      printf("MUSE: incorrect amount of args\n");
     }
 
     num_arguments = func_def->num_arguments;
@@ -137,7 +137,7 @@ static int lua_callback(lua_State *state) {
       switch (func_def->arguments[t]) {
         case MUSE_ARGUMENT_NUMBER:
           if (!lua_isnumber(muse->state, t + 1)) {
-            printf("incorrect arg type, expected number!\n");
+            printf("MUSE: incorrect arg type, expected number!\n");
           }
 
           arguments[t] = (MuseArgument){
@@ -149,7 +149,7 @@ static int lua_callback(lua_State *state) {
 
         case MUSE_ARGUMENT_STRING:
           if (!lua_isstring(muse->state, t + 1)) {
-            printf("incorrect arg type, expected string!\n");
+            printf("MUSE: incorrect arg type, expected string!\n");
           }
 
           uintmax_t length = 0;
@@ -162,7 +162,7 @@ static int lua_callback(lua_State *state) {
           break;
 
         default:
-          printf("unknown/unimplemented type %d\n", func_def->arguments[t]);
+          printf("MUSE: unknown/unimplemented type %d\n", func_def->arguments[t]);
           break;
       }
     }

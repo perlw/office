@@ -11,12 +11,12 @@
 
 #include "bedrock/bedrock.h"
 
-void read_config(void);
+#include "config.h"
 
 int main() {
-  read_config();
+  Config config = read_config();
 
-  if (!bedrock_init()) {
+  if (!bedrock_init("Office", config.res_width, config.res_height)) {
     printf("bedrock failed\n");
     return -1;
   }
@@ -31,12 +31,12 @@ int main() {
 
     int32_t vertex_data[] = {
       0, 0,
-      640, 480,
-      0, 480,
+      config.res_width, config.res_height,
+      0, config.res_height,
 
       0, 0,
-      640, 0,
-      640, 480,
+      config.res_width, 0,
+      config.res_width, config.res_height,
     };
     float coord_data[] = {
       0, 1,
@@ -93,7 +93,7 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, coord_buffer);
     glVertexAttribPointer(coord_attr, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
-    mat4_t ortho = m4_ortho(0, 640, 0, 480, 1, 0);
+    mat4_t ortho = m4_ortho(0, config.res_width, 0, config.res_height, 1, 0);
     mat4_t model = m4_identity();
 
     int32_t pmatrix_uniform = picasso_program_uniform_location(p_program, "pMatrix");

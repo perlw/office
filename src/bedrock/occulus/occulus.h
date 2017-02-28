@@ -1,5 +1,4 @@
-#ifndef __OCCULUS_H__
-#define __OCCULUS_H__
+#pragma once
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -16,5 +15,3 @@ void occulus_print();
 #define realloc(n, s) occulus_realloc(n, s, __FILE__, __LINE__)
 #define free(n) occulus_free(n, __FILE__, __LINE__)
 #endif // MEM_DEBUG
-
-#endif // __OCCULUS_H__
