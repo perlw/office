@@ -4,17 +4,18 @@
 
 #include "config.h"
 
-Config config;
-
-void set_resolution(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments) {
+void set_resolution(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
   double width = *(double*)arguments[0].argument;
   double height = *(double*)arguments[1].argument;
 
-  config.res_width = (uint32_t)width;
-  config.res_height = (uint32_t)height;
+  Config *config = (Config*)userdata;
+  config->res_width = (uint32_t)width;
+  config->res_height = (uint32_t)height;
 }
 
 Config read_config(void) {
+  Config config = { 0 };
+
   MuseFunctionDef set_resolution_def = {
     .name = "resolution",
     .func = &set_resolution,
@@ -23,6 +24,7 @@ Config read_config(void) {
       MUSE_ARGUMENT_NUMBER,
       MUSE_ARGUMENT_NUMBER,
     },
+    .userdata = &config,
   };
 
   Muse *muse = muse_init_lite();

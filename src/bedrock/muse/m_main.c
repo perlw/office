@@ -168,7 +168,7 @@ static int lua_callback(lua_State *state) {
     }
   }
 
-  func_def->func(instances[instance_id], num_arguments, arguments);
+  func_def->func(instances[instance_id], num_arguments, arguments, func_def->userdata);
 
   if (num_arguments > 0) {
     for (uintmax_t t = 0; t < num_arguments; t++) {
@@ -190,6 +190,7 @@ MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
       muse->func_defs[t]->name = calloc(strlen(func_def->name), sizeof(char));
       strcpy(muse->func_defs[t]->name, func_def->name);
       muse->func_defs[t]->func = func_def->func;
+      muse->func_defs[t]->userdata = func_def->userdata;
       if (func_def->num_arguments > 0) {
         muse->func_defs[t]->num_arguments = func_def->num_arguments;
         muse->func_defs[t]->arguments = calloc(func_def->num_arguments, sizeof(MuseArgumentType));

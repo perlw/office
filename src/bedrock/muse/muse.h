@@ -21,13 +21,14 @@ typedef struct {
   MuseArgumentType type;
 } MuseArgument;
 
-typedef void (*MuseFunc)(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments);
+typedef void (*MuseFunc)(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata);
 
 typedef struct {
   char *name;
   MuseFunc func;
   uintmax_t num_arguments;
   MuseArgumentType *arguments;
+  void *userdata;
 } MuseFunctionDef;
 
 Muse *muse_init(void);
