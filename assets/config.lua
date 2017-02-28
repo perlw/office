@@ -1,2 +1,2 @@
 test_func()
-test_arguments(123)
+test_arguments(123, "foo456")

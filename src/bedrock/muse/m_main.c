@@ -137,7 +137,6 @@ static int lua_callback(lua_State *state) {
         case MUSE_ARGUMENT_NUMBER:
           if (!lua_isnumber(muse->state, t + 1)) {
             printf("incorrect arg type, expected number!\n");
-            break;
           }
 
           arguments[t] = (MuseArgument){
@@ -147,7 +146,22 @@ static int lua_callback(lua_State *state) {
           *(double*)arguments[t].argument = (double)lua_tonumber(muse->state, t + 1);
           break;
 
+        case MUSE_ARGUMENT_STRING:
+          if (!lua_isstring(muse->state, t + 1)) {
+            printf("incorrect arg type, expected string!\n");
+          }
+
+          uintmax_t length = 0;
+          const char *string = lua_tolstring(muse->state, t + 1, &length);
+          arguments[t] = (MuseArgument){
+            .argument = calloc(length + 1, sizeof(char)),
+            .type = func_def->arguments[t],
+          };
+          memcpy(arguments[t].argument, string, length * sizeof(char));
+          break;
+
         default:
+          printf("unknown/unimplemented type %d\n", func_def->arguments[t]);
           break;
       }
     }
