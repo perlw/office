@@ -60,6 +60,9 @@ void muse_kill(Muse *muse) {
   for (int t = 0; t < 256; t++) {
     if (muse->func_defs[t]) {
       free(muse->func_defs[t]->name);
+      if (muse->func_defs[t]->num_arguments > 0) {
+        free(muse->func_defs[t]->arguments);
+      }
       free(muse->func_defs[t]);
       muse->func_defs[t] = NULL;
     }
@@ -108,6 +111,7 @@ MuseResult muse_add_module(Muse *muse, uintmax_t num_funcs, const MuseFunctionDe
   return MUSE_RESULT_OK;
 }
 
+// FIXME: Finish error checks
 static int lua_callback(lua_State *state) {
   uint8_t instance_id = lua_tonumber(state, lua_upvalueindex(1));
   uint8_t func_id = lua_tonumber(state, lua_upvalueindex(2));
@@ -117,7 +121,46 @@ static int lua_callback(lua_State *state) {
   assert(instances[instance_id]);
   assert(instances[instance_id]->func_defs[func_id]);
 
-  instances[instance_id]->func_defs[func_id]->func(instances[instance_id]);
+  uintmax_t num_arguments = 0;
+  MuseArgument *arguments = NULL;
+  Muse *muse = instances[instance_id];
+  MuseFunctionDef *func_def = muse->func_defs[func_id];
+  if (func_def->num_arguments > 0) {
+    if (lua_gettop(muse->state) != func_def->num_arguments) {
+      printf("incorrect amount of args\n");
+    }
+
+    num_arguments = func_def->num_arguments;
+    arguments = calloc(num_arguments, sizeof(MuseArgument));
+    for (uintmax_t t = 0; t < func_def->num_arguments; t++) {
+      switch (func_def->arguments[t]) {
+        case MUSE_ARGUMENT_NUMBER:
+          if (!lua_isnumber(muse->state, t + 1)) {
+            printf("incorrect arg type, expected number!\n");
+            break;
+          }
+
+          arguments[t] = (MuseArgument){
+            .argument = calloc(1, sizeof(double)),
+            .type = func_def->arguments[t],
+          };
+          *(double*)arguments[t].argument = (double)lua_tonumber(muse->state, t + 1);
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+
+  func_def->func(instances[instance_id], num_arguments, arguments);
+
+  if (num_arguments > 0) {
+    for (uintmax_t t = 0; t < num_arguments; t++) {
+      free(arguments[t].argument);
+    }
+    free(arguments);
+  }
 
   return 0;
 }
@@ -133,6 +176,7 @@ MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
       strcpy(muse->func_defs[t]->name, func_def->name);
       muse->func_defs[t]->func = func_def->func;
       if (func_def->num_arguments > 0) {
+        muse->func_defs[t]->num_arguments = func_def->num_arguments;
         muse->func_defs[t]->arguments = calloc(func_def->num_arguments, sizeof(MuseArgumentType));
         memcpy(muse->func_defs[t]->arguments, func_def->arguments, func_def->num_arguments * sizeof(MuseArgumentType));
       } else {

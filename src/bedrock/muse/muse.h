@@ -16,7 +16,12 @@ typedef enum {
 
 typedef struct Muse Muse;
 
-typedef void (*MuseFunc)(Muse*);
+typedef struct {
+  void *argument;
+  MuseArgumentType type;
+} MuseArgument;
+
+typedef void (*MuseFunc)(Muse *muse, uintmax_t num_arguments, MuseArgument *arguments);
 
 typedef struct {
   char *name;

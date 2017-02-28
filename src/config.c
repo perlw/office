@@ -2,12 +2,12 @@
 
 #include <stdio.h>
 
-void test_func(Muse *muse) {
+void test_func(Muse *muse, uintmax_t num_arguments, MuseArgument *arguments) {
   printf("FUNC WORKS\n");
 }
 
-void test_arguments(Muse *muse) {
-  printf("ARGUMENTS WORKS\n");
+void test_arguments(Muse *muse, uintmax_t num_arguments, MuseArgument *arguments) {
+  printf("ARGUMENTS WORKS %f\n", *(double*)arguments[0].argument);
 }
 
 void read_config(void) {
