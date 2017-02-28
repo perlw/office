@@ -187,8 +187,9 @@ MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
   for (int t = 0; t < 256; t++) {
     if (!muse->func_defs[t]) {
       muse->func_defs[t] = calloc(1, sizeof(MuseFunctionDef));
-      muse->func_defs[t]->name = calloc(strlen(func_def->name), sizeof(char));
-      strcpy(muse->func_defs[t]->name, func_def->name);
+      uintmax_t size = strlen(func_def->name) + 1;
+      muse->func_defs[t]->name = calloc(size, sizeof(char));
+      memcpy(muse->func_defs[t]->name, func_def->name, size);
       muse->func_defs[t]->func = func_def->func;
       muse->func_defs[t]->userdata = func_def->userdata;
       if (func_def->num_arguments > 0) {
