@@ -63,11 +63,17 @@ void *occulus_calloc(size_t num, size_t size, const char *restrict filepath, uin
   return ptr;
 }
 
-// FIXME: Log allocation
 void *occulus_realloc(void *restrict old_ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
   void *ptr = realloc(old_ptr, size);
   assert(ptr);
-  printf("%s:%" PRIuMAX "> realloc(%zu) 0x%" PRIuPTR "x->0x%" PRIuPTR "x\n", filepath, line, size, (uintptr_t)old_ptr, (uintptr_t)ptr);
+  for (uintmax_t t = 0; t < num_allocations; t++) {
+    if (allocations[t].ptr == old_ptr && !allocations[t].freed) {
+      mem_leaked -= allocations[t].size;
+      allocations[t].freed = true;
+    }
+  }
+
+  log_allocation(ptr, size, filepath, line, function);
   return ptr;
 }
 
