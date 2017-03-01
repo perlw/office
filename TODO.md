@@ -30,3 +30,4 @@ Networking
 
 ### Occulus
 Memory introspector
+* Add fencing to catch off by one errors ###|actual memory|###

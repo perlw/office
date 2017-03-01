@@ -90,6 +90,12 @@ void occulus_free(void *restrict ptr, const char *restrict filepath, uintmax_t l
   free(ptr);
 }
 
+typedef struct {
+  char filepath[FILEPATH_LENGTH];
+  uintmax_t num_allocations;
+  uintmax_t allocations_size;
+  Allocation **allocations;
+} OutputFileStats;
 // FIXME: Prettify and merge stats
 // Filepath NumAlloc MaxSize Leaked
 // ...
@@ -97,9 +103,59 @@ void occulus_free(void *restrict ptr, const char *restrict filepath, uintmax_t l
 void occulus_print(bool detailed) {
   printf("MEM_DEBUG>\nMax: %.2fkb\tLeaked: %.2fkb\n", (double)max_mem / 1024.0, (double)mem_leaked / 1024.0);
   if (detailed) {
+    const uintmax_t chunk = 10;
+    uintmax_t stats_size = 10;
+    uintmax_t num_stats = 0;
+    OutputFileStats *stats = calloc(chunk, sizeof(OutputFileStats) * stats_size);
+
     for (uintmax_t t = 0; t < num_allocations; t++) {
-      printf("%s:%" PRIuMAX "/%s #%.2fkb\n", allocations[t].filepath, allocations[t].line, allocations[t].function, (double)allocations[t].size / 1024.0);
+      uintmax_t index = 0;
+      bool found = false;
+      for (uintmax_t u = 0; u < num_stats; u++) {
+        if (strcmp(stats[u].filepath, allocations[t].filepath) == 0) {
+          found = true;
+          index = u;
+          break;
+        }
+      }
+
+      if (!found) {
+        index = num_stats;
+        stats[index] = (OutputFileStats){
+          .filepath = { 0 },
+          .num_allocations = 0,
+          .allocations_size = chunk,
+          .allocations = calloc(chunk, sizeof(Allocation*)),
+        };
+        strncpy(stats[index].filepath, allocations[t].filepath, FILEPATH_LENGTH);
+
+        num_stats++;
+        if (num_stats >= stats_size) {
+          stats_size += chunk;
+          stats = realloc(stats, sizeof(OutputFileStats) * stats_size);
+        }
+      }
+
+      stats[index].allocations[stats[index].num_allocations] = &allocations[t];
+      stats[index].num_allocations++;
+      if (stats[index].num_allocations >= stats[index].allocations_size) {
+        stats[index].allocations_size += chunk;
+        stats[index].allocations = realloc(stats[index].allocations, sizeof(Allocation*) * stats[index].allocations_size);
+      }
     }
+
+    for (uintmax_t t = 0; t < num_stats; t++) {
+      printf("%s\n", stats[t].filepath);
+
+      for (uintmax_t u = 0; u < stats[t].num_allocations; u++) {
+        printf("\t%s:%" PRIuMAX " #%.2fkb\n", stats[t].allocations[u]->function, stats[t].allocations[u]->line, (double)stats[t].allocations[u]->size / 1024.0);
+      }
+    }
+
+    for (uintmax_t t = 0; t < num_stats; t++) {
+      free(stats[t].allocations);
+    }
+    free(stats);
   }
 
   for (uintmax_t t = 0; t < num_allocations; t++) {
