@@ -3,17 +3,22 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <inttypes.h>
+#include <string.h>
 #include <assert.h>
 
-#define LOCATION_STRING_LENGTH 64
+#define FILEPATH_LENGTH 128
+#define FUNCTION_LENGTH 128
 #define ALLOC_CHUNK 100
 
 typedef struct {
   const void *ptr;
   uintmax_t size;
   bool freed;
-  char alloc_location[LOCATION_STRING_LENGTH];
-  char free_location[LOCATION_STRING_LENGTH];
+
+  char filepath[FILEPATH_LENGTH];
+  char function[FUNCTION_LENGTH];
+  uintmax_t line;
 } Allocation;
 
 uintmax_t max_mem = 0;
@@ -22,7 +27,7 @@ uintmax_t num_allocations = 0;
 uintmax_t allocations_length = 0;
 Allocation *allocations = NULL;
 
-void log_allocation(const void *ptr, size_t size, const char *file, uintmax_t line) {
+void log_allocation(const void *ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
   if (num_allocations >= allocations_length) {
     allocations_length += ALLOC_CHUNK;
     allocations = realloc(allocations, allocations_length * sizeof(Allocation));
@@ -32,44 +37,45 @@ void log_allocation(const void *ptr, size_t size, const char *file, uintmax_t li
     .ptr = ptr,
     .size = size,
     .freed = false,
-    .alloc_location = { 0 },
-    .free_location = { 0 },
+    .filepath = { 0 },
+    .function = { 0 },
+    .line = line,
   };
-  snprintf(allocations[num_allocations].alloc_location, LOCATION_STRING_LENGTH, "%s:%lu", file, line);
+  strncpy(allocations[num_allocations].filepath, filepath, FILEPATH_LENGTH);
+  strncpy(allocations[num_allocations].function, function, FUNCTION_LENGTH);
   num_allocations += 1;
 
   mem_leaked += size;
   max_mem = (mem_leaked > max_mem ? mem_leaked : max_mem);
 }
 
-void *occulus_malloc(size_t size, const char *file, uintmax_t line) {
+void *occulus_malloc(size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
   void *ptr = malloc(size);
   assert(ptr);
-  log_allocation(ptr, size, file, line);
+  log_allocation(ptr, size, filepath, line, function);
   return ptr;
 }
 
-void *occulus_calloc(size_t num, size_t size, const char *file, uintmax_t line) {
+void *occulus_calloc(size_t num, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
   void *ptr = calloc(num, size);
   assert(ptr);
-  log_allocation(ptr, num * size, file, line);
+  log_allocation(ptr, num * size, filepath, line, function);
   return ptr;
 }
 
 // FIXME: Log allocation
-void *occulus_realloc(void *old_ptr, size_t size, const char *file, uintmax_t line) {
+void *occulus_realloc(void *old_ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
   void *ptr = realloc(old_ptr, size);
   assert(ptr);
-  printf("%s:%lu> realloc(%lu) 0x%0lx->0x%0lx\n", file, line, size, (uintmax_t)old_ptr, (uintmax_t)ptr);
+  printf("%s:%" PRIuMAX "> realloc(%zu) 0x%" PRIuPTR "x->0x%" PRIuPTR "x\n", filepath, line, size, (uintptr_t)old_ptr, (uintptr_t)ptr);
   return ptr;
 }
 
-void occulus_free(void *ptr, const char *file, uintmax_t line) {
+void occulus_free(void *ptr, const char *restrict file, uintmax_t line, const char *restrict function) {
   assert(ptr);
   bool found = false;
   for (uintmax_t t = 0; t < num_allocations; t++) {
     if (allocations[t].ptr == ptr && !allocations[t].freed) {
-      snprintf(allocations[num_allocations].free_location, LOCATION_STRING_LENGTH, "%s:%lu", file, line);
       mem_leaked -= allocations[t].size;
       allocations[t].freed = true;
       found = true;
@@ -92,17 +98,13 @@ void occulus_print(bool detailed) {
   printf("MEM_DEBUG>\nMax: %.2fkb\tLeaked: %.2fkb\n", (double)max_mem / 1024.0, (double)mem_leaked / 1024.0);
   if (detailed) {
     for (uintmax_t t = 0; t < num_allocations; t++) {
-      if (allocations[t].freed) {
-        printf("%s #%.2fkb\n", allocations[t].alloc_location, (double)allocations[t].size / 1024.0);
-      } else {
-        printf("%s\t%.2fkb NOT FREED\n", allocations[t].alloc_location, (double)allocations[t].size / 1024.0);
-      }
+      printf("%s:%" PRIuMAX "/%s #%.2fkb\n", allocations[t].filepath, allocations[t].line, allocations[t].function, (double)allocations[t].size / 1024.0);
     }
-  } else {
-    for (uintmax_t t = 0; t < num_allocations; t++) {
-      if (!allocations[t].freed) {
-        printf("Memory at %s never freed and leaked %.2fkb!\n", allocations[t].alloc_location, (double)allocations[t].size / 1024.0);
-      }
+  }
+
+  for (uintmax_t t = 0; t < num_allocations; t++) {
+    if (!allocations[t].freed) {
+      printf("Memory at %s:%" PRIuMAX "/%s never freed and leaked %.2fkb!\n", allocations[t].filepath, allocations[t].line, allocations[t].function, (double)allocations[t].size / 1024.0);
     }
   }
   printf("<MEM_DEBUG\n");
