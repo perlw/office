@@ -14,7 +14,10 @@ void set_resolution(Muse *muse, uintmax_t num_arguments, const MuseArgument *arg
 }
 
 Config read_config(void) {
-  Config config = { 0 };
+  Config config = {
+    .res_width = 640,
+    .res_height = 480,
+  };
 
   MuseFunctionDef set_resolution_def = {
     .name = "resolution",
