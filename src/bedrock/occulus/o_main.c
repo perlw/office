@@ -27,7 +27,7 @@ uintmax_t num_allocations = 0;
 uintmax_t allocations_length = 0;
 Allocation *allocations = NULL;
 
-void log_allocation(const void *ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
+void log_allocation(const void *restrict ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
   if (num_allocations >= allocations_length) {
     allocations_length += ALLOC_CHUNK;
     allocations = realloc(allocations, allocations_length * sizeof(Allocation));
@@ -64,14 +64,14 @@ void *occulus_calloc(size_t num, size_t size, const char *restrict filepath, uin
 }
 
 // FIXME: Log allocation
-void *occulus_realloc(void *old_ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
+void *occulus_realloc(void *restrict old_ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
   void *ptr = realloc(old_ptr, size);
   assert(ptr);
   printf("%s:%" PRIuMAX "> realloc(%zu) 0x%" PRIuPTR "x->0x%" PRIuPTR "x\n", filepath, line, size, (uintptr_t)old_ptr, (uintptr_t)ptr);
   return ptr;
 }
 
-void occulus_free(void *ptr, const char *restrict file, uintmax_t line, const char *restrict function) {
+void occulus_free(void *restrict ptr, const char *restrict filepath, uintmax_t line, const char *restrict function) {
   assert(ptr);
   bool found = false;
   for (uintmax_t t = 0; t < num_allocations; t++) {
@@ -84,7 +84,7 @@ void occulus_free(void *ptr, const char *restrict file, uintmax_t line, const ch
   }
 
   if (!found) {
-    printf("%s:%lu> free on unrecognized memory, 0x%0lx\n", file, line, (uintmax_t)ptr);
+    printf("%s:%" PRIuMAX "/%s> free on unrecognized memory, 0x%" PRIuPTR "x\n", filepath, line, function, (uintptr_t)ptr);
   }
 
   free(ptr);
