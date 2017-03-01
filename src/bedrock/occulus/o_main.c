@@ -11,6 +11,8 @@
 #define FUNCTION_LENGTH 128
 #define ALLOC_CHUNK 100
 
+const char fence[3] = { 'O', 'C', 'C' };
+
 typedef struct {
   const void *ptr;
   uintmax_t size;
@@ -50,19 +52,34 @@ void log_allocation(const void *restrict ptr, size_t size, const char *restrict 
 }
 
 void *occulus_malloc(size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
-  void *ptr = malloc(size);
+  void *ptr = malloc(size + 6);
   assert(ptr);
+
+  for (uintmax_t t = 0; t < 3; t++) {
+    ((uint8_t*)ptr)[t] = fence[t];
+    ((uint8_t*)ptr)[size + t + 3] = fence[t];
+  }
+
   log_allocation(ptr, size, filepath, line, function);
-  return ptr;
+  return (ptr + 3);
 }
 
 void *occulus_calloc(size_t num, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
-  void *ptr = calloc(num, size);
+  size_t total = num * size;
+  void *ptr = malloc(total + 6);
   assert(ptr);
-  log_allocation(ptr, num * size, filepath, line, function);
-  return ptr;
+
+  memset((ptr + 3), 0, total);
+  for (uintmax_t t = 0; t < 3; t++) {
+    ((uint8_t*)ptr)[t] = fence[t];
+    ((uint8_t*)ptr)[total + t + 3] = fence[t];
+  }
+
+  log_allocation(ptr, total, filepath, line, function);
+  return (ptr + 3);
 }
 
+// TODO: Fencing
 void *occulus_realloc(void *restrict old_ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
   void *ptr = realloc(old_ptr, size);
   assert(ptr);
@@ -79,12 +96,23 @@ void *occulus_realloc(void *restrict old_ptr, size_t size, const char *restrict 
 
 void occulus_free(void *restrict ptr, const char *restrict filepath, uintmax_t line, const char *restrict function) {
   assert(ptr);
+  void *fenced_ptr = (ptr - 3);
+
   bool found = false;
   for (uintmax_t t = 0; t < num_allocations; t++) {
-    if (allocations[t].ptr == ptr && !allocations[t].freed) {
+    if (allocations[t].ptr == fenced_ptr && !allocations[t].freed) {
       mem_leaked -= allocations[t].size;
       allocations[t].freed = true;
       found = true;
+
+      for (uintmax_t u = 0; u < 3; u++) {
+        if (((uint8_t*)fenced_ptr)[u] != fence[u] ||
+            ((uint8_t*)fenced_ptr)[allocations[t].size + u + 3] != fence[u]) {
+          printf("%s:%" PRIuMAX "/%s> fence failed on memory originally allocated at %s:%" PRIuMAX"/%s\n", filepath, line, function, allocations[t].filepath, allocations[t].line, allocations[t].function);
+          break;
+        }
+      }
+
       break;
     }
   }
@@ -93,7 +121,7 @@ void occulus_free(void *restrict ptr, const char *restrict filepath, uintmax_t l
     printf("%s:%" PRIuMAX "/%s> free on unrecognized memory, 0x%" PRIuPTR "x\n", filepath, line, function, (uintptr_t)ptr);
   }
 
-  free(ptr);
+  free(fenced_ptr);
 }
 
 typedef struct {
