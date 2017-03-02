@@ -64,16 +64,16 @@ int main() {
     archivist_read_file("shaders/dummy.vert", &vert_source, &vert_length);
     archivist_read_file("shaders/dummy.frag", &frag_source, &frag_length);
 
-    PicassoShader* vertex_shader = picasso_shader_create(PICASSO_SHADER_VERTEX);
-    PicassoShader* fragment_shader = picasso_shader_create(PICASSO_SHADER_FRAGMENT);
+    PicassoShader *vertex_shader = picasso_shader_create(PICASSO_SHADER_VERTEX);
+    PicassoShader *fragment_shader = picasso_shader_create(PICASSO_SHADER_FRAGMENT);
     picasso_shader_compile(vertex_shader, vert_source, vert_length);
     picasso_shader_compile(fragment_shader, frag_source, frag_length);
 
     p_program = picasso_program_create();
-    picasso_program_link_shaders(p_program, 2, (const PicassoShader*[2]){
-        vertex_shader,
-        fragment_shader,
-        });
+    picasso_program_link_shaders(p_program, 2, (const PicassoShader*[]){
+      vertex_shader,
+      fragment_shader,
+    });
 
     picasso_shader_destroy(vertex_shader);
     picasso_shader_destroy(fragment_shader);
