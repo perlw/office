@@ -57,7 +57,7 @@ void *occulus_malloc(size_t size, const char *restrict filepath, uintmax_t line,
 
   for (uintmax_t t = 0; t < 3; t++) {
     ((uint8_t*)ptr)[t] = fence[t];
-    ((uint8_t*)ptr)[size + t + 3] = fence[t];
+    ((uint8_t*)ptr)[size + (2 - t) + 3] = fence[t];
   }
 
   log_allocation(ptr, size, filepath, line, function);
@@ -72,26 +72,30 @@ void *occulus_calloc(size_t num, size_t size, const char *restrict filepath, uin
   memset((ptr + 3), 0, total);
   for (uintmax_t t = 0; t < 3; t++) {
     ((uint8_t*)ptr)[t] = fence[t];
-    ((uint8_t*)ptr)[total + t + 3] = fence[t];
+    ((uint8_t*)ptr)[total + (2 - t) + 3] = fence[t];
   }
 
   log_allocation(ptr, total, filepath, line, function);
   return (ptr + 3);
 }
 
-// TODO: Fencing
 void *occulus_realloc(void *restrict old_ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
-  void *ptr = realloc(old_ptr, size);
+  void *fenced_ptr = (old_ptr - 3);
+  void *ptr = realloc(fenced_ptr, size + 6);
   assert(ptr);
   for (uintmax_t t = 0; t < num_allocations; t++) {
-    if (allocations[t].ptr == old_ptr && !allocations[t].freed) {
+    if (allocations[t].ptr == fenced_ptr && !allocations[t].freed) {
       mem_leaked -= allocations[t].size;
       allocations[t].freed = true;
     }
   }
 
+  for (uintmax_t t = 0; t < 3; t++) {
+    ((uint8_t*)ptr)[size + (2 - t) + 3] = fence[t];
+  }
+
   log_allocation(ptr, size, filepath, line, function);
-  return ptr;
+  return (ptr + 3);
 }
 
 void occulus_free(void *restrict ptr, const char *restrict filepath, uintmax_t line, const char *restrict function) {
@@ -107,7 +111,7 @@ void occulus_free(void *restrict ptr, const char *restrict filepath, uintmax_t l
 
       for (uintmax_t u = 0; u < 3; u++) {
         if (((uint8_t*)fenced_ptr)[u] != fence[u] ||
-            ((uint8_t*)fenced_ptr)[allocations[t].size + u + 3] != fence[u]) {
+            ((uint8_t*)fenced_ptr)[allocations[t].size + (2 - u) + 3] != fence[u]) {
           printf("%s:%" PRIuMAX "/%s> fence failed on memory originally allocated at %s:%" PRIuMAX"/%s\n", filepath, line, function, allocations[t].filepath, allocations[t].line, allocations[t].function);
           break;
         }
