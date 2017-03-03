@@ -134,10 +134,6 @@ typedef struct {
   uintmax_t allocations_size;
   Allocation **allocations;
 } OutputFileStats;
-// FIXME: Prettify and merge stats
-// Filepath NumAlloc MaxSize Leaked
-// ...
-// AppMaxSize AppLeaked
 void occulus_print(bool detailed) {
   printf("MEM_DEBUG>\nMax: %.2fkb\tLeaked: %.2fkb\n", (double)max_mem / 1024.0, (double)mem_leaked / 1024.0);
   if (detailed) {

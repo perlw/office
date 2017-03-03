@@ -9,7 +9,6 @@ The actual game
 
 ### Picasso
 Graphics, pipeline
-* Shader management (need more work)
 * Buffer management
 * Image management
 * Keep track of gl state, atleast for buffers, textures, shaders
@@ -30,4 +29,6 @@ Networking
 
 ### Occulus
 Memory introspector
-* Add fencing to catch off by one errors ###|actual memory|###
+
+### Tome
+Pak/resource file support
