@@ -40,7 +40,7 @@ PicassoShaderResult picasso_shader_compile(const PicassoShader* shader, const ui
 
 	GLint log_length;
 	glGetShaderiv(shader->id, GL_INFO_LOG_LENGTH, &log_length);
-	if (length > 1) {
+	if (log_length > 1) {
 		GLchar log[1024];
 		glGetShaderInfoLog(shader->id, log_length, 0, &log[0]);
 		log[log_length + 1] = '\0';

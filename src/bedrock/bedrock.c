@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include "gossip/gossip.h"
 #include "occulus/occulus.h"
@@ -27,7 +29,7 @@ void should_close_callback(void) {
   quit = 1;
 }
 
-int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height) {
+int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug) {
   if (!glfwInit()) {
     printf("glfw fail\n");
     return -1;
@@ -38,6 +40,8 @@ int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, (gl_debug ? GL_TRUE : GL_FALSE));
 
   window = glfwCreateWindow(res_width, res_height, title, NULL, NULL);
   if (!window) {
@@ -67,9 +71,11 @@ int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height) {
   glDepthFunc(GL_LESS);
   glViewport(0, 0, res_width, res_height);
 
-  glEnable(GL_DEBUG_OUTPUT);
-  glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-  glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);
+  if (gl_debug) {
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+    glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);
+  }
 
   gossip_subscribe(GOSSIP_ID_CLOSE, should_close_callback);
 

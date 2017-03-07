@@ -161,6 +161,18 @@ static int lua_callback(lua_State *state) {
           memcpy(arguments[t].argument, string, length * sizeof(char));
           break;
 
+        case MUSE_ARGUMENT_BOOLEAN:
+          if (!lua_isboolean(muse->state, t + 1)) {
+            printf("MUSE: incorrect arg type, expected boolean!\n");
+          }
+
+          arguments[t] = (MuseArgument){
+            .argument = calloc(1, sizeof(double)),
+            .type = func_def->arguments[t],
+          };
+          *(bool*)arguments[t].argument = (bool)lua_toboolean(muse->state, t + 1);
+          break;
+
         default:
           printf("MUSE: unknown/unimplemented type %d\n", func_def->arguments[t]);
           break;
