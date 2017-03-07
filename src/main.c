@@ -134,7 +134,7 @@ int main() {
   bedrock_kill();
 
 #ifdef MEM_DEBUG
-  occulus_print(true);
+  occulus_print(false);
 #endif
 
   return 0;

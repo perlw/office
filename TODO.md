@@ -19,8 +19,6 @@ File management
 
 ### Muse
 Lua wrapper
-* Config via lua? or simple ini files
-* Lua wrapper
 
 ### Input handling
 
