@@ -13,10 +13,12 @@ typedef enum {
 typedef struct PicassoShader PicassoShader;
 typedef struct PicassoProgram PicassoProgram;
 
+// Shaders
 PicassoShader *picasso_shader_create(PicassoShaderType type);
 void picasso_shader_destroy(PicassoShader *shader);
 PicassoShaderResult picasso_shader_compile(const PicassoShader* shader, const uint8_t *source, uintmax_t length);
 
+// Programs
 PicassoProgram *picasso_program_create(void);
 void picasso_program_destroy(PicassoProgram *program);
 void picasso_program_link_shaders(const PicassoProgram *program, uintmax_t num_shaders, const PicassoShader **shaders);
