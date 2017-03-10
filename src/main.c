@@ -114,31 +114,42 @@ void screen_kill(Screen *screen) {
   free(screen);
 }
 
-/*
+// +INPUT
 typedef enum {
-  MESSAGE_TEST = GOSSIP_ID_LAST + 1,
-} Messages;
-void test_gossip(void *userdata) {
-  printf("foobar %d\n", MESSAGE_TEST);
-}
-*/
+  INPUT_ACTION_CLOSE = GOSSIP_ID_LAST + 1,
+  INPUT_ACTION_TEST,
+} InputAction;
 
-void raw_keyboard_callback(void *userdata) {
-  assert(userdata);
+void input_action(NeglectBinding *binding) {
+  switch (binding->action) {
+    case INPUT_ACTION_CLOSE:
+      gossip_emit(GOSSIP_ID_CLOSE, NULL);
+      break;
 
-  BedrockRawKeyboardEvent event = *(BedrockRawKeyboardEvent*)userdata;
-  printf("KEYBOARD %d %s\n", event.scancode, (event.press ? "down" : "up"));
+    default:
+      break;
+  }
 }
+
+void test_action(NeglectBinding *binding) {
+  printf("ACTION!\n");
+}
+// -INPUT
 
 int main() {
   Config config = read_config();
 
-  /*
-  gossip_subscribe(MESSAGE_TEST, &test_gossip);
-  gossip_emit(MESSAGE_TEST, NULL);
-  */
-
-  gossip_subscribe(GOSSIP_ID_INPUT_KEY, &raw_keyboard_callback);
+  neglect_init();
+  neglect_add_binding(&(NeglectBinding){
+    .action = INPUT_ACTION_CLOSE,
+    .scancode = 9,
+  });
+  neglect_add_binding(&(NeglectBinding){
+    .action = INPUT_ACTION_TEST,
+    .scancode = 65,
+    .callback = &test_action,
+  });
+  neglect_action_callback(&input_action);
 
   if (!bedrock_init("Office", config.res_width, config.res_height, config.gl_debug)) {
     printf("bedrock failed\n");
@@ -174,6 +185,7 @@ int main() {
     bedrock_poll();
   }
 
+  neglect_kill();
   screen_kill(screen);
   bedrock_kill();
 

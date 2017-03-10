@@ -20,8 +20,8 @@ File management
 ### Muse
 Lua wrapper
 
-### Input handling
-Input handling
+### Neglect
+Input management
 
 ### Synapse
 Networking

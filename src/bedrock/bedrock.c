@@ -7,7 +7,7 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
-int quit = 0;
+bool quit = false;
 GLFWwindow *window = NULL;
 
 void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -15,11 +15,7 @@ void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, in
     return;
   }
 
-  if (key == GLFW_KEY_ESCAPE) {
-    gossip_emit(GOSSIP_ID_CLOSE, NULL);
-  }
-
-  gossip_emit(GOSSIP_ID_INPUT_KEY, (void*)&(BedrockRawKeyboardEvent){
+  gossip_emit(GOSSIP_ID_INPUT_KEY, (void*)&(BedrockKeyboardEvent){
     .key = key,
     .scancode = scancode,
     .press = (action == GLFW_PRESS),
@@ -32,7 +28,7 @@ void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
 }
 
 void should_close_callback(void *userdata) {
-  quit = 1;
+  quit = true;
 }
 
 int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug) {
