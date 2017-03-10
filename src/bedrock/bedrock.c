@@ -2,8 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "gossip/gossip.h"
-#include "occulus/occulus.h"
+#include "bedrock.h"
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
@@ -17,15 +16,22 @@ void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, in
   }
 
   if (key == GLFW_KEY_ESCAPE) {
-    gossip_emit(GOSSIP_ID_CLOSE);
+    gossip_emit(GOSSIP_ID_CLOSE, NULL);
   }
+
+  gossip_emit(GOSSIP_ID_INPUT_KEY, (void*)&(BedrockRawKeyboardEvent){
+    .key = key,
+    .scancode = scancode,
+    .press = (action == GLFW_PRESS),
+    .release = (action == GLFW_RELEASE),
+  });
 }
 
 void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *user_param) {
-  printf("GL debug %s\n", message);
+  printf("BEDROCK: GL %s\n", message);
 }
 
-void should_close_callback(void) {
+void should_close_callback(void *userdata) {
   quit = 1;
 }
 
@@ -77,7 +83,7 @@ int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height, boo
     glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);
   }
 
-  gossip_subscribe(GOSSIP_ID_CLOSE, should_close_callback);
+  gossip_subscribe(GOSSIP_ID_CLOSE, &should_close_callback);
 
   return 1;
 }

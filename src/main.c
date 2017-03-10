@@ -114,8 +114,31 @@ void screen_kill(Screen *screen) {
   free(screen);
 }
 
+/*
+typedef enum {
+  MESSAGE_TEST = GOSSIP_ID_LAST + 1,
+} Messages;
+void test_gossip(void *userdata) {
+  printf("foobar %d\n", MESSAGE_TEST);
+}
+*/
+
+void raw_keyboard_callback(void *userdata) {
+  assert(userdata);
+
+  BedrockRawKeyboardEvent event = *(BedrockRawKeyboardEvent*)userdata;
+  printf("KEYBOARD %d %s\n", event.scancode, (event.press ? "down" : "up"));
+}
+
 int main() {
   Config config = read_config();
+
+  /*
+  gossip_subscribe(MESSAGE_TEST, &test_gossip);
+  gossip_emit(MESSAGE_TEST, NULL);
+  */
+
+  gossip_subscribe(GOSSIP_ID_INPUT_KEY, &raw_keyboard_callback);
 
   if (!bedrock_init("Office", config.res_width, config.res_height, config.gl_debug)) {
     printf("bedrock failed\n");

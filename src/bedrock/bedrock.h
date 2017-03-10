@@ -9,6 +9,13 @@
 #include "gossip/gossip.h"
 #include "picasso/picasso.h"
 
+typedef struct {
+  int32_t key;
+  int32_t scancode;
+  bool press;
+  bool release;
+} BedrockRawKeyboardEvent;
+
 int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug);
 void bedrock_kill();
 

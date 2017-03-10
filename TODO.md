@@ -21,6 +21,7 @@ File management
 Lua wrapper
 
 ### Input handling
+Input handling
 
 ### Synapse
 Networking

@@ -13,12 +13,18 @@ Gossiper gossipers[GOSSIP_ID_MAX] = { { 0, 0, NULL } };
 
 #define LISTENER_CHUNK 4
 
+// TODO: Errorhandling
 void gossip_subscribe(GossipID id, GossipCallback callback) {
+  if (id < 1 || id > GOSSIP_ID_MAX) {
+    printf("FIXME: out of range id\n");
+    return;
+  }
+
 	Gossiper *g = &gossipers[id];
 
 	if (!g->listeners) {
 		g->max_listeners = LISTENER_CHUNK;
-		g->listeners = malloc(sizeof(GossipCallback) * g->max_listeners);
+    g->listeners = calloc(g->max_listeners, sizeof(GossipCallback));
 	} else if (g->num_listeners == g->max_listeners) {
 		g->max_listeners += LISTENER_CHUNK;
 		g->listeners = realloc(g->listeners, sizeof(GossipCallback) * g->max_listeners);
@@ -28,11 +34,16 @@ void gossip_subscribe(GossipID id, GossipCallback callback) {
 	g->num_listeners += 1;
 }
 
-void gossip_emit(GossipID id) {
+void gossip_emit(GossipID id, void *userdata) {
+  if (id < 1 || id > GOSSIP_ID_MAX) {
+    printf("FIXME: out of range id\n");
+    return;
+  }
+
 	Gossiper *g = &gossipers[id];
 
 	for (size_t t = 0; t < g->num_listeners; t += 1) {
-		g->listeners[t]();
+		g->listeners[t](userdata);
 	}
 }
 
