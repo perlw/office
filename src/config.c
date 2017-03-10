@@ -1,5 +1,3 @@
-#include "bedrock/muse/muse.h"
-
 #include <stdio.h>
 
 #include "config.h"
@@ -16,6 +14,20 @@ void set_resolution(Muse *muse, uintmax_t num_arguments, const MuseArgument *arg
 void gl_debug(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
   Config *config = (Config*)userdata;
   config->gl_debug = *(bool*)arguments[0].argument;
+}
+
+void test_action(NeglectBinding *binding) {
+  printf("TEST FROM LUA\n");
+}
+void key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
+  int32_t action = (int32_t)*(double*)arguments[0].argument;
+  int32_t scancode = (int32_t)*(double*)arguments[1].argument;
+
+  neglect_add_binding(&(NeglectBinding){
+    .action = action,
+    .scancode = scancode,
+    .callback = &test_action,
+  });
 }
 
 Config read_config(void) {
@@ -44,10 +56,29 @@ Config read_config(void) {
     },
     .userdata = &config,
   };
+  MuseFunctionDef bind_def = {
+    .name = "bind",
+    .func = &key_bind,
+    .num_arguments = 2,
+    .arguments = (MuseArgumentType[]){
+      MUSE_ARGUMENT_NUMBER,
+      MUSE_ARGUMENT_NUMBER,
+    },
+    .userdata = &config,
+  };
 
   Muse *muse = muse_init_lite();
+
   muse_add_func(muse, &set_resolution_def);
   muse_add_func(muse, &gl_debug_def);
+  muse_add_func(muse, &bind_def);
+
+  // TODO: Cleanup, break out, etc
+  muse_set_global_number(muse, "INPUT_ACTION_CLOSE", INPUT_ACTION_CLOSE);
+  muse_set_global_number(muse, "INPUT_ACTION_TEST", INPUT_ACTION_TEST);
+  muse_set_global_number(muse, "KEY_ESCAPE", 9);
+  muse_set_global_number(muse, "KEY_SPACE", 65);
+
   muse_load_file(muse, "config.lua");
   muse_kill(muse);
 

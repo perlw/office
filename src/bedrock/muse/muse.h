@@ -39,3 +39,4 @@ MuseResult muse_call_simple(Muse *muse, const char *name);
 MuseResult muse_load_file(Muse *muse, const char *filename);
 MuseResult muse_add_module(Muse *muse, uintmax_t num_funcs, const MuseFunctionDef *funcs);
 MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func);
+MuseResult muse_set_global_number(Muse *muse, const char *name, double number);

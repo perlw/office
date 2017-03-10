@@ -115,11 +115,6 @@ void screen_kill(Screen *screen) {
 }
 
 // +INPUT
-typedef enum {
-  INPUT_ACTION_CLOSE = GOSSIP_ID_LAST + 1,
-  INPUT_ACTION_TEST,
-} InputAction;
-
 void input_action(NeglectBinding *binding) {
   switch (binding->action) {
     case INPUT_ACTION_CLOSE:
@@ -130,26 +125,13 @@ void input_action(NeglectBinding *binding) {
       break;
   }
 }
-
-void test_action(NeglectBinding *binding) {
-  printf("ACTION!\n");
-}
 // -INPUT
 
 int main() {
-  Config config = read_config();
-
   neglect_init();
-  neglect_add_binding(&(NeglectBinding){
-    .action = INPUT_ACTION_CLOSE,
-    .scancode = 9,
-  });
-  neglect_add_binding(&(NeglectBinding){
-    .action = INPUT_ACTION_TEST,
-    .scancode = 65,
-    .callback = &test_action,
-  });
   neglect_action_callback(&input_action);
+
+  Config config = read_config();
 
   if (!bedrock_init("Office", config.res_width, config.res_height, config.gl_debug)) {
     printf("bedrock failed\n");

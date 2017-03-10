@@ -224,3 +224,12 @@ MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
 
   return MUSE_RESULT_OUT_OF_IDS;
 }
+
+MuseResult muse_set_global_number(Muse *muse, const char *name, double number) {
+  assert(muse);
+
+  lua_pushnumber(muse->state, number);
+  lua_setglobal(muse->state, name);
+
+  return MUSE_RESULT_OK;
+}
