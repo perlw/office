@@ -23,11 +23,25 @@ void key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments
   int32_t action = (int32_t)*(double*)arguments[0].argument;
   int32_t scancode = (int32_t)*(double*)arguments[1].argument;
 
-  neglect_add_binding(&(NeglectBinding){
+  NeglectBinding binding = (NeglectBinding){
     .action = action,
     .scancode = scancode,
-    .callback = &test_action,
-  });
+    .callback = NULL,
+  };
+
+  switch (action) {
+    case INPUT_ACTION_TEST:
+      binding.callback = &test_action;
+      break;
+
+    case INPUT_ACTION_CLOSE:
+      break;
+
+    default:
+      return;
+  }
+
+  neglect_add_binding(&binding);
 }
 
 Config read_config(void) {
