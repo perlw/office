@@ -138,6 +138,9 @@ int main() {
     return -1;
   }
 
+  Muse *muse = muse_init();
+  muse_load_file(muse, "main.lua");
+
   Screen *screen = screen_create(&config);
 
   double last_tick = bedrock_time();
@@ -161,15 +164,21 @@ int main() {
       frames = 0;
     }
 
+    if (muse_call_init(muse, "update", 1, 0) == MUSE_RESULT_OK) {
+      muse_push_number(muse, current_second);
+      muse_do_call(muse);
+    }
+
     screen_draw(screen);
 
     bedrock_swap();
     bedrock_poll();
   }
 
-  neglect_kill();
+  muse_kill(muse);
   screen_kill(screen);
   bedrock_kill();
+  neglect_kill();
 
 #ifdef MEM_DEBUG
   occulus_print(false);

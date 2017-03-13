@@ -15,4 +15,8 @@ struct Muse {
   lua_State* state;
   uint8_t instance_id;
   MuseFunctionDef *func_defs[256];
+
+  bool preparing_call;
+  uintmax_t call_num_arguments;
+  uintmax_t call_num_results;
 };

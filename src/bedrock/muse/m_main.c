@@ -26,6 +26,9 @@ Muse *muse_init_lite(void) {
         .state = luaL_newstate(),
         .instance_id = t,
         .func_defs = { NULL },
+        .preparing_call = false,
+        .call_num_arguments = 0,
+        .call_num_results = 0,
       };
 
       instances[t] = muse;
@@ -72,14 +75,14 @@ void muse_kill(Muse *muse) {
   free(muse);
 }
 
-MuseResult muse_call_simple(Muse *muse, const char *name) {
+MuseResult muse_call_simple(Muse *restrict muse, const char *name) {
   assert(muse);
 
   lua_getglobal(muse->state, name);
   int result = lua_pcall(muse->state, 0, 0, 0);
   if (result != LUA_OK) {
     const char *message = lua_tostring(muse->state, -1);
-    printf("MUSE: %s: %s\n", __FUNCTION__, message);
+    printf("MUSE: %s: %s\n", __func__, message);
     lua_pop(muse->state, 1);
     return MUSE_RESULT_MISSING_FUNC;
   }
@@ -87,7 +90,45 @@ MuseResult muse_call_simple(Muse *muse, const char *name) {
   return MUSE_RESULT_OK;
 }
 
-MuseResult muse_load_file(Muse *muse, const char *filename) {
+MuseResult muse_call_init(Muse *restrict muse, const char *name, uintmax_t num_arguments, uintmax_t num_results) {
+  assert(muse);
+
+  if (muse->preparing_call) {
+    // TODO: Error
+    printf("MUSE: fuxx0r\n");
+    return MUSE_RESULT_CALL_ALREADY_INIT;
+  }
+
+  lua_getglobal(muse->state, name);
+  muse->preparing_call = true;
+  muse->call_num_arguments = num_arguments;
+  muse->call_num_results = num_results;
+
+  return MUSE_RESULT_OK;
+}
+
+MuseResult muse_do_call(Muse *restrict muse) {
+  assert(muse);
+
+  if (!muse->preparing_call) {
+    // TODO: Error
+    printf("MUSE: barz\n");
+    return MUSE_RESULT_CALL_NO_INIT;
+  }
+
+  int result = lua_pcall(muse->state, muse->call_num_arguments, muse->call_num_results, 0);
+  if (result != LUA_OK) {
+    const char *message = lua_tostring(muse->state, -1);
+    printf("MUSE: %s: %s\n", __func__, message);
+    lua_pop(muse->state, 1);
+    return MUSE_RESULT_MISSING_FUNC;
+  }
+
+  muse->preparing_call = false;
+  return MUSE_RESULT_OK;
+}
+
+MuseResult muse_load_file(Muse *restrict muse, const char *filename) {
   assert(muse);
 
   luaL_loadfile(muse->state, filename);
@@ -95,7 +136,7 @@ MuseResult muse_load_file(Muse *muse, const char *filename) {
   int result = lua_pcall(muse->state, 0, LUA_MULTRET, 0);
   if (result != LUA_OK) {
     const char *message = lua_tostring(muse->state, -1);
-    printf("MUSE: %s: %s\n", __FUNCTION__, message);
+    printf("MUSE: %s: %s\n", __func__, message);
     lua_pop(muse->state, 1);
     return MUSE_RESULT_LOAD_CALL_FAILED;
   }
@@ -103,7 +144,7 @@ MuseResult muse_load_file(Muse *muse, const char *filename) {
   return MUSE_RESULT_OK;
 }
 
-MuseResult muse_add_module(Muse *muse, uintmax_t num_funcs, const MuseFunctionDef *func_defs) {
+MuseResult muse_add_module(Muse *restrict muse, uintmax_t num_funcs, const MuseFunctionDef *func_defs) {
   assert(muse);
   assert(num_funcs > 0);
   assert(func_defs);
@@ -128,7 +169,8 @@ static int lua_callback(lua_State *state) {
   MuseFunctionDef *func_def = muse->func_defs[func_id];
   if (func_def->num_arguments > 0) {
     if (lua_gettop(muse->state) != func_def->num_arguments) {
-      printf("MUSE: incorrect amount of args\n");
+      printf("MUSE (%s:%d): incorrect amount of args\n", __FILE__, __LINE__);
+      return 0;
     }
 
     num_arguments = func_def->num_arguments;
@@ -137,7 +179,7 @@ static int lua_callback(lua_State *state) {
       switch (func_def->arguments[t]) {
         case MUSE_ARGUMENT_NUMBER:
           if (!lua_isnumber(muse->state, t + 1)) {
-            printf("MUSE: incorrect arg type, expected number!\n");
+            printf("MUSE (%s:%d): incorrect arg type, expected number!\n", __FILE__, __LINE__);
           }
 
           arguments[t] = (MuseArgument){
@@ -149,7 +191,7 @@ static int lua_callback(lua_State *state) {
 
         case MUSE_ARGUMENT_STRING:
           if (!lua_isstring(muse->state, t + 1)) {
-            printf("MUSE: incorrect arg type, expected string!\n");
+            printf("MUSE (%s:%d): incorrect arg type, expected string!\n", __FILE__, __LINE__);
           }
 
           uintmax_t length = 0;
@@ -163,7 +205,7 @@ static int lua_callback(lua_State *state) {
 
         case MUSE_ARGUMENT_BOOLEAN:
           if (!lua_isboolean(muse->state, t + 1)) {
-            printf("MUSE: incorrect arg type, expected boolean!\n");
+            printf("MUSE (%s:%d): incorrect arg type, expected boolean!\n", __FILE__, __LINE__);
           }
 
           arguments[t] = (MuseArgument){
@@ -174,7 +216,7 @@ static int lua_callback(lua_State *state) {
           break;
 
         default:
-          printf("MUSE: unknown/unimplemented type %d\n", func_def->arguments[t]);
+          printf("MUSE (%s:%d): unknown/unimplemented type %d\n", __FILE__, __LINE__, func_def->arguments[t]);
           break;
       }
     }
@@ -192,7 +234,7 @@ static int lua_callback(lua_State *state) {
   return 0;
 }
 
-MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
+MuseResult muse_add_func(Muse *restrict muse, const MuseFunctionDef *func_def) {
   assert(muse);
   assert(func_def);
 
@@ -225,7 +267,22 @@ MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
   return MUSE_RESULT_OUT_OF_IDS;
 }
 
-MuseResult muse_set_global_number(Muse *muse, const char *name, double number) {
+void muse_push_number(Muse *restrict muse, double number) {
+  assert(muse);
+  lua_pushnumber(muse->state, number);
+}
+
+double muse_pop_number(Muse *restrict muse) {
+  assert(muse);
+
+  if (!lua_isnumber(muse->state, 1)) {
+    printf("MUSE (%s:%d): incorrect arg type, expected number!\n", __FILE__, __LINE__);
+  }
+
+  return lua_tonumber(muse->state, 1);
+}
+
+MuseResult muse_set_global_number(Muse *restrict muse, const char *name, double number) {
   assert(muse);
 
   lua_pushnumber(muse->state, number);
