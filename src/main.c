@@ -116,13 +116,8 @@ void screen_kill(Screen *screen) {
 
 // +INPUT
 void input_action(NeglectBinding *binding) {
-  switch (binding->action) {
-    case INPUT_ACTION_CLOSE:
-      gossip_emit(GOSSIP_ID_CLOSE, NULL);
-      break;
-
-    default:
-      break;
+  if (strcmp(binding->action, "close") == 0) {
+    gossip_emit(GOSSIP_ID_CLOSE, NULL);
   }
 }
 // -INPUT

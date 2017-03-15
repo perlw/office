@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "config.h"
 
@@ -20,7 +21,7 @@ void test_action(NeglectBinding *binding) {
   printf("TEST FROM LUA\n");
 }
 void key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
-  int32_t action = (int32_t)*(double*)arguments[0].argument;
+  char *action = (char*)arguments[0].argument;
   int32_t scancode = (int32_t)*(double*)arguments[1].argument;
 
   NeglectBinding binding = (NeglectBinding){
@@ -29,16 +30,8 @@ void key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments
     .callback = NULL,
   };
 
-  switch (action) {
-    case INPUT_ACTION_TEST:
-      binding.callback = &test_action;
-      break;
-
-    case INPUT_ACTION_CLOSE:
-      break;
-
-    default:
-      return;
+  if (strcmp(action, "test") == 0) {
+    binding.callback = &test_action;
   }
 
   neglect_add_binding(&binding);
@@ -75,7 +68,7 @@ Config read_config(void) {
     .func = &key_bind,
     .num_arguments = 2,
     .arguments = (MuseArgumentType[]){
-      MUSE_ARGUMENT_NUMBER,
+      MUSE_ARGUMENT_STRING,
       MUSE_ARGUMENT_NUMBER,
     },
     .userdata = &config,
@@ -88,8 +81,6 @@ Config read_config(void) {
   muse_add_func(muse, &bind_def);
 
   // TODO: Cleanup, break out, etc
-  muse_set_global_number(muse, "INPUT_ACTION_CLOSE", INPUT_ACTION_CLOSE);
-  muse_set_global_number(muse, "INPUT_ACTION_TEST", INPUT_ACTION_TEST);
   muse_set_global_number(muse, "KEY_ESCAPE", 9);
   muse_set_global_number(muse, "KEY_SPACE", 65);
 

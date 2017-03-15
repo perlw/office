@@ -37,6 +37,9 @@ void neglect_init(void) {
 }
 
 void neglect_kill(void) {
+  for (uintmax_t t = 0; t < num_bindings; t++) {
+    free(input_bindings[t].action);
+  }
   free(input_bindings);
 }
 
@@ -49,5 +52,10 @@ void neglect_action_callback(NeglectCallback callback) {
 void neglect_add_binding(NeglectBinding *binding) {
   num_bindings++;
   input_bindings = realloc(input_bindings, num_bindings * sizeof(NeglectBinding));
-  memcpy(&input_bindings[num_bindings - 1], binding, sizeof(NeglectBinding));
+  input_bindings[num_bindings - 1] = (NeglectBinding){
+    .action = calloc(strlen(binding->action) + 1, sizeof(char)),
+    .scancode = binding->scancode,
+    .callback = binding->callback,
+  };
+  strcpy(input_bindings[num_bindings - 1].action, binding->action);
 }
