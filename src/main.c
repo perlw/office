@@ -164,10 +164,12 @@ int main() {
       frames = 0;
     }
 
-    if (muse_call_init(muse, "update", 1, 0) == MUSE_RESULT_OK) {
-      muse_push_number(muse, current_second);
-      muse_do_call(muse);
-    }
+    muse_call(muse, "update", 1, (MuseArgument[]){
+      {
+        .type = MUSE_ARGUMENT_NUMBER,
+        .argument = &current_second,
+      },
+    });
 
     screen_draw(screen);
 

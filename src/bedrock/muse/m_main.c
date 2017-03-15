@@ -26,9 +26,6 @@ Muse *muse_init_lite(void) {
         .state = luaL_newstate(),
         .instance_id = t,
         .func_defs = { NULL },
-        .preparing_call = false,
-        .call_num_arguments = 0,
-        .call_num_results = 0,
       };
 
       instances[t] = muse;
@@ -90,33 +87,29 @@ MuseResult muse_call_simple(Muse *restrict muse, const char *name) {
   return MUSE_RESULT_OK;
 }
 
-MuseResult muse_call_init(Muse *restrict muse, const char *name, uintmax_t num_arguments, uintmax_t num_results) {
+// TODO: Read results
+MuseResult muse_call(Muse *restrict muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments) {
   assert(muse);
-
-  if (muse->preparing_call) {
-    // TODO: Error
-    printf("MUSE: fuxx0r\n");
-    return MUSE_RESULT_CALL_ALREADY_INIT;
-  }
 
   lua_getglobal(muse->state, name);
-  muse->preparing_call = true;
-  muse->call_num_arguments = num_arguments;
-  muse->call_num_results = num_results;
+  for (uintmax_t t = 0; t < num_arguments; t++) {
+    switch (arguments[t].type) {
+      case MUSE_ARGUMENT_NUMBER:
+        lua_pushnumber(muse->state, *(double*)arguments[t].argument);
+        break;
 
-  return MUSE_RESULT_OK;
-}
+      case MUSE_ARGUMENT_BOOLEAN:
+        lua_pushboolean(muse->state, *(bool*)arguments[t].argument);
+        break;
 
-MuseResult muse_do_call(Muse *restrict muse) {
-  assert(muse);
-
-  if (!muse->preparing_call) {
-    // TODO: Error
-    printf("MUSE: barz\n");
-    return MUSE_RESULT_CALL_NO_INIT;
+      case MUSE_ARGUMENT_STRING:
+      default:
+        printf("MUSE (%s:%d): unknown/unimplemented type %d\n", __FILE__, __LINE__, arguments[t].type);
+        break;
+    }
   }
 
-  int result = lua_pcall(muse->state, muse->call_num_arguments, muse->call_num_results, 0);
+  int result = lua_pcall(muse->state, num_arguments, 0, 0);
   if (result != LUA_OK) {
     const char *message = lua_tostring(muse->state, -1);
     printf("MUSE: %s: %s\n", __func__, message);
@@ -124,7 +117,6 @@ MuseResult muse_do_call(Muse *restrict muse) {
     return MUSE_RESULT_MISSING_FUNC;
   }
 
-  muse->preparing_call = false;
   return MUSE_RESULT_OK;
 }
 
