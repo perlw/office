@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-void *occulus_malloc(size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function);
-void *occulus_calloc(size_t num, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function);
-void *occulus_realloc(void *restrict old_ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function);
-void occulus_free(void *restrict ptr, const char *restrict filepath, uintmax_t line, const char *restrict function);
+void *occulus_malloc(size_t size, const char *filepath, uintmax_t line, const char *function);
+void *occulus_calloc(size_t num, size_t size, const char *filepath, uintmax_t line, const char *function);
+void *occulus_realloc(void *old_ptr, size_t size, const char *filepath, uintmax_t line, const char *function);
+void occulus_free(void *ptr, const char *filepath, uintmax_t line, const char *function);
 void occulus_print(bool detailed);
 
 #ifdef MEM_DEBUG

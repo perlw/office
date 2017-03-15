@@ -29,7 +29,7 @@ uintmax_t num_allocations = 0;
 uintmax_t allocations_length = 0;
 Allocation *allocations = NULL;
 
-void log_allocation(const void *restrict ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
+void log_allocation(const void *ptr, size_t size, const char *filepath, uintmax_t line, const char *function) {
   if (num_allocations >= allocations_length) {
     allocations_length += ALLOC_CHUNK;
     allocations = realloc(allocations, allocations_length * sizeof(Allocation));
@@ -51,7 +51,7 @@ void log_allocation(const void *restrict ptr, size_t size, const char *restrict 
   max_mem = (mem_leaked > max_mem ? mem_leaked : max_mem);
 }
 
-void *occulus_malloc(size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
+void *occulus_malloc(size_t size, const char *filepath, uintmax_t line, const char *function) {
   void *ptr = malloc(size + 6);
   assert(ptr);
 
@@ -61,26 +61,26 @@ void *occulus_malloc(size_t size, const char *restrict filepath, uintmax_t line,
   }
 
   log_allocation(ptr, size, filepath, line, function);
-  return (ptr + 3);
+  return (void*)((uintptr_t)ptr + 3);
 }
 
-void *occulus_calloc(size_t num, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
+void *occulus_calloc(size_t num, size_t size, const char *filepath, uintmax_t line, const char *function) {
   size_t total = num * size;
   void *ptr = malloc(total + 6);
   assert(ptr);
 
-  memset((ptr + 3), 0, total);
+  memset((void*)((uintptr_t)ptr + 3), 0, total);
   for (uintmax_t t = 0; t < 3; t++) {
     ((uint8_t*)ptr)[t] = fence[t];
     ((uint8_t*)ptr)[total + (2 - t) + 3] = fence[t];
   }
 
   log_allocation(ptr, total, filepath, line, function);
-  return (ptr + 3);
+  return (void*)((uintptr_t)ptr + 3);
 }
 
-void *occulus_realloc(void *restrict old_ptr, size_t size, const char *restrict filepath, uintmax_t line, const char *restrict function) {
-  void *fenced_ptr = (old_ptr - 3);
+void *occulus_realloc(void *old_ptr, size_t size, const char *filepath, uintmax_t line, const char *function) {
+  void *fenced_ptr = (void*)((uintptr_t)old_ptr - 3);
   void *ptr = realloc(fenced_ptr, size + 6);
   assert(ptr);
   for (uintmax_t t = 0; t < num_allocations; t++) {
@@ -95,12 +95,12 @@ void *occulus_realloc(void *restrict old_ptr, size_t size, const char *restrict 
   }
 
   log_allocation(ptr, size, filepath, line, function);
-  return (ptr + 3);
+  return (void*)((uintptr_t)ptr + 3);
 }
 
-void occulus_free(void *restrict ptr, const char *restrict filepath, uintmax_t line, const char *restrict function) {
+void occulus_free(void *ptr, const char *filepath, uintmax_t line, const char *function) {
   assert(ptr);
-  void *fenced_ptr = (ptr - 3);
+  void *fenced_ptr = (void*)((uintptr_t)ptr - 3);
 
   bool found = false;
   for (uintmax_t t = 0; t < num_allocations; t++) {

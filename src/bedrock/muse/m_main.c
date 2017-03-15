@@ -72,7 +72,7 @@ void muse_kill(Muse *muse) {
   free(muse);
 }
 
-MuseResult muse_call_simple(Muse *restrict muse, const char *name) {
+MuseResult muse_call_simple(Muse *muse, const char *name) {
   assert(muse);
 
   lua_getglobal(muse->state, name);
@@ -88,7 +88,7 @@ MuseResult muse_call_simple(Muse *restrict muse, const char *name) {
 }
 
 // TODO: Read results
-MuseResult muse_call(Muse *restrict muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments) {
+MuseResult muse_call(Muse *muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments) {
   assert(muse);
 
   lua_getglobal(muse->state, name);
@@ -121,7 +121,7 @@ MuseResult muse_call(Muse *restrict muse, const char *name, uintmax_t num_argume
 }
 
 // TODO: arguments/results
-MuseResult muse_call_func_ref(Muse *restrict muse, MuseFunctionRef ref) {
+MuseResult muse_call_func_ref(Muse *muse, MuseFunctionRef ref) {
   assert(muse);
 
   lua_rawgeti(muse->state, LUA_REGISTRYINDEX, ref);
@@ -130,7 +130,7 @@ MuseResult muse_call_func_ref(Muse *restrict muse, MuseFunctionRef ref) {
   return MUSE_RESULT_OK;
 }
 
-MuseResult muse_load_file(Muse *restrict muse, const char *filename) {
+MuseResult muse_load_file(Muse *muse, const char *filename) {
   assert(muse);
 
   luaL_loadfile(muse->state, filename);
@@ -146,7 +146,7 @@ MuseResult muse_load_file(Muse *restrict muse, const char *filename) {
   return MUSE_RESULT_OK;
 }
 
-MuseResult muse_add_module(Muse *restrict muse, uintmax_t num_funcs, const MuseFunctionDef *func_defs) {
+MuseResult muse_add_module(Muse *muse, uintmax_t num_funcs, const MuseFunctionDef *func_defs) {
   assert(muse);
   assert(num_funcs > 0);
   assert(func_defs);
@@ -247,7 +247,7 @@ static int lua_callback(lua_State *state) {
   return 0;
 }
 
-MuseResult muse_add_func(Muse *restrict muse, const MuseFunctionDef *func_def) {
+MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
   assert(muse);
   assert(func_def);
 
@@ -280,12 +280,12 @@ MuseResult muse_add_func(Muse *restrict muse, const MuseFunctionDef *func_def) {
   return MUSE_RESULT_OUT_OF_IDS;
 }
 
-void muse_push_number(Muse *restrict muse, double number) {
+void muse_push_number(Muse *muse, double number) {
   assert(muse);
   lua_pushnumber(muse->state, number);
 }
 
-double muse_pop_number(Muse *restrict muse) {
+double muse_pop_number(Muse *muse) {
   assert(muse);
 
   if (!lua_isnumber(muse->state, 1)) {
@@ -295,7 +295,7 @@ double muse_pop_number(Muse *restrict muse) {
   return lua_tonumber(muse->state, 1);
 }
 
-MuseResult muse_set_global_number(Muse *restrict muse, const char *name, double number) {
+MuseResult muse_set_global_number(Muse *muse, const char *name, double number) {
   assert(muse);
 
   lua_pushnumber(muse->state, number);

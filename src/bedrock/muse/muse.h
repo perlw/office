@@ -26,7 +26,7 @@ typedef struct {
   MuseArgumentType type;
 } MuseArgument;
 
-typedef void (*MuseFunc)(Muse *restrict muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata);
+typedef void (*MuseFunc)(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata);
 
 typedef struct {
   char *name;
@@ -40,13 +40,13 @@ typedef uint32_t MuseFunctionRef;
 
 Muse *muse_init(void);
 Muse *muse_init_lite(void);
-void muse_kill(Muse *restrict muse);
-MuseResult muse_call_simple(Muse *restrict muse, const char *name);
-MuseResult muse_call(Muse *restrict muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments);
-MuseResult muse_call_func_ref(Muse *restrict muse, MuseFunctionRef ref);
-MuseResult muse_load_file(Muse *restrict muse, const char *filename);
-MuseResult muse_add_module(Muse *restrict muse, uintmax_t num_funcs, const MuseFunctionDef *funcs);
-MuseResult muse_add_func(Muse *restrict muse, const MuseFunctionDef *func);
-void muse_push_number(Muse *restrict muse, double number);
-double muse_pop_number(Muse *restrict muse);
-MuseResult muse_set_global_number(Muse *restrict muse, const char *name, double number);
+void muse_kill(Muse *muse);
+MuseResult muse_call_simple(Muse *muse, const char *name);
+MuseResult muse_call(Muse *muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments);
+MuseResult muse_call_func_ref(Muse *muse, MuseFunctionRef ref);
+MuseResult muse_load_file(Muse *muse, const char *filename);
+MuseResult muse_add_module(Muse *muse, uintmax_t num_funcs, const MuseFunctionDef *funcs);
+MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func);
+void muse_push_number(Muse *muse, double number);
+double muse_pop_number(Muse *muse);
+MuseResult muse_set_global_number(Muse *muse, const char *name, double number);
