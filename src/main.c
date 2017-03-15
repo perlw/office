@@ -115,10 +115,23 @@ void screen_kill(Screen *screen) {
 }
 
 // +INPUT
+typedef struct {
+  char *action;
+  MuseFunctionRef ref;
+} ActionRefs;
+//ActionRefs *action_refs;
 void input_action(NeglectBinding *binding) {
+  printf("->binding %s\n", binding->action);
+
   if (strcmp(binding->action, "close") == 0) {
     gossip_emit(GOSSIP_ID_CLOSE, NULL);
   }
+}
+void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
+  char *action = (char*)arguments[0].argument;
+  MuseFunctionRef ref = *(MuseFunctionRef*)arguments[1].argument;
+
+  printf("==%s %d==\n", action, ref);
 }
 // -INPUT
 
@@ -133,7 +146,18 @@ int main() {
     return -1;
   }
 
+  MuseFunctionDef action_def = {
+    .name = "action",
+    .func = &lua_action,
+    .num_arguments = 2,
+    .arguments = (MuseArgumentType[]){
+      MUSE_ARGUMENT_STRING,
+      MUSE_ARGUMENT_FUNCTION,
+    },
+    .userdata = NULL,
+  };
   Muse *muse = muse_init();
+  muse_add_func(muse, &action_def);
   muse_load_file(muse, "main.lua");
 
   Screen *screen = screen_create(&config);

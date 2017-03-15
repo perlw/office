@@ -120,6 +120,16 @@ MuseResult muse_call(Muse *restrict muse, const char *name, uintmax_t num_argume
   return MUSE_RESULT_OK;
 }
 
+// TODO: arguments/results
+MuseResult muse_call_func_ref(Muse *restrict muse, MuseFunctionRef ref) {
+  assert(muse);
+
+  lua_rawgeti(muse->state, LUA_REGISTRYINDEX, ref);
+  lua_pcall(muse->state, 0, 0, 0);
+
+  return MUSE_RESULT_OK;
+}
+
 MuseResult muse_load_file(Muse *restrict muse, const char *filename) {
   assert(muse);
 
@@ -205,6 +215,17 @@ static int lua_callback(lua_State *state) {
             .type = func_def->arguments[t],
           };
           *(bool*)arguments[t].argument = (bool)lua_toboolean(muse->state, t + 1);
+          break;
+
+        case MUSE_ARGUMENT_FUNCTION:
+          luaL_checktype(muse->state, t + 1, LUA_TFUNCTION);
+
+          arguments[t] = (MuseArgument){
+            .argument = calloc(1, sizeof(MuseFunctionRef)),
+            .type = func_def->arguments[t],
+          };
+          *(MuseFunctionRef*)arguments[t].argument = (MuseFunctionRef)luaL_ref(muse->state, LUA_REGISTRYINDEX);
+
           break;
 
         default:

@@ -16,6 +16,7 @@ typedef enum {
   MUSE_ARGUMENT_NUMBER = 1,
   MUSE_ARGUMENT_STRING,
   MUSE_ARGUMENT_BOOLEAN,
+  MUSE_ARGUMENT_FUNCTION,
 } MuseArgumentType;
 
 typedef struct Muse Muse;
@@ -35,11 +36,14 @@ typedef struct {
   void *userdata;
 } MuseFunctionDef;
 
+typedef uint32_t MuseFunctionRef;
+
 Muse *muse_init(void);
 Muse *muse_init_lite(void);
 void muse_kill(Muse *restrict muse);
 MuseResult muse_call_simple(Muse *restrict muse, const char *name);
 MuseResult muse_call(Muse *restrict muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments);
+MuseResult muse_call_func_ref(Muse *restrict muse, MuseFunctionRef ref);
 MuseResult muse_load_file(Muse *restrict muse, const char *filename);
 MuseResult muse_add_module(Muse *restrict muse, uintmax_t num_funcs, const MuseFunctionDef *funcs);
 MuseResult muse_add_func(Muse *restrict muse, const MuseFunctionDef *func);

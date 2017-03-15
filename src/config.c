@@ -17,9 +17,6 @@ void gl_debug(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments
   config->gl_debug = *(bool*)arguments[0].argument;
 }
 
-void test_action(NeglectBinding *binding) {
-  printf("TEST FROM LUA\n");
-}
 void key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
   char *action = (char*)arguments[0].argument;
   int32_t scancode = (int32_t)*(double*)arguments[1].argument;
@@ -29,10 +26,6 @@ void key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments
     .scancode = scancode,
     .callback = NULL,
   };
-
-  if (strcmp(action, "test") == 0) {
-    binding.callback = &test_action;
-  }
 
   neglect_add_binding(&binding);
 }
