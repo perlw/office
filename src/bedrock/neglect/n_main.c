@@ -13,14 +13,14 @@ void keyboard_event(void *userdata) {
   assert(userdata);
 
   BedrockKeyboardEvent event = *(BedrockKeyboardEvent*)userdata;
-  printf("KEYBOARD %d %s\n", event.scancode, (event.press ? "down" : "up"));
+  printf("KEYBOARD %d %s\n", event.key, (event.press ? "down" : "up"));
 
   if (event.release) {
     return;
   }
 
   for (uintmax_t t = 0; t < num_bindings; t++) {
-    if (input_bindings[t].scancode == event.scancode) {
+    if (input_bindings[t].key == event.key) {
       if (input_bindings[t].callback) {
         input_bindings[t].callback(&input_bindings[t]);
       }
@@ -54,7 +54,7 @@ void neglect_add_binding(NeglectBinding *binding) {
   input_bindings = realloc(input_bindings, num_bindings * sizeof(NeglectBinding));
   input_bindings[num_bindings - 1] = (NeglectBinding){
     .action = calloc(strlen(binding->action) + 1, sizeof(char)),
-    .scancode = binding->scancode,
+    .key = binding->key,
     .callback = binding->callback,
   };
   strcpy(input_bindings[num_bindings - 1].action, binding->action);
