@@ -8,6 +8,7 @@
 uintmax_t num_bindings = 0;
 NeglectBinding *input_bindings;
 NeglectCallback main_callback = NULL;
+void *main_callback_userdata = NULL;
 
 void keyboard_event(void *userdata) {
   assert(userdata);
@@ -22,10 +23,11 @@ void keyboard_event(void *userdata) {
   for (uintmax_t t = 0; t < num_bindings; t++) {
     if (input_bindings[t].key == event.key) {
       if (input_bindings[t].callback) {
-        input_bindings[t].callback(&input_bindings[t]);
+        // TODO: Userdata support?
+        input_bindings[t].callback(&input_bindings[t], NULL);
       }
 
-      main_callback(&input_bindings[t]);
+      main_callback(&input_bindings[t], main_callback_userdata);
     }
   }
 }
@@ -43,10 +45,11 @@ void neglect_kill(void) {
   free(input_bindings);
 }
 
-void neglect_action_callback(NeglectCallback callback) {
+void neglect_action_callback(NeglectCallback callback, void *userdata) {
   assert(callback);
 
   main_callback = callback;
+  main_callback_userdata = userdata;
 }
 
 void neglect_add_binding(NeglectBinding *binding) {

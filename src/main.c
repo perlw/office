@@ -118,26 +118,62 @@ void screen_kill(Screen *screen) {
 typedef struct {
   char *action;
   MuseFunctionRef ref;
-} ActionRefs;
-//ActionRefs *action_refs;
-void input_action(NeglectBinding *binding) {
+} ActionRef;
+ActionRef *action_refs;
+#define ACTIONS_CHUNK 10
+uintmax_t actions_size = 0;
+uintmax_t actions_current = 0;
+
+void input_init() {
+  actions_size = ACTIONS_CHUNK;
+  action_refs = calloc(actions_size, sizeof(ActionRef));
+}
+
+void input_kill() {
+  for (uintmax_t t = 0; t < actions_size; t++) {
+    if (action_refs[t].action) {
+      free(action_refs[t].action);
+    }
+  }
+  free(action_refs);
+}
+
+void input_action(NeglectBinding *binding, void *userdata) {
   printf("->binding %s\n", binding->action);
 
   if (strcmp(binding->action, "close") == 0) {
     gossip_emit(GOSSIP_ID_CLOSE, NULL);
+  }
+
+  for (uintmax_t t = 0; t < actions_current; t++) {
+    if (strcmp(action_refs[t].action, binding->action) == 0) {
+      muse_call_func_ref((Muse*)userdata, action_refs[t].ref);
+    }
   }
 }
 void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
   char *action = (char*)arguments[0].argument;
   MuseFunctionRef ref = *(MuseFunctionRef*)arguments[1].argument;
 
-  printf("==%s %d==\n", action, ref);
+  action_refs[actions_current].action = calloc(strlen(action) + 1, sizeof(char));
+  strcpy(action_refs[actions_current].action, action);
+  action_refs[actions_current].ref = ref;
+
+  actions_current++;
+  if (actions_current >= actions_size) {
+    actions_size += ACTIONS_CHUNK;
+    action_refs = realloc(action_refs, actions_size * sizeof(ActionRef));
+  }
 }
 // -INPUT
 
 int main() {
+  Muse *muse = muse_init();
+
   neglect_init();
-  neglect_action_callback(&input_action);
+  neglect_action_callback(&input_action, muse);
+
+  input_init();
 
   Config config = read_config();
 
@@ -156,7 +192,6 @@ int main() {
     },
     .userdata = NULL,
   };
-  Muse *muse = muse_init();
   muse_add_func(muse, &action_def);
   muse_load_file(muse, "main.lua");
 
@@ -196,8 +231,10 @@ int main() {
     bedrock_poll();
   }
 
-  muse_kill(muse);
   screen_kill(screen);
+  input_kill();
+
+  muse_kill(muse);
   bedrock_kill();
   neglect_kill();
 

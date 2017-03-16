@@ -127,7 +127,7 @@ typedef enum {
 } NeglectKey;
 
 typedef struct NeglectBinding NeglectBinding;
-typedef void (*NeglectCallback)(NeglectBinding*);
+typedef void (*NeglectCallback)(NeglectBinding*, void*);
 
 struct NeglectBinding {
   char *action;
@@ -138,5 +138,5 @@ struct NeglectBinding {
 
 void neglect_init(void);
 void neglect_kill(void);
-void neglect_action_callback(NeglectCallback callback);
+void neglect_action_callback(NeglectCallback callback, void *userdata);
 void neglect_add_binding(NeglectBinding *binding);

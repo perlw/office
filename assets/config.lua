@@ -5,6 +5,7 @@ gl_debug(true)
 -- Callbacks?
 bind("close", KEY_ESCAPE)
 bind("test", KEY_SPACE)
+bind("foo", KEY_F)
 
 --[[
 action(INPUT_ACTION_TEST, function ()
