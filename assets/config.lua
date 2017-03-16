@@ -6,9 +6,3 @@ gl_debug(true)
 bind("close", KEY_ESCAPE)
 bind("test", KEY_SPACE)
 bind("foo", KEY_F)
-
---[[
-action(INPUT_ACTION_TEST, function ()
-  io.write("foo")
-end)
-]]--
