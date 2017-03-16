@@ -21,6 +21,7 @@ file(GLOB LUA_SRCS "${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src/*.c")
 add_library (lua STATIC ${LUA_SRCS})
 
 add_library (bedrock STATIC bedrock.c)
+add_subdirectory (rectify)
 add_subdirectory (archivist)
 add_subdirectory (gossip)
 add_subdirectory (muse)

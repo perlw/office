@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "occulus/occulus.h"
+#include "rectify/rectify.h"
 #include "muse/muse.h"
 #include "neglect/neglect.h"
 #include "archivist/archivist.h"

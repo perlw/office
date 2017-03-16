@@ -120,22 +120,18 @@ typedef struct {
   MuseFunctionRef ref;
 } ActionRef;
 ActionRef *action_refs;
-#define ACTIONS_CHUNK 10
-uintmax_t actions_size = 0;
-uintmax_t actions_current = 0;
 
 void input_init() {
-  actions_size = ACTIONS_CHUNK;
-  action_refs = calloc(actions_size, sizeof(ActionRef));
+  action_refs = rectify_array_alloc(10, sizeof(ActionRef));
 }
 
 void input_kill() {
-  for (uintmax_t t = 0; t < actions_size; t++) {
+  for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
     if (action_refs[t].action) {
       free(action_refs[t].action);
     }
   }
-  free(action_refs);
+  rectify_array_free(action_refs);
 }
 
 void input_action(NeglectBinding *binding, void *userdata) {
@@ -145,7 +141,7 @@ void input_action(NeglectBinding *binding, void *userdata) {
     gossip_emit(GOSSIP_ID_CLOSE, NULL);
   }
 
-  for (uintmax_t t = 0; t < actions_current; t++) {
+  for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
     if (strcmp(action_refs[t].action, binding->action) == 0) {
       muse_call_func_ref((Muse*)userdata, action_refs[t].ref);
     }
@@ -155,15 +151,12 @@ void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *argumen
   char *action = (char*)arguments[0].argument;
   MuseFunctionRef ref = *(MuseFunctionRef*)arguments[1].argument;
 
-  action_refs[actions_current].action = calloc(strlen(action) + 1, sizeof(char));
-  strcpy(action_refs[actions_current].action, action);
-  action_refs[actions_current].ref = ref;
-
-  actions_current++;
-  if (actions_current >= actions_size) {
-    actions_size += ACTIONS_CHUNK;
-    action_refs = realloc(action_refs, actions_size * sizeof(ActionRef));
-  }
+  ActionRef action_ref = {
+    .action = calloc(strlen(action) + 1, sizeof(char)),
+    .ref = ref,
+  };
+  strcpy(action_ref.action, action);
+  action_refs = rectify_array_push(action_refs, &action_ref);
 }
 // -INPUT
 
