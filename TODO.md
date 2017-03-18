@@ -9,9 +9,7 @@ The actual game
 
 ### Picasso
 Graphics, pipeline
-* Buffer management
 * Image management
-* Keep track of gl state, atleast for buffers, textures, shaders
 
 ### Archivist module
 File management
