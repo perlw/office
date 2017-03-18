@@ -31,13 +31,11 @@ void picasso_program_destroy(PicassoProgram *program) {
 }
 
 void picasso_program_use(const PicassoProgram *program) {
-	if (program && get_state(PICASSO_STATE_PROGRAM) != program->id) {
-		glUseProgram(program->id);
-    set_state(PICASSO_STATE_PROGRAM, program->id);
-	} else {
-		glUseProgram(0);
-    set_state(PICASSO_STATE_PROGRAM, 0);
-	}
+  uint32_t id = (program ? program->id : 0);
+  if (get_state(PICASSO_STATE_PROGRAM) != id) {
+		glUseProgram(id);
+    set_state(PICASSO_STATE_PROGRAM, id);
+  }
 }
 
 int32_t picasso_program_attrib_location(const PicassoProgram *program, const char *name) {

@@ -17,8 +17,13 @@ struct PicassoProgram {
   uint32_t id;
 };
 
+struct PicassoBuffer {
+  uint32_t id;
+};
+
 typedef enum {
   PICASSO_STATE_PROGRAM = 1,
+  PICASSO_STATE_BUFFER,
 
   PICASSO_STATE_END,
 } PicassoState;

@@ -15,8 +15,8 @@
 
 typedef struct {
   uint32_t vao;
-  uint32_t vertex_buffer;
-  uint32_t coord_buffer;
+  PicassoBuffer *vertex_buffer;
+  PicassoBuffer *coord_buffer;
   PicassoProgram *program;
 } Screen;
 
@@ -45,12 +45,12 @@ Screen *screen_create(const Config *config) {
     1, 0,
   };
 
-  glGenBuffers(1, &screen->vertex_buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, screen->vertex_buffer);
+  screen->vertex_buffer = picasso_buffer_create();
+  picasso_buffer_bind(screen->vertex_buffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(*vertex_data) * 12, vertex_data, GL_STATIC_DRAW);
 
-  glGenBuffers(1, &screen->coord_buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, screen->coord_buffer);
+  screen->coord_buffer = picasso_buffer_create();
+  picasso_buffer_bind(screen->coord_buffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(*coord_data) * 12, coord_data, GL_STATIC_DRAW);
 
   {
@@ -82,12 +82,12 @@ Screen *screen_create(const Config *config) {
   {
     int32_t vertex_attr = picasso_program_attrib_location(screen->program, "vertex");
     glEnableVertexAttribArray(vertex_attr);
-    glBindBuffer(GL_ARRAY_BUFFER, screen->vertex_buffer);
+    picasso_buffer_bind(screen->vertex_buffer);
     glVertexAttribPointer(vertex_attr, 2, GL_INT, GL_FALSE, 0, NULL);
 
     int32_t coord_attr = picasso_program_attrib_location(screen->program, "coord");
     glEnableVertexAttribArray(coord_attr);
-    glBindBuffer(GL_ARRAY_BUFFER, screen->coord_buffer);
+    picasso_buffer_bind(screen->coord_buffer);
     glVertexAttribPointer(coord_attr, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
     mat4_t ortho = m4_ortho(0, config->res_width, 0, config->res_height, 1, 0);
@@ -111,6 +111,10 @@ void screen_draw(Screen *screen) {
 
 void screen_kill(Screen *screen) {
   picasso_program_destroy(screen->program);
+
+  picasso_buffer_destroy(screen->vertex_buffer);
+  picasso_buffer_destroy(screen->coord_buffer);
+
   free(screen);
 }
 
