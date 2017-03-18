@@ -3,9 +3,6 @@
 
 #include "glad/glad.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
-
 #define MATH_3D_IMPLEMENTATION
 #include "arkanis/math_3d.h"
 
@@ -16,6 +13,7 @@
 typedef struct {
   PicassoBufferGroup *buffergroup;
   PicassoProgram *program;
+  PicassoTexture *texture;
 } Screen;
 
 Screen *screen_create(const Config *config) {
@@ -23,14 +21,20 @@ Screen *screen_create(const Config *config) {
 
   screen->buffergroup = picasso_buffergroup_create();
 
+  int32_t w = 128; //config.res_width;
+  int32_t h = 128; //config.res_height;
+  int32_t hw = w / 2;
+  int32_t hh = h / 2;
+  int32_t ow = config->res_width / 2;
+  int32_t oh = config->res_height / 2;
   int32_t vertex_data[] = {
-    0, 0,
-    config->res_width, config->res_height,
-    0, config->res_height,
+    ow - hw, oh - hh,
+    ow + hw, oh + hh,
+    ow - hw, oh + hh,
 
-    0, 0,
-    config->res_width, 0,
-    config->res_width, config->res_height,
+    ow - hw, oh - hh,
+    ow + hw, oh - hh,
+    ow + hw, oh + hh,
   };
   float coord_data[] = {
     0, 1,
@@ -51,13 +55,13 @@ Screen *screen_create(const Config *config) {
   {
     uintmax_t vert_length = 0, frag_length = 0;
     uint8_t *vert_source, *frag_source;
-    archivist_read_file("shaders/dummy.vert", &vert_source, &vert_length);
-    archivist_read_file("shaders/dummy.frag", &frag_source, &frag_length);
+    archivist_read_file("shaders/dummy.vert", &vert_length, &vert_source);
+    archivist_read_file("shaders/dummy.frag", &frag_length, &frag_source);
 
     PicassoShader *vertex_shader = picasso_shader_create(PICASSO_SHADER_VERTEX);
     PicassoShader *fragment_shader = picasso_shader_create(PICASSO_SHADER_FRAGMENT);
-    picasso_shader_compile(vertex_shader, vert_source, vert_length);
-    picasso_shader_compile(fragment_shader, frag_source, frag_length);
+    picasso_shader_compile(vertex_shader, vert_length, vert_source);
+    picasso_shader_compile(fragment_shader, frag_length, frag_source);
 
     screen->program = picasso_program_create();
     picasso_program_link_shaders(screen->program, 2, (const PicassoShader*[]){
@@ -90,6 +94,24 @@ Screen *screen_create(const Config *config) {
     picasso_program_uniform_mat4(screen->program, mvmatrix_uniform, (float*)&model);
   }
 
+  picasso_program_use(NULL);
+
+  {
+    uintmax_t buffer_size = 0;
+    uint8_t *buffer;
+
+    screen->texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D);
+
+    archivist_read_file("fonts/cp437_8x8.png", &buffer_size, &buffer);
+    picasso_texture_load(screen->texture, buffer, buffer_size, PICASSO_TEXTURE_RGB);
+    picasso_texture_bind_to(screen->texture, 0);
+
+    int32_t image_uniform = picasso_program_uniform_location(screen->program, "image");
+    picasso_program_uniform_int(screen->program, image_uniform, 0);
+
+    free(buffer);
+  }
+
   return screen;
 }
 
@@ -102,8 +124,8 @@ void screen_draw(Screen *screen) {
 }
 
 void screen_kill(Screen *screen) {
+  picasso_texture_destroy(screen->texture);
   picasso_program_destroy(screen->program);
-
   picasso_buffergroup_destroy(screen->buffergroup);
 
   free(screen);
@@ -188,31 +210,10 @@ int main() {
   double last_tick = bedrock_time();
   double current_second = 0;
 
-  {
-    picasso_program_use(screen->program);
-
-    int w, h;
-    uint8_t *imagedata = stbi_load("fonts/cp437_8x8.png", &w, &h, 0, 3);
-
-    int32_t image_uniform = picasso_program_uniform_location(screen->program, "image");
-    picasso_program_uniform_int(screen->program, image_uniform, 0);
-
-    uint32_t image_id;
-    glCreateTextures(GL_TEXTURE_2D, 1, &image_id);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, image_id);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, imagedata);
-
-    stbi_image_free(imagedata);
-  }
-
-
   uint32_t frames = 0;
-  glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
+  bedrock_clear_color(0.5f, 0.5f, 1.0f, 1.0f);
   while (!bedrock_should_close()) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    bedrock_clear();
 
     double tick = bedrock_time();
     double diff = tick - last_tick;

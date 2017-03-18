@@ -38,12 +38,19 @@ struct PicassoBufferGroup {
 
 struct PicassoTexture {
   uint32_t id;
+
+  struct {
+    GLenum target;
+    uint32_t active_texture;
+  } gl;
 };
 
 typedef enum {
   PICASSO_STATE_PROGRAM = 1,
   PICASSO_STATE_BUFFER,
   PICASSO_STATE_VAO,
+  PICASSO_STATE_ACTIVE_TEXTURE,
+  PICASSO_STATE_TEXTURE,
 
   PICASSO_STATE_END,
 } PicassoState;
@@ -54,3 +61,6 @@ void set_state(PicassoState state, uint32_t value);
 void buffergroup_bind(PicassoBufferGroup *buffergroup);
 void buffer_destroy(PicassoBuffer *buffer);
 void buffer_bind(PicassoBuffer *buffer);
+
+void active_texture_bind(uint32_t id);
+void texture_bind(PicassoTexture *texture);

@@ -16,7 +16,7 @@ typedef struct PicassoProgram PicassoProgram;
 
 PicassoShader *picasso_shader_create(PicassoShaderType type);
 void picasso_shader_destroy(PicassoShader *shader);
-PicassoShaderResult picasso_shader_compile(PicassoShader* shader, const uint8_t *source, uintmax_t length);
+PicassoShaderResult picasso_shader_compile(PicassoShader* shader, uintmax_t length, const uint8_t *source);
 
 PicassoProgram *picasso_program_create(void);
 void picasso_program_destroy(PicassoProgram *program);
@@ -68,9 +68,25 @@ typedef enum {
   PICASSO_TEXTURE_TARGET_2D,
 } PicassoTextureTarget;
 
+typedef enum {
+  PICASSO_TEXTURE_R = 1,
+  PICASSO_TEXTURE_G = 1,
+  PICASSO_TEXTURE_B = 1,
+  PICASSO_TEXTURE_RGB = 3,
+  PICASSO_TEXTURE_RGBA = 4,
+} PicassoTextureChannels;
+
+typedef enum {
+  PICASSO_TEXTURE_OK = 1,
+  PICASSO_TEXTURE_LOAD_FAILED,
+} PicassoTextureResult;
+
 typedef struct PicassoTexture PicassoTexture;
 
 PicassoTexture *picasso_texture_create(PicassoTextureTarget target);
 void picasso_texture_destroy(PicassoTexture *texture);
+
+PicassoTextureResult picasso_texture_load(PicassoTexture *texture, const uint8_t *data, uintmax_t size, PicassoTextureChannels channels);
+void picasso_texture_bind_to(PicassoTexture *texture, uint32_t index);
 // -Textures
 

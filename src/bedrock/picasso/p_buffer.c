@@ -52,7 +52,7 @@ void picasso_buffergroup_draw(PicassoBufferGroup *buffergroup, PicassoBufferMode
   assert(buffergroup);
 
   buffergroup_bind(buffergroup);
-  glDrawArrays(BufferModeToGL[mode], 0, num_vertices);
+  glDrawArrays(BufferModeToGL[mode], 0, (GLsizei)num_vertices);
   buffergroup_bind(NULL);
 }
 

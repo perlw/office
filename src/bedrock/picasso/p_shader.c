@@ -32,7 +32,7 @@ void picasso_shader_destroy(PicassoShader *shader) {
 	free(shader);
 }
 
-PicassoShaderResult picasso_shader_compile(PicassoShader* shader, const uint8_t *source, uintmax_t length) {
+PicassoShaderResult picasso_shader_compile(PicassoShader* shader, uintmax_t length, const uint8_t *source) {
 	assert(shader);
 
 	glShaderSource(shader->id, 1, (const GLchar* const*)&source, (const GLint*)&length);
