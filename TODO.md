@@ -9,7 +9,6 @@ The actual game
 
 ### Picasso
 Graphics, pipeline
-* Image management
 
 ### Archivist module
 File management
