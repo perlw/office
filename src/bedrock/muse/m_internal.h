@@ -7,7 +7,7 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
-#include "../occulus/occulus.h"
+#include "occulus/occulus.h"
 
 #include "muse.h"
 

@@ -14,17 +14,14 @@
 #include "config.h"
 
 typedef struct {
-  uint32_t vao;
-  PicassoBuffer *vertex_buffer;
-  PicassoBuffer *coord_buffer;
+  PicassoBufferGroup *buffergroup;
   PicassoProgram *program;
 } Screen;
 
 Screen *screen_create(const Config *config) {
   Screen *screen = calloc(1, sizeof(Screen));
 
-  glGenVertexArrays(1, &screen->vao);
-  glBindVertexArray(screen->vao);
+  screen->buffergroup = picasso_buffergroup_create();
 
   int32_t vertex_data[] = {
     0, 0,
@@ -45,13 +42,11 @@ Screen *screen_create(const Config *config) {
     1, 0,
   };
 
-  screen->vertex_buffer = picasso_buffer_create();
-  picasso_buffer_bind(screen->vertex_buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(*vertex_data) * 12, vertex_data, GL_STATIC_DRAW);
+  PicassoBuffer *vertex_buffer = picasso_buffer_create(screen->buffergroup);
+  picasso_buffer_set_data(vertex_buffer, sizeof(*vertex_data) * 12, vertex_data);
 
-  screen->coord_buffer = picasso_buffer_create();
-  picasso_buffer_bind(screen->coord_buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(*coord_data) * 12, coord_data, GL_STATIC_DRAW);
+  PicassoBuffer *coord_buffer = picasso_buffer_create(screen->buffergroup);
+  picasso_buffer_set_data(coord_buffer, sizeof(*coord_data) * 12, coord_data);
 
   {
     uintmax_t vert_length = 0, frag_length = 0;
@@ -81,14 +76,10 @@ Screen *screen_create(const Config *config) {
 
   {
     int32_t vertex_attr = picasso_program_attrib_location(screen->program, "vertex");
-    glEnableVertexAttribArray(vertex_attr);
-    picasso_buffer_bind(screen->vertex_buffer);
-    glVertexAttribPointer(vertex_attr, 2, GL_INT, GL_FALSE, 0, NULL);
+    picasso_buffer_shader_attrib(vertex_buffer, vertex_attr, 2, PICASSO_BUFFER_TYPE_INT);
 
     int32_t coord_attr = picasso_program_attrib_location(screen->program, "coord");
-    glEnableVertexAttribArray(coord_attr);
-    picasso_buffer_bind(screen->coord_buffer);
-    glVertexAttribPointer(coord_attr, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+    picasso_buffer_shader_attrib(coord_buffer, coord_attr, 2, PICASSO_BUFFER_TYPE_FLOAT);
 
     mat4_t ortho = m4_ortho(0, config->res_width, 0, config->res_height, 1, 0);
     mat4_t model = m4_identity();
@@ -106,14 +97,13 @@ void screen_update(Screen *screen, double delta) {
 }
 
 void screen_draw(Screen *screen) {
-  glDrawArrays(GL_TRIANGLES, 0, 6);
+  picasso_buffergroup_draw(screen->buffergroup, 6);
 }
 
 void screen_kill(Screen *screen) {
   picasso_program_destroy(screen->program);
 
-  picasso_buffer_destroy(screen->vertex_buffer);
-  picasso_buffer_destroy(screen->coord_buffer);
+  picasso_buffergroup_destroy(screen->buffergroup);
 
   free(screen);
 }

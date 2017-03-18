@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <string.h>
 
+#include <occulus/occulus.h>
+
 typedef struct {
   uintmax_t chunk_size;
   uintmax_t capacity;

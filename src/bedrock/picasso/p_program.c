@@ -10,7 +10,7 @@ PicassoProgram *picasso_program_create(void) {
 	return program;
 }
 
-void picasso_program_link_shaders(const PicassoProgram *program, uintmax_t num_shaders, const PicassoShader **shaders) {
+void picasso_program_link_shaders(PicassoProgram *program, uintmax_t num_shaders, const PicassoShader **shaders) {
 	assert(program);
 	assert(num_shaders > 0);
 	assert(shaders);
@@ -30,7 +30,7 @@ void picasso_program_destroy(PicassoProgram *program) {
 	free(program);
 }
 
-void picasso_program_use(const PicassoProgram *program) {
+void picasso_program_use(PicassoProgram *program) {
   uint32_t id = (program ? program->id : 0);
   if (get_state(PICASSO_STATE_PROGRAM) != id) {
 		glUseProgram(id);
@@ -38,19 +38,19 @@ void picasso_program_use(const PicassoProgram *program) {
   }
 }
 
-int32_t picasso_program_attrib_location(const PicassoProgram *program, const char *name) {
+int32_t picasso_program_attrib_location(PicassoProgram *program, const char *name) {
 	assert(program);
 
 	return glGetAttribLocation(program->id, name);
 }
 
-int32_t picasso_program_uniform_location(const PicassoProgram *program, const char *name) {
+int32_t picasso_program_uniform_location(PicassoProgram *program, const char *name) {
 	assert(program);
 
 	return glGetUniformLocation(program->id, name);
 }
 
-void picasso_program_mat4_set(const PicassoProgram *program, int32_t uniform, float *mat) {
+void picasso_program_mat4_set(PicassoProgram *program, int32_t uniform, float *mat) {
 	assert(program);
 
 	glProgramUniformMatrix4fv(program->id, uniform, 1, GL_FALSE, (const GLfloat*)mat);

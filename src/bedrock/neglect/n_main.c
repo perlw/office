@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "../bedrock.h"
+#include "bedrock.h"
 
 uintmax_t num_bindings = 0;
 NeglectBinding *input_bindings;
