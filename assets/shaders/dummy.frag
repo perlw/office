@@ -3,6 +3,8 @@
 in vec2 texCoord;
 out vec4 fragment;
 
+uniform sampler2D image;
+
 void main() {
-	fragment = vec4(texCoord.s, texCoord.t, 0, 1);
+	fragment = texture(image, texCoord);
 }

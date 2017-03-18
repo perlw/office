@@ -8,14 +8,6 @@
 
 #include "picasso.h"
 
-typedef enum {
-  PICASSO_STATE_PROGRAM = 1,
-  PICASSO_STATE_BUFFER,
-  PICASSO_STATE_VAO,
-
-  PICASSO_STATE_END,
-} PicassoState;
-
 struct PicassoShader {
   uint32_t id;
   GLenum type;
@@ -29,6 +21,13 @@ struct PicassoBuffer {
   uint32_t id;
 
   PicassoBufferGroup *group;
+
+  struct {
+    GLenum type;
+    GLenum usage;
+    GLenum num_fields;
+    GLenum data_type;
+  } gl;
 };
 
 struct PicassoBufferGroup {
@@ -36,6 +35,18 @@ struct PicassoBufferGroup {
 
   PicassoBuffer **buffers;
 };
+
+struct PicassoTexture {
+  uint32_t id;
+};
+
+typedef enum {
+  PICASSO_STATE_PROGRAM = 1,
+  PICASSO_STATE_BUFFER,
+  PICASSO_STATE_VAO,
+
+  PICASSO_STATE_END,
+} PicassoState;
 
 uint32_t get_state(PicassoState state);
 void set_state(PicassoState state, uint32_t value);

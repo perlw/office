@@ -42,11 +42,11 @@ Screen *screen_create(const Config *config) {
     1, 0,
   };
 
-  PicassoBuffer *vertex_buffer = picasso_buffer_create(screen->buffergroup);
-  picasso_buffer_set_data(vertex_buffer, sizeof(*vertex_data) * 12, vertex_data);
+  PicassoBuffer *vertex_buffer = picasso_buffer_create(screen->buffergroup, PICASSO_BUFFER_TYPE_ARRAY, PICASSO_BUFFER_USAGE_STATIC);
+  picasso_buffer_set_data(vertex_buffer, 2, PICASSO_TYPE_INT, sizeof(*vertex_data) * 12, vertex_data);
 
-  PicassoBuffer *coord_buffer = picasso_buffer_create(screen->buffergroup);
-  picasso_buffer_set_data(coord_buffer, sizeof(*coord_data) * 12, coord_data);
+  PicassoBuffer *coord_buffer = picasso_buffer_create(screen->buffergroup, PICASSO_BUFFER_TYPE_ARRAY, PICASSO_BUFFER_USAGE_STATIC);
+  picasso_buffer_set_data(coord_buffer, 2, PICASSO_TYPE_FLOAT, sizeof(*coord_data) * 12, coord_data);
 
   {
     uintmax_t vert_length = 0, frag_length = 0;
@@ -76,18 +76,18 @@ Screen *screen_create(const Config *config) {
 
   {
     int32_t vertex_attr = picasso_program_attrib_location(screen->program, "vertex");
-    picasso_buffer_shader_attrib(vertex_buffer, vertex_attr, 2, PICASSO_BUFFER_TYPE_INT);
+    picasso_buffer_shader_attrib(vertex_buffer, vertex_attr);
 
     int32_t coord_attr = picasso_program_attrib_location(screen->program, "coord");
-    picasso_buffer_shader_attrib(coord_buffer, coord_attr, 2, PICASSO_BUFFER_TYPE_FLOAT);
+    picasso_buffer_shader_attrib(coord_buffer, coord_attr);
 
     mat4_t ortho = m4_ortho(0, config->res_width, 0, config->res_height, 1, 0);
     mat4_t model = m4_identity();
 
     int32_t pmatrix_uniform = picasso_program_uniform_location(screen->program, "pMatrix");
     int32_t mvmatrix_uniform = picasso_program_uniform_location(screen->program, "mvMatrix");
-    picasso_program_mat4_set(screen->program, pmatrix_uniform, (float*)&ortho);
-    picasso_program_mat4_set(screen->program, mvmatrix_uniform, (float*)&model);
+    picasso_program_uniform_mat4(screen->program, pmatrix_uniform, (float*)&ortho);
+    picasso_program_uniform_mat4(screen->program, mvmatrix_uniform, (float*)&model);
   }
 
   return screen;
@@ -97,7 +97,8 @@ void screen_update(Screen *screen, double delta) {
 }
 
 void screen_draw(Screen *screen) {
-  picasso_buffergroup_draw(screen->buffergroup, 6);
+  picasso_program_use(screen->program);
+  picasso_buffergroup_draw(screen->buffergroup, PICASSO_BUFFER_MODE_TRIANGLES, 6);
 }
 
 void screen_kill(Screen *screen) {
@@ -186,6 +187,27 @@ int main() {
 
   double last_tick = bedrock_time();
   double current_second = 0;
+
+  {
+    picasso_program_use(screen->program);
+
+    int w, h;
+    uint8_t *imagedata = stbi_load("fonts/cp437_8x8.png", &w, &h, 0, 3);
+
+    int32_t image_uniform = picasso_program_uniform_location(screen->program, "image");
+    picasso_program_uniform_int(screen->program, image_uniform, 0);
+
+    uint32_t image_id;
+    glCreateTextures(GL_TEXTURE_2D, 1, &image_id);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, image_id);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, imagedata);
+
+    stbi_image_free(imagedata);
+  }
+
 
   uint32_t frames = 0;
   glClearColor(0.5f, 0.5f, 1.0f, 1.0f);

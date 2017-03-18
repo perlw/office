@@ -1,57 +1,63 @@
 #include "p_internal.h"
 
 PicassoProgram *picasso_program_create(void) {
-	PicassoProgram *program = calloc(1, sizeof(PicassoProgram));
+  PicassoProgram *program = calloc(1, sizeof(PicassoProgram));
 
-	*program = (PicassoProgram) {
-		.id = glCreateProgram(),
-	};
+  *program = (PicassoProgram) {
+    .id = glCreateProgram(),
+  };
 
-	return program;
+  return program;
 }
 
 void picasso_program_link_shaders(PicassoProgram *program, uintmax_t num_shaders, const PicassoShader **shaders) {
-	assert(program);
-	assert(num_shaders > 0);
-	assert(shaders);
+  assert(program);
+  assert(num_shaders > 0);
+  assert(shaders);
 
-	for (uintmax_t t = 0; t < num_shaders; t++) {
-		glAttachShader(program->id, shaders[t]->id);
-	}
-	glLinkProgram(program->id);
+  for (uintmax_t t = 0; t < num_shaders; t++) {
+    glAttachShader(program->id, shaders[t]->id);
+  }
+  glLinkProgram(program->id);
 
-	picasso_program_use(NULL);
+  picasso_program_use(NULL);
 }
 
 void picasso_program_destroy(PicassoProgram *program) {
-	assert(program);
+  assert(program);
 
-	glDeleteProgram(program->id);
-	free(program);
+  glDeleteProgram(program->id);
+  free(program);
 }
 
 void picasso_program_use(PicassoProgram *program) {
   uint32_t id = (program ? program->id : 0);
   if (get_state(PICASSO_STATE_PROGRAM) != id) {
-		glUseProgram(id);
+    glUseProgram(id);
     set_state(PICASSO_STATE_PROGRAM, id);
   }
 }
 
 int32_t picasso_program_attrib_location(PicassoProgram *program, const char *name) {
-	assert(program);
+  assert(program);
 
-	return glGetAttribLocation(program->id, name);
+  return glGetAttribLocation(program->id, name);
 }
 
 int32_t picasso_program_uniform_location(PicassoProgram *program, const char *name) {
-	assert(program);
+  assert(program);
 
-	return glGetUniformLocation(program->id, name);
+  return glGetUniformLocation(program->id, name);
 }
 
-void picasso_program_mat4_set(PicassoProgram *program, int32_t uniform, float *mat) {
-	assert(program);
+void picasso_program_uniform_int(PicassoProgram *program, int32_t uniform, int32_t val) {
+  assert(program);
 
-	glProgramUniformMatrix4fv(program->id, uniform, 1, GL_FALSE, (const GLfloat*)mat);
+  glProgramUniform1i(program->id, uniform, val);
+}
+
+void picasso_program_uniform_mat4(PicassoProgram *program, int32_t uniform, float *mat) {
+  assert(program);
+
+  glProgramUniformMatrix4fv(program->id, uniform, 1, GL_FALSE, (const GLfloat*)mat);
 }

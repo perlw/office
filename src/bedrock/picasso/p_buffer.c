@@ -2,10 +2,29 @@
 
 #include "rectify/rectify.h"
 
-GLenum BufferTypeToGL[] = {
+GLenum BufferDataTypeToGL[] = {
   0,
   GL_INT,
   GL_FLOAT,
+};
+
+GLenum BufferTypeToGL[] = {
+  0,
+  GL_ARRAY_BUFFER,
+  GL_ELEMENT_ARRAY_BUFFER,
+};
+
+GLenum BufferUsageToGL[] = {
+  0,
+  GL_STREAM_DRAW,
+  GL_STATIC_DRAW,
+  GL_DYNAMIC_DRAW,
+};
+
+GLenum BufferModeToGL[] = {
+  0,
+  GL_LINES,
+  GL_TRIANGLES,
 };
 
 PicassoBufferGroup *picasso_buffergroup_create(void) {
@@ -29,12 +48,12 @@ void picasso_buffergroup_destroy(PicassoBufferGroup *buffergroup) {
   free(buffergroup);
 }
 
-void picasso_buffergroup_draw(PicassoBufferGroup *buffergroup, uintmax_t num_vertices) {
+void picasso_buffergroup_draw(PicassoBufferGroup *buffergroup, PicassoBufferMode mode, uintmax_t num_vertices) {
   assert(buffergroup);
 
-  glBindVertexArray(buffergroup->id);
-  glDrawArrays(GL_TRIANGLES, 0, num_vertices);
-  glBindVertexArray(0);
+  buffergroup_bind(buffergroup);
+  glDrawArrays(BufferModeToGL[mode], 0, num_vertices);
+  buffergroup_bind(NULL);
 }
 
 void buffergroup_bind(PicassoBufferGroup *buffergroup) {
@@ -45,8 +64,7 @@ void buffergroup_bind(PicassoBufferGroup *buffergroup) {
   }
 }
 
-
-PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *buffergroup) {
+PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *buffergroup, PicassoBufferType type, PicassoBufferUsage usage) {
   assert(buffergroup);
 
   PicassoBuffer *buffer = calloc(1, sizeof(PicassoBuffer));
@@ -56,6 +74,9 @@ PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *buffergroup) {
   buffergroup_bind(buffer->group);
 
   glCreateBuffers(1, &buffer->id);
+
+  buffer->gl.type = BufferTypeToGL[type];
+  buffer->gl.usage = BufferUsageToGL[usage];
 
   buffergroup_bind(NULL);
 
@@ -73,26 +94,28 @@ void buffer_destroy(PicassoBuffer *buffer) {
   buffergroup_bind(NULL);
 }
 
-void picasso_buffer_set_data(PicassoBuffer *buffer, uintmax_t size, void *data) {
+void picasso_buffer_set_data(PicassoBuffer *buffer, uintmax_t num_fields, PicassoDataType type, uintmax_t size, void *data) {
   assert(buffer);
 
   buffergroup_bind(buffer->group);
   buffer_bind(buffer);
 
-  glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+  glBufferData(buffer->gl.type, size, data, buffer->gl.usage);
+  buffer->gl.num_fields = num_fields;
+  buffer->gl.data_type = BufferDataTypeToGL[type];
 
   buffer_bind(NULL);
   buffergroup_bind(NULL);
 }
 
-void picasso_buffer_shader_attrib(PicassoBuffer *buffer, int32_t attr_pos, uintmax_t num_fields, int type) {
+void picasso_buffer_shader_attrib(PicassoBuffer *buffer, int32_t attr_pos) {
   assert(buffer);
 
   buffergroup_bind(buffer->group);
   buffer_bind(buffer);
 
   glEnableVertexAttribArray(attr_pos);
-  glVertexAttribPointer(attr_pos, num_fields, BufferTypeToGL[type], GL_FALSE, 0, NULL);
+  glVertexAttribPointer(attr_pos, buffer->gl.num_fields, buffer->gl.data_type, GL_FALSE, 0, NULL);
 
   buffer_bind(NULL);
   buffergroup_bind(NULL);
