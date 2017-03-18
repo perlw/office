@@ -23,11 +23,16 @@ Lua wrapper
 ### Neglect
 Input management
 
-### Synapse
-Networking
-
 ### Occulus
 Memory introspector
 
+## TODO
+
+### Synapse
+Networking
+
 ### Tome
 Pak/resource file support
+
+### Sound/Music
+Boombox/Cassette
