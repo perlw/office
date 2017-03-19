@@ -44,7 +44,9 @@ void picasso_texture_destroy(PicassoTexture *texture) {
   free(texture);
 }
 
-PicassoTextureResult picasso_texture_load(PicassoTexture *texture, const uint8_t *data, uintmax_t size, PicassoTextureChannels channels) {
+PicassoTextureResult picasso_texture_load(PicassoTexture *texture, PicassoTextureChannels channels, uintmax_t size, const uint8_t *data) {
+  assert(texture);
+
   int w, h;
   uint8_t *imagedata = stbi_load_from_memory(data, size, &w, &h, 0, channels);
 
@@ -54,6 +56,13 @@ PicassoTextureResult picasso_texture_load(PicassoTexture *texture, const uint8_t
   stbi_image_free(imagedata);
 
   return PICASSO_TEXTURE_OK;
+}
+
+void picasso_texture_set_data(PicassoTexture *texture, uintmax_t width, uintmax_t height, PicassoTextureChannels channels, const void *data) {
+  assert(texture);
+
+  glTextureStorage2D(texture->id, 1, TextureChannelToFormatGL[channels], width, height);
+  glTextureSubImage2D(texture->id, 0, 0, 0, width, height, TextureChannelToGL[channels], GL_UNSIGNED_BYTE, data);
 }
 
 void picasso_texture_bind_to(PicassoTexture *texture, uint32_t index) {

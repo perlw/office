@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "glad/glad.h"
 
@@ -10,31 +11,29 @@
 
 #include "config.h"
 
+// +AsciiLayer
 typedef struct {
-  PicassoBufferGroup *buffergroup;
+  PicassoBufferGroup *quad;
   PicassoProgram *program;
-  PicassoTexture *texture;
-} Screen;
+  PicassoTexture *font_texture;
 
-Screen *screen_create(const Config *config) {
-  Screen *screen = calloc(1, sizeof(Screen));
+  uint8_t asciimap[80 * 60];
+  PicassoTexture *asciimap_texture;
+} AsciiLayer;
 
-  screen->buffergroup = picasso_buffergroup_create();
+AsciiLayer *asciilayer_create(uint32_t res_width, uint32_t res_height) {
+  AsciiLayer *layer = calloc(1, sizeof(AsciiLayer));
 
-  int32_t w = 128; //config.res_width;
-  int32_t h = 128; //config.res_height;
-  int32_t hw = w / 2;
-  int32_t hh = h / 2;
-  int32_t ow = config->res_width / 2;
-  int32_t oh = config->res_height / 2;
+  layer->quad = picasso_buffergroup_create();
+
   int32_t vertex_data[] = {
-    ow - hw, oh - hh,
-    ow + hw, oh + hh,
-    ow - hw, oh + hh,
+    0, 0,
+    res_width, res_height,
+    0, res_height,
 
-    ow - hw, oh - hh,
-    ow + hw, oh - hh,
-    ow + hw, oh + hh,
+    0, 0,
+    res_width, 0,
+    res_width, res_height,
   };
   float coord_data[] = {
     0, 1,
@@ -46,10 +45,10 @@ Screen *screen_create(const Config *config) {
     1, 0,
   };
 
-  PicassoBuffer *vertex_buffer = picasso_buffer_create(screen->buffergroup, PICASSO_BUFFER_TYPE_ARRAY, PICASSO_BUFFER_USAGE_STATIC);
+  PicassoBuffer *vertex_buffer = picasso_buffer_create(layer->quad, PICASSO_BUFFER_TYPE_ARRAY, PICASSO_BUFFER_USAGE_STATIC);
   picasso_buffer_set_data(vertex_buffer, 2, PICASSO_TYPE_INT, sizeof(*vertex_data) * 12, vertex_data);
 
-  PicassoBuffer *coord_buffer = picasso_buffer_create(screen->buffergroup, PICASSO_BUFFER_TYPE_ARRAY, PICASSO_BUFFER_USAGE_STATIC);
+  PicassoBuffer *coord_buffer = picasso_buffer_create(layer->quad, PICASSO_BUFFER_TYPE_ARRAY, PICASSO_BUFFER_USAGE_STATIC);
   picasso_buffer_set_data(coord_buffer, 2, PICASSO_TYPE_FLOAT, sizeof(*coord_data) * 12, coord_data);
 
   {
@@ -63,8 +62,8 @@ Screen *screen_create(const Config *config) {
     picasso_shader_compile(vertex_shader, vert_length, vert_source);
     picasso_shader_compile(fragment_shader, frag_length, frag_source);
 
-    screen->program = picasso_program_create();
-    picasso_program_link_shaders(screen->program, 2, (const PicassoShader*[]){
+    layer->program = picasso_program_create();
+    picasso_program_link_shaders(layer->program, 2, (const PicassoShader*[]){
       vertex_shader,
       fragment_shader,
     });
@@ -76,60 +75,106 @@ Screen *screen_create(const Config *config) {
     free(frag_source);
   }
 
-  picasso_program_use(screen->program);
-
   {
-    int32_t vertex_attr = picasso_program_attrib_location(screen->program, "vertex");
+    int32_t vertex_attr = picasso_program_attrib_location(layer->program, "vertex");
     picasso_buffer_shader_attrib(vertex_buffer, vertex_attr);
 
-    int32_t coord_attr = picasso_program_attrib_location(screen->program, "coord");
+    int32_t coord_attr = picasso_program_attrib_location(layer->program, "coord");
     picasso_buffer_shader_attrib(coord_buffer, coord_attr);
 
-    mat4_t ortho = m4_ortho(0, config->res_width, 0, config->res_height, 1, 0);
+    mat4_t ortho = m4_ortho(0, (float)res_width, 0, (float)res_height, 1, 0);
     mat4_t model = m4_identity();
 
-    int32_t pmatrix_uniform = picasso_program_uniform_location(screen->program, "pMatrix");
-    int32_t mvmatrix_uniform = picasso_program_uniform_location(screen->program, "mvMatrix");
-    picasso_program_uniform_mat4(screen->program, pmatrix_uniform, (float*)&ortho);
-    picasso_program_uniform_mat4(screen->program, mvmatrix_uniform, (float*)&model);
+    int32_t pmatrix_uniform = picasso_program_uniform_location(layer->program, "pMatrix");
+    int32_t mvmatrix_uniform = picasso_program_uniform_location(layer->program, "mvMatrix");
+    picasso_program_uniform_mat4(layer->program, pmatrix_uniform, (float*)&ortho);
+    picasso_program_uniform_mat4(layer->program, mvmatrix_uniform, (float*)&model);
   }
-
-  picasso_program_use(NULL);
 
   {
     uintmax_t buffer_size = 0;
     uint8_t *buffer;
 
-    screen->texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D);
+    layer->font_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D);
 
     archivist_read_file("fonts/cp437_8x8.png", &buffer_size, &buffer);
-    picasso_texture_load(screen->texture, buffer, buffer_size, PICASSO_TEXTURE_RGB);
-    picasso_texture_bind_to(screen->texture, 0);
+    picasso_texture_load(layer->font_texture, PICASSO_TEXTURE_RGB, buffer_size, buffer);
+    picasso_texture_bind_to(layer->font_texture, 0);
 
-    int32_t image_uniform = picasso_program_uniform_location(screen->program, "image");
-    picasso_program_uniform_int(screen->program, image_uniform, 0);
+    int32_t texture_uniform = picasso_program_uniform_location(layer->program, "font_texture");
+    picasso_program_uniform_int(layer->program, texture_uniform, 0);
 
     free(buffer);
   }
 
+  {
+    /*for (uintmax_t t = 0; t < 80 * 60; t++) {
+      layer->asciimap[t] = 1;
+    }*/
+    for (uintmax_t y = 0; y < 60; y++) {
+      for (uintmax_t x = 0; x < 80; x++) {
+        uintmax_t i = (y * 80) + x;
+        layer->asciimap[i] = x ^ y;
+      }
+    }
+    layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D);
+    picasso_texture_bind_to(layer->asciimap_texture, 1);
+    picasso_texture_set_data(layer->asciimap_texture, 80, 60, PICASSO_TEXTURE_R, layer->asciimap);
+
+    int32_t texture_uniform = picasso_program_uniform_location(layer->program, "asciimap_texture");
+    picasso_program_uniform_int(layer->program, texture_uniform, 1);
+  }
+
+  return layer;
+}
+
+void asciilayer_destroy(AsciiLayer *layer) {
+  assert(layer);
+
+  picasso_texture_destroy(layer->asciimap_texture);
+  picasso_texture_destroy(layer->font_texture);
+  picasso_program_destroy(layer->program);
+  picasso_buffergroup_destroy(layer->quad);
+
+  free(layer);
+}
+
+void asciilayer_draw(AsciiLayer *layer) {
+  assert(layer);
+
+  picasso_program_use(layer->program);
+  picasso_buffergroup_draw(layer->quad, PICASSO_BUFFER_MODE_TRIANGLES, 6);
+}
+// -AsciiLayer
+
+// +Screen
+typedef struct {
+  AsciiLayer *asciilayer;
+} Screen;
+
+Screen *screen_create(const Config *config) {
+  Screen *screen = calloc(1, sizeof(Screen));
+
+  screen->asciilayer = asciilayer_create(config->res_width, config->res_height);
+
   return screen;
+}
+
+void screen_kill(Screen *screen) {
+  assert(screen);
+
+  asciilayer_destroy(screen->asciilayer);
+
+  free(screen);
 }
 
 void screen_update(Screen *screen, double delta) {
 }
 
 void screen_draw(Screen *screen) {
-  picasso_program_use(screen->program);
-  picasso_buffergroup_draw(screen->buffergroup, PICASSO_BUFFER_MODE_TRIANGLES, 6);
+  asciilayer_draw(screen->asciilayer);
 }
-
-void screen_kill(Screen *screen) {
-  picasso_texture_destroy(screen->texture);
-  picasso_program_destroy(screen->program);
-  picasso_buffergroup_destroy(screen->buffergroup);
-
-  free(screen);
-}
+// -Screen
 
 // +INPUT
 typedef struct {

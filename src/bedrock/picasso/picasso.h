@@ -86,7 +86,8 @@ typedef struct PicassoTexture PicassoTexture;
 PicassoTexture *picasso_texture_create(PicassoTextureTarget target);
 void picasso_texture_destroy(PicassoTexture *texture);
 
-PicassoTextureResult picasso_texture_load(PicassoTexture *texture, const uint8_t *data, uintmax_t size, PicassoTextureChannels channels);
+PicassoTextureResult picasso_texture_load(PicassoTexture *texture, PicassoTextureChannels channels, uintmax_t size, const uint8_t *data);
+void picasso_texture_set_data(PicassoTexture *texture, uintmax_t width, uintmax_t height, PicassoTextureChannels channels, const void *data);
 void picasso_texture_bind_to(PicassoTexture *texture, uint32_t index);
 // -Textures
 
