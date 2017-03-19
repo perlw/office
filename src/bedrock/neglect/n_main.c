@@ -10,17 +10,18 @@ NeglectBinding *input_bindings;
 NeglectCallback main_callback = NULL;
 void *main_callback_userdata = NULL;
 
-void keyboard_event(BedrockKeyboardEvent *event) {
+void keyboard_event(void *userdata) {
   assert(userdata);
 
-  printf("KEYBOARD %d %s\n", event->key, (event->press ? "down" : "up"));
+  BedrockKeyboardEvent event = *(BedrockKeyboardEvent*)userdata;
 
-  if (event->release) {
+  printf("KEYBOARD %d %s\n", event.key, (event.press ? "down" : "up"));
+  if (event.release) {
     return;
   }
 
   for (uintmax_t t = 0; t < num_bindings; t++) {
-    if (input_bindings[t].key == event->key) {
+    if (input_bindings[t].key == event.key) {
       if (input_bindings[t].callback) {
         input_bindings[t].callback(&input_bindings[t], input_bindings[t].userdata);
       }
