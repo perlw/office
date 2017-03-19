@@ -10,6 +10,11 @@ typedef enum {
   GOSSIP_ID_LAST,
 } GossipID;
 
-void gossip_subscribe(GossipID id, GossipCallback callback);
-void gossip_emit(GossipID id, void *userdata);
+typedef enum {
+  GOSSIP_RESULT_OK = 1,
+  GOSSIP_RESULT_OUT_OF_RANGE,
+} GossipResult;
+
+GossipResult gossip_subscribe(GossipID id, GossipCallback callback);
+GossipResult gossip_emit(GossipID id, void *userdata);
 void gossip_cleanup();
