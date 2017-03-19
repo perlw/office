@@ -9,6 +9,7 @@ The actual game
 
 ### Picasso
 Graphics, pipeline
+* Picasso: support for offsets and subimage editing
 
 ### Archivist module
 File management
