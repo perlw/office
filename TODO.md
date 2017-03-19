@@ -10,6 +10,7 @@ The actual game
 ### Picasso
 Graphics, pipeline
 * Picasso: support for offsets and subimage editing
+* Picasso: work over creation of textures, loading from data should be a "creation"
 
 ### Archivist module
 File management

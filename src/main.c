@@ -17,6 +17,7 @@ typedef struct {
   PicassoProgram *program;
   PicassoTexture *font_texture;
 
+  uint8_t offset;
   uint8_t asciimap[80 * 60];
   PicassoTexture *asciimap_texture;
 } AsciiLayer;
@@ -108,9 +109,7 @@ AsciiLayer *asciilayer_create(uint32_t res_width, uint32_t res_height) {
   }
 
   {
-    /*for (uintmax_t t = 0; t < 80 * 60; t++) {
-      layer->asciimap[t] = 1;
-    }*/
+    layer->offset = 0;
     for (uintmax_t y = 0; y < 60; y++) {
       for (uintmax_t x = 0; x < 80; x++) {
         uintmax_t i = (y * 80) + x;
@@ -139,6 +138,19 @@ void asciilayer_destroy(AsciiLayer *layer) {
   free(layer);
 }
 
+void asciilayer_tick(AsciiLayer *layer) {
+  layer->offset++;
+
+  for (uintmax_t y = 0; y < 60; y++) {
+    for (uintmax_t x = 0; x < 80; x++) {
+      uintmax_t i = (y * 80) + x;
+      layer->asciimap[i] = (x + layer->offset) ^ (y + layer->offset);
+    }
+  }
+
+  picasso_texture_update_data(layer->asciimap_texture, 80, 60, PICASSO_TEXTURE_R, layer->asciimap);
+}
+
 void asciilayer_draw(AsciiLayer *layer) {
   assert(layer);
 
@@ -150,12 +162,16 @@ void asciilayer_draw(AsciiLayer *layer) {
 // +Screen
 typedef struct {
   AsciiLayer *asciilayer;
+  double timing;
+  double since_update;
 } Screen;
 
 Screen *screen_create(const Config *config) {
   Screen *screen = calloc(1, sizeof(Screen));
 
   screen->asciilayer = asciilayer_create(config->res_width, config->res_height);
+  screen->timing = 1 / 30.0;
+  screen->since_update = screen->timing;
 
   return screen;
 }
@@ -169,6 +185,12 @@ void screen_kill(Screen *screen) {
 }
 
 void screen_update(Screen *screen, double delta) {
+  screen->since_update += delta;
+  while (screen->since_update >= screen->timing) {
+    screen->since_update -= screen->timing;
+
+    asciilayer_tick(screen->asciilayer);
+  }
 }
 
 void screen_draw(Screen *screen) {
@@ -255,23 +277,15 @@ int main() {
   double last_tick = bedrock_time();
   double current_second = 0;
 
+  double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
+  double next_frame = frame_timing;
+
   uint32_t frames = 0;
   bedrock_clear_color(0.5f, 0.5f, 1.0f, 1.0f);
   while (!bedrock_should_close()) {
-    bedrock_clear();
-
     double tick = bedrock_time();
-    double diff = tick - last_tick;
+    double delta = tick - last_tick;
     last_tick = tick;
-
-    current_second += diff;
-
-    frames++;
-    if (current_second >= 1) {
-      current_second = 0;
-      printf("FPS: %d\n", frames);
-      frames = 0;
-    }
 
     muse_call(muse, "update", 1, (MuseArgument[]){
       {
@@ -280,9 +294,25 @@ int main() {
       },
     });
 
-    screen_draw(screen);
+    screen_update(screen, delta);
 
-    bedrock_swap();
+    next_frame += delta;
+    if (next_frame >= frame_timing) {
+      next_frame = 0.0;
+      frames++;
+
+      bedrock_clear();
+      screen_draw(screen);
+      bedrock_swap();
+    }
+
+    current_second += delta;
+    if (current_second >= 1) {
+      current_second = 0;
+      printf("FPS: %d\n", frames);
+      frames = 0;
+    }
+
     bedrock_poll();
   }
 

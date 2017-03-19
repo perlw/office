@@ -65,6 +65,12 @@ void picasso_texture_set_data(PicassoTexture *texture, uintmax_t width, uintmax_
   glTextureSubImage2D(texture->id, 0, 0, 0, width, height, TextureChannelToGL[channels], GL_UNSIGNED_BYTE, data);
 }
 
+void picasso_texture_update_data(PicassoTexture *texture, uintmax_t width, uintmax_t height, PicassoTextureChannels channels, const void *data) {
+  assert(texture);
+
+  glTextureSubImage2D(texture->id, 0, 0, 0, width, height, TextureChannelToGL[channels], GL_UNSIGNED_BYTE, data);
+}
+
 void picasso_texture_bind_to(PicassoTexture *texture, uint32_t index) {
   assert(texture);
 

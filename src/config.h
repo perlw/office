@@ -9,6 +9,7 @@ typedef struct {
   uint32_t res_width;
   uint32_t res_height;
   bool gl_debug;
+  uint32_t frame_lock;
 } Config;
 
 typedef enum {

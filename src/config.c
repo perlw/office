@@ -17,6 +17,11 @@ void gl_debug(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments
   config->gl_debug = *(bool*)arguments[0].argument;
 }
 
+void set_frame_lock(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
+  Config *config = (Config*)userdata;
+  config->frame_lock = (uint32_t)*(double*)arguments[0].argument;
+}
+
 void key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
   char *action = (char*)arguments[0].argument;
   int32_t key = (int32_t)*(double*)arguments[1].argument;
@@ -35,6 +40,7 @@ Config read_config(void) {
     .res_width = 640,
     .res_height = 480,
     .gl_debug = false,
+    .frame_lock = 0,
   };
 
   MuseFunctionDef set_resolution_def = {
@@ -56,6 +62,15 @@ Config read_config(void) {
     },
     .userdata = &config,
   };
+  MuseFunctionDef frame_lock_def = {
+    .name = "frame_lock",
+    .func = &set_frame_lock,
+    .num_arguments = 1,
+    .arguments = (MuseArgumentType[]){
+      MUSE_ARGUMENT_NUMBER,
+    },
+    .userdata = &config,
+  };
   MuseFunctionDef bind_def = {
     .name = "bind",
     .func = &key_bind,
@@ -71,6 +86,7 @@ Config read_config(void) {
 
   muse_add_func(muse, &set_resolution_def);
   muse_add_func(muse, &gl_debug_def);
+  muse_add_func(muse, &frame_lock_def);
   muse_add_func(muse, &bind_def);
 
   muse_set_global_number(muse, "KEY_SPACE", NEGLECT_KEY_SPACE);

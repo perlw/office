@@ -1,5 +1,6 @@
 resolution(640, 480)
 gl_debug(true)
+--frame_lock(60);
 
 -- TODO: Add support to create complex combinations
 -- Callbacks?
