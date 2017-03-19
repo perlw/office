@@ -10,21 +10,19 @@ NeglectBinding *input_bindings;
 NeglectCallback main_callback = NULL;
 void *main_callback_userdata = NULL;
 
-void keyboard_event(void *userdata) {
+void keyboard_event(BedrockKeyboardEvent *event) {
   assert(userdata);
 
-  BedrockKeyboardEvent event = *(BedrockKeyboardEvent*)userdata;
-  printf("KEYBOARD %d %s\n", event.key, (event.press ? "down" : "up"));
+  printf("KEYBOARD %d %s\n", event->key, (event->press ? "down" : "up"));
 
-  if (event.release) {
+  if (event->release) {
     return;
   }
 
   for (uintmax_t t = 0; t < num_bindings; t++) {
-    if (input_bindings[t].key == event.key) {
+    if (input_bindings[t].key == event->key) {
       if (input_bindings[t].callback) {
-        // TODO: Userdata support?
-        input_bindings[t].callback(&input_bindings[t], NULL);
+        input_bindings[t].callback(&input_bindings[t], input_bindings[t].userdata);
       }
 
       main_callback(&input_bindings[t], main_callback_userdata);
@@ -53,12 +51,14 @@ void neglect_action_callback(NeglectCallback callback, void *userdata) {
 }
 
 void neglect_add_binding(NeglectBinding *binding) {
+  uintmax_t length = strlen(binding->action) + 1;
   num_bindings++;
   input_bindings = realloc(input_bindings, num_bindings * sizeof(NeglectBinding));
   input_bindings[num_bindings - 1] = (NeglectBinding){
-    .action = calloc(strlen(binding->action) + 1, sizeof(char)),
+    .action = calloc(length, sizeof(char)),
     .key = binding->key,
     .callback = binding->callback,
+    .userdata = binding->userdata,
   };
-  strcpy(input_bindings[num_bindings - 1].action, binding->action);
+  strncpy(input_bindings[num_bindings - 1].action, binding->action, length);
 }

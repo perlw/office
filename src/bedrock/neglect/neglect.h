@@ -134,6 +134,7 @@ struct NeglectBinding {
   // TODO: Combinations, modifiers, controllers
   int32_t key;
   NeglectCallback callback;
+  void *userdata;
 };
 
 void neglect_init(void);
