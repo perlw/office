@@ -17,17 +17,22 @@ GLenum TextureChannelToGL[] = {
   GL_RGBA,
 };
 
+GLenum TextureChannelToFormatGL[] = {
+  0,
+  GL_R8,
+  0,
+  GL_RGB8,
+  GL_RGBA8,
+};
+
 PicassoTexture *picasso_texture_create(PicassoTextureTarget target) {
   PicassoTexture *texture = calloc(1, sizeof(PicassoTexture));
 
   texture->gl.target = TextureTargetToGL[target];
 
   glCreateTextures(texture->gl.target, 1, &texture->id);
-  glBindTexture(texture->gl.target, texture->id);
-  glTexParameterf(texture->gl.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameterf(texture->gl.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-  glBindTexture(texture->gl.target, 0);
+  glTextureParameterf(texture->id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTextureParameterf(texture->id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
   return texture;
 }
@@ -43,8 +48,8 @@ PicassoTextureResult picasso_texture_load(PicassoTexture *texture, const uint8_t
   int w, h;
   uint8_t *imagedata = stbi_load_from_memory(data, size, &w, &h, 0, channels);
 
-  texture_bind(texture);
-  glTexImage2D(texture->gl.target, 0, TextureChannelToGL[channels], w, h, 0, TextureChannelToGL[channels], GL_UNSIGNED_BYTE, imagedata);
+  glTextureStorage2D(texture->id, 1, TextureChannelToFormatGL[channels], w, h);
+  glTextureSubImage2D(texture->id, 0, 0, 0, w, h, TextureChannelToGL[channels], GL_UNSIGNED_BYTE, imagedata);
 
   stbi_image_free(imagedata);
 
@@ -54,24 +59,5 @@ PicassoTextureResult picasso_texture_load(PicassoTexture *texture, const uint8_t
 void picasso_texture_bind_to(PicassoTexture *texture, uint32_t index) {
   assert(texture);
 
-  texture->gl.active_texture = index;
-  active_texture_bind(index);
-  texture_bind(texture);
-}
-
-void active_texture_bind(uint32_t id) {
-  if (get_state(PICASSO_STATE_TEXTURE) != id) {
-    glActiveTexture(GL_TEXTURE0 + id);
-    set_state(PICASSO_STATE_TEXTURE, id);
-  }
-}
-
-// TODO: Should separate bind check between targets, bug prone?
-void texture_bind(PicassoTexture *texture) {
-  uint32_t id = (texture ? texture->id : 0);
-
-  if (get_state(PICASSO_STATE_TEXTURE) != id) {
-    glBindTexture(texture->gl.target, id);
-    set_state(PICASSO_STATE_TEXTURE, id);
-  }
+  glBindTextureUnit(index, texture->id);
 }

@@ -53,7 +53,6 @@ void picasso_buffergroup_draw(PicassoBufferGroup *buffergroup, PicassoBufferMode
 
   buffergroup_bind(buffergroup);
   glDrawArrays(BufferModeToGL[mode], 0, (GLsizei)num_vertices);
-  buffergroup_bind(NULL);
 }
 
 void buffergroup_bind(PicassoBufferGroup *buffergroup) {
@@ -71,14 +70,12 @@ PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *buffergroup, PicassoBuf
 
   buffergroup->buffers = rectify_array_push(buffergroup->buffers, &buffer);
   buffer->group = buffergroup;
-  buffergroup_bind(buffer->group);
 
   glCreateBuffers(1, &buffer->id);
+  glVertexArrayVertexBuffer(buffer->group->id, rectify_array_size(buffer->group->buffers), buffer->id, 0, 0);
 
   buffer->gl.type = BufferTypeToGL[type];
   buffer->gl.usage = BufferUsageToGL[usage];
-
-  buffergroup_bind(NULL);
 
   return buffer;
 }
@@ -86,26 +83,16 @@ PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *buffergroup, PicassoBuf
 void buffer_destroy(PicassoBuffer *buffer) {
   assert(buffer);
 
-  buffergroup_bind(buffer->group);
-
   glDeleteBuffers(1, &buffer->id);
   free(buffer);
-
-  buffergroup_bind(NULL);
 }
 
 void picasso_buffer_set_data(PicassoBuffer *buffer, uintmax_t num_fields, PicassoDataType type, uintmax_t size, void *data) {
   assert(buffer);
 
-  buffergroup_bind(buffer->group);
-  buffer_bind(buffer);
-
-  glBufferData(buffer->gl.type, size, data, buffer->gl.usage);
+  glNamedBufferData(buffer->id, size, data, buffer->gl.usage);
   buffer->gl.num_fields = num_fields;
   buffer->gl.data_type = BufferDataTypeToGL[type];
-
-  buffer_bind(NULL);
-  buffergroup_bind(NULL);
 }
 
 void picasso_buffer_shader_attrib(PicassoBuffer *buffer, int32_t attr_pos) {
