@@ -97,10 +97,8 @@ AsciiLayer *asciilayer_create(uint32_t res_width, uint32_t res_height) {
     uintmax_t buffer_size = 0;
     uint8_t *buffer;
 
-    layer->font_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D);
-
     archivist_read_file("fonts/cp437_8x8.png", &buffer_size, &buffer);
-    picasso_texture_load(layer->font_texture, PICASSO_TEXTURE_RGB, buffer_size, buffer);
+    layer->font_texture = picasso_texture_load(PICASSO_TEXTURE_TARGET_2D, PICASSO_TEXTURE_RGB, buffer_size, buffer);
     picasso_texture_bind_to(layer->font_texture, 0);
 
     int32_t texture_uniform = picasso_program_uniform_location(layer->program, "font_texture");
@@ -115,9 +113,9 @@ AsciiLayer *asciilayer_create(uint32_t res_width, uint32_t res_height) {
       layer->asciimap[t] = 0;
     }
 
-    layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D);
+    layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, 80, 60, PICASSO_TEXTURE_R);
     picasso_texture_bind_to(layer->asciimap_texture, 1);
-    picasso_texture_set_data(layer->asciimap_texture, 80, 60, PICASSO_TEXTURE_R, layer->asciimap);
+    picasso_texture_set_data(layer->asciimap_texture, 0, 0, 80, 60, layer->asciimap);
 
     int32_t texture_uniform = picasso_program_uniform_location(layer->program, "asciimap_texture");
     picasso_program_uniform_int(layer->program, texture_uniform, 1);
@@ -161,7 +159,7 @@ void asciilayer_tick(AsciiLayer *layer) {
     }
   }
 
-  picasso_texture_update_data(layer->asciimap_texture, 80, 60, PICASSO_TEXTURE_R, layer->asciimap);
+  picasso_texture_set_data(layer->asciimap_texture, 0, 0, 80, 60, layer->asciimap);
 }
 
 void asciilayer_draw(AsciiLayer *layer) {

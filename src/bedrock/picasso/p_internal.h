@@ -38,9 +38,12 @@ struct PicassoBufferGroup {
 
 struct PicassoTexture {
   uint32_t id;
+  uintmax_t width;
+  uintmax_t height;
 
   struct {
     GLenum target;
+    GLenum channels;
     uint32_t active_texture;
   } gl;
 };

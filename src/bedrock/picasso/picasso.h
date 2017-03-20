@@ -78,17 +78,16 @@ typedef enum {
 
 typedef enum {
   PICASSO_TEXTURE_OK = 1,
-  PICASSO_TEXTURE_LOAD_FAILED,
+  PICASSO_TEXTURE_OUT_OF_BOUNDS,
 } PicassoTextureResult;
 
 typedef struct PicassoTexture PicassoTexture;
 
-PicassoTexture *picasso_texture_create(PicassoTextureTarget target);
+PicassoTexture *picasso_texture_create(PicassoTextureTarget target, uintmax_t width, uintmax_t height, PicassoTextureChannels channels);
+PicassoTexture *picasso_texture_load(PicassoTextureTarget target, PicassoTextureChannels channels, uintmax_t size, const uint8_t *data);
 void picasso_texture_destroy(PicassoTexture *texture);
 
-PicassoTextureResult picasso_texture_load(PicassoTexture *texture, PicassoTextureChannels channels, uintmax_t size, const uint8_t *data);
-void picasso_texture_set_data(PicassoTexture *texture, uintmax_t width, uintmax_t height, PicassoTextureChannels channels, const void *data);
-void picasso_texture_update_data(PicassoTexture *texture, uintmax_t width, uintmax_t height, PicassoTextureChannels channels, const void *data);
+PicassoTextureResult picasso_texture_set_data(PicassoTexture *texture, uintmax_t offset_x, uintmax_t offset_y, uintmax_t width, uintmax_t height, const void *data);
 void picasso_texture_bind_to(PicassoTexture *texture, uint32_t index);
 // -Textures
 
