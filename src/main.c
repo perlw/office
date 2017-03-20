@@ -18,7 +18,7 @@ typedef struct {
   PicassoProgram *program;
   PicassoTexture *font_texture;
 
-  uint8_t offset;
+  double offset;
   uint8_t asciimap[80 * 60];
   PicassoTexture *asciimap_texture;
 } AsciiLayer;
@@ -111,12 +111,10 @@ AsciiLayer *asciilayer_create(uint32_t res_width, uint32_t res_height) {
 
   {
     layer->offset = 0;
-    for (uintmax_t y = 0; y < 60; y++) {
-      for (uintmax_t x = 0; x < 80; x++) {
-        uintmax_t i = (y * 80) + x;
-        layer->asciimap[i] = x ^ y;
-      }
+    for (uintmax_t t = 0; t < (80 * 60); t++) {
+      layer->asciimap[t] = 0;
     }
+
     layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D);
     picasso_texture_bind_to(layer->asciimap_texture, 1);
     picasso_texture_set_data(layer->asciimap_texture, 80, 60, PICASSO_TEXTURE_R, layer->asciimap);
@@ -140,12 +138,26 @@ void asciilayer_destroy(AsciiLayer *layer) {
 }
 
 void asciilayer_tick(AsciiLayer *layer) {
-  layer->offset++;
+  layer->offset += 0.1;
 
+  double wave_depth = 0.25;
+  double wave_thickness = M_PI * 4.0;
+  double cx = 40;
+  double cy = 30;
   for (uintmax_t y = 0; y < 60; y++) {
     for (uintmax_t x = 0; x < 80; x++) {
       uintmax_t i = (y * 80) + x;
-      layer->asciimap[i] = (x + layer->offset) ^ (y + layer->offset);
+
+      double dx = abs((double)x - cx);
+      double dy = abs((double)y - cy);
+      double dist = sqrt(pow(dx, 2) + pow(dy, 2));
+      double ndist = dist / 50.0;
+
+      double wave_color = ((cos((ndist * wave_thickness) + layer->offset) + 1.0) / 4.0) + wave_depth;
+      double base_color = (double)(x ^ y) / 255.0;
+      double final_color = (base_color + wave_color) / 2.0;
+
+      layer->asciimap[i] = (uintmax_t)(final_color * 255.0);
     }
   }
 
