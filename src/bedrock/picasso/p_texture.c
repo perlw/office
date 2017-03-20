@@ -70,7 +70,7 @@ PicassoTextureResult picasso_texture_set_data(PicassoTexture *texture, uintmax_t
     return PICASSO_TEXTURE_OUT_OF_BOUNDS;
   }
 
-  glTextureSubImage2D(texture->id, offset_x, offset_y, 0, width, height, texture->gl.channels, GL_UNSIGNED_BYTE, data);
+  glTextureSubImage2D(texture->id, 0, offset_x, offset_y, width, height, texture->gl.channels, GL_UNSIGNED_BYTE, data);
 
   return PICASSO_TEXTURE_OK;
 }
