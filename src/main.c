@@ -261,6 +261,11 @@ int main() {
     printf("Boombox: failed to init\n");
     return -1;
   }
+  BoomboxCassette *sound = boombox_cassette_create(boombox);
+  if (boombox_cassette_load_sound(sound, "swish.wav") != BOOMBOX_OK) {
+    printf("Boombox: failed to load sound\n");
+    return -1;
+  }
 
   Muse *muse = muse_create();
 
@@ -295,6 +300,8 @@ int main() {
 
   double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
   double next_frame = frame_timing;
+
+  boombox_cassette_play(sound);
 
   uint32_t frames = 0;
   while (!picasso_window_should_close()) {
@@ -338,6 +345,8 @@ int main() {
 
   muse_destroy(muse);
   picasso_window_kill();
+
+  boombox_cassette_destroy(sound);
   boombox_destroy(boombox);
 
 #ifdef MEM_DEBUG
