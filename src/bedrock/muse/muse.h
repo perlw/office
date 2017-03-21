@@ -38,9 +38,9 @@ typedef struct {
 
 typedef uint32_t MuseFunctionRef;
 
-Muse *muse_init(void);
-Muse *muse_init_lite(void);
-void muse_kill(Muse *muse);
+Muse *muse_create(void);
+Muse *muse_create_lite(void);
+void muse_destroy(Muse *muse);
 MuseResult muse_call_simple(Muse *muse, const char *name);
 MuseResult muse_call(Muse *muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments);
 MuseResult muse_call_func_ref(Muse *muse, MuseFunctionRef ref);

@@ -17,7 +17,7 @@
    */
 Muse *instances[256] = { NULL };
 
-Muse *muse_init_lite(void) {
+Muse *muse_create_lite(void) {
   for (int t = 0; t < 256; t++) {
     if (!instances[t]) {
       Muse *muse = calloc(1, sizeof(Muse));
@@ -37,8 +37,8 @@ Muse *muse_init_lite(void) {
   return NULL;
 }
 
-Muse *muse_init(void) {
-  Muse *muse = muse_init_lite();
+Muse *muse_create(void) {
+  Muse *muse = muse_create_lite();
   if (!muse) {
     return NULL;
   }
@@ -47,7 +47,7 @@ Muse *muse_init(void) {
   return muse;
 }
 
-void muse_kill(Muse *muse) {
+void muse_destroy(Muse *muse) {
   assert(muse);
 
   for (int t = 0; t < 256; t++) {

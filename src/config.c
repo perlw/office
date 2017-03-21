@@ -82,7 +82,7 @@ Config read_config(void) {
     .userdata = &config,
   };
 
-  Muse *muse = muse_init_lite();
+  Muse *muse = muse_create_lite();
 
   muse_add_func(muse, &set_resolution_def);
   muse_add_func(muse, &gl_debug_def);
@@ -212,7 +212,7 @@ Config read_config(void) {
   muse_set_global_number(muse, "KEY_MENU", NEGLECT_KEY_MENU);
 
   muse_load_file(muse, "config.lua");
-  muse_kill(muse);
+  muse_destroy(muse);
 
   return config;
 }

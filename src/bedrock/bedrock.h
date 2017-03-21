@@ -10,6 +10,7 @@
 #include "archivist/archivist.h"
 #include "gossip/gossip.h"
 #include "picasso/picasso.h"
+#include "boombox/boombox.h"
 
 typedef struct {
   int32_t key;

@@ -8,11 +8,6 @@
 #define MATH_3D_IMPLEMENTATION
 #include "arkanis/math_3d.h"
 
-
-#include "fmod/fmod.h"
-#include "fmod/fmod_errors.h"
-
-
 #include "bedrock/bedrock.h"
 
 #include "config.h"
@@ -192,7 +187,7 @@ Screen *screen_create(const Config *config) {
   return screen;
 }
 
-void screen_kill(Screen *screen) {
+void screen_destroy(Screen *screen) {
   assert(screen);
 
   asciilayer_destroy(screen->asciilayer);
@@ -261,32 +256,12 @@ void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *argumen
 // -INPUT
 
 int main() {
-  // +Sounds
-  FMOD_SYSTEM *system = NULL;
-  FMOD_SOUND *sound = NULL;
-  FMOD_CHANNEL *channel = NULL;
-  FMOD_RESULT result;
-  result = FMOD_System_Create(&system);
-  if (result != FMOD_OK) {
-    printf("FMOD: (%d) %s\n", result, FMOD_ErrorString(result));
-    return -1;
-  }
-  result = FMOD_System_Init(system, 512, FMOD_INIT_NORMAL, 0);
-  if (result != FMOD_OK) {
-    printf("FMOD: (%d) %s\n", result, FMOD_ErrorString(result));
-    return -1;
-  }
-  result = FMOD_System_CreateSound(system, "swish.wav", FMOD_DEFAULT, 0, &sound);
-  if (result != FMOD_OK) {
-    printf("FMOD: (%d) %s\n", result, FMOD_ErrorString(result));
-    return -1;
-  }
-  // -Sounds
-
-  Muse *muse = muse_init();
+  Muse *muse = muse_create();
 
   neglect_init();
   neglect_action_callback(&input_action, muse);
+
+  boombox_create();
 
   input_init();
 
@@ -318,14 +293,6 @@ int main() {
   double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
   double next_frame = frame_timing;
 
-  // +Sounds
-  result = FMOD_System_PlaySound(system, sound, 0, false, &channel);
-  if (result != FMOD_OK) {
-    printf("FMOD: (%d) %s\n", result, FMOD_ErrorString(result));
-    return -1;
-  }
-  // -Sounds
-
   uint32_t frames = 0;
   bedrock_clear_color(0.5f, 0.5f, 1.0f, 1.0f);
   while (!bedrock_should_close()) {
@@ -333,9 +300,7 @@ int main() {
     double delta = tick - last_tick;
     last_tick = tick;
 
-    // +Sounds
-    FMOD_System_Update(system);
-    // -Sounds
+    boombox_update();
 
     muse_call(muse, "update", 1, (MuseArgument[]){
       {
@@ -366,18 +331,13 @@ int main() {
     bedrock_poll();
   }
 
-  screen_kill(screen);
+  screen_destroy(screen);
   input_kill();
 
-  muse_kill(muse);
+  muse_destroy(muse);
   bedrock_kill();
   neglect_kill();
-
-  // +Sounds
-  FMOD_Sound_Release(sound);
-  FMOD_System_Close(system);
-  FMOD_System_Release(system);
-  // -Sounds
+  boombox_destroy();
 
 #ifdef MEM_DEBUG
   occulus_print(false);
