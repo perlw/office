@@ -83,7 +83,7 @@ int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height, boo
   return 1;
 }
 
-void bedrock_kill() {
+void bedrock_kill(void) {
   glfwTerminate();
   gossip_cleanup();
 }
@@ -96,20 +96,20 @@ void bedrock_clear(void) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void bedrock_swap() {
+void bedrock_swap(void) {
   glfwSwapBuffers(window);
 }
 
-void bedrock_poll() {
+void bedrock_poll(void) {
   glfwPollEvents();
 }
 
-int bedrock_should_close() {
+int bedrock_should_close(void) {
   return glfwWindowShouldClose(window) || quit;
 }
 
 #ifdef WIN32
-double bedrock_time() {
+double bedrock_time(void) {
   static int initialized = 0;
   static uint64_t freq, start;
   uint64_t curr;
@@ -125,7 +125,7 @@ double bedrock_time() {
 }
 #else
 #include <time.h>
-double bedrock_time() {
+double bedrock_time(void) {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   return (float)ts.tv_sec + ((float)ts.tv_nsec / 1000000000.0f);

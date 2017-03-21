@@ -20,11 +20,11 @@ typedef struct {
 } BedrockKeyboardEvent;
 
 int bedrock_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug);
-void bedrock_kill();
+void bedrock_kill(void);
 
 void bedrock_clear_color(float r, float g, float b, float a);
 void bedrock_clear(void);
-void bedrock_swap();
-void bedrock_poll();
-int bedrock_should_close();
-double bedrock_time();
+void bedrock_swap(void);
+void bedrock_poll(void);
+int bedrock_should_close(void);
+double bedrock_time(void);

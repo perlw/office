@@ -256,12 +256,16 @@ void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *argumen
 // -INPUT
 
 int main() {
+  Boombox *boombox = boombox_create();
+  if (boombox_init(boombox) != BOOMBOX_OK) {
+    printf("Boombox: failed to init\n");
+    return -1;
+  }
+
   Muse *muse = muse_create();
 
   neglect_init();
   neglect_action_callback(&input_action, muse);
-
-  boombox_create();
 
   input_init();
 
@@ -300,7 +304,7 @@ int main() {
     double delta = tick - last_tick;
     last_tick = tick;
 
-    boombox_update();
+    boombox_update(boombox);
 
     muse_call(muse, "update", 1, (MuseArgument[]){
       {
@@ -337,7 +341,7 @@ int main() {
   muse_destroy(muse);
   bedrock_kill();
   neglect_kill();
-  boombox_destroy();
+  boombox_destroy(boombox);
 
 #ifdef MEM_DEBUG
   occulus_print(false);
