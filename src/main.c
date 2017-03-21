@@ -229,7 +229,7 @@ void input_kill() {
   rectify_array_free(action_refs);
 }
 
-void input_action(NeglectBinding *binding, void *userdata) {
+void input_action(PicassoWindowInputBinding *binding, void *userdata) {
   printf("->binding %s\n", binding->action);
 
   if (strcmp(binding->action, "close") == 0) {
@@ -264,15 +264,14 @@ int main() {
 
   Muse *muse = muse_create();
 
-  neglect_init();
-  neglect_action_callback(&input_action, muse);
+  picasso_window_action_callback(&input_action, muse);
 
   input_init();
 
   Config config = read_config();
 
-  if (!bedrock_init("Office", config.res_width, config.res_height, config.gl_debug)) {
-    printf("bedrock failed\n");
+  if (picasso_window_init("Office", config.res_width, config.res_height, config.gl_debug) != PICASSO_WINDOW_OK) {
+    printf("Window: failed to init\n");
     return -1;
   }
 
@@ -298,8 +297,7 @@ int main() {
   double next_frame = frame_timing;
 
   uint32_t frames = 0;
-  bedrock_clear_color(0.5f, 0.5f, 1.0f, 1.0f);
-  while (!bedrock_should_close()) {
+  while (!picasso_window_should_close()) {
     double tick = bedrock_time();
     double delta = tick - last_tick;
     last_tick = tick;
@@ -320,9 +318,9 @@ int main() {
       next_frame = 0.0;
       frames++;
 
-      bedrock_clear();
+      picasso_window_clear();
       screen_draw(screen);
-      bedrock_swap();
+      picasso_window_swap();
     }
 
     current_second += delta;
@@ -332,15 +330,14 @@ int main() {
       frames = 0;
     }
 
-    bedrock_poll();
+    picasso_window_update();
   }
 
   screen_destroy(screen);
   input_kill();
 
   muse_destroy(muse);
-  bedrock_kill();
-  neglect_kill();
+  picasso_window_kill();
   boombox_destroy(boombox);
 
 #ifdef MEM_DEBUG

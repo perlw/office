@@ -21,9 +21,6 @@ Lua wrapper
 * Creation of modules
 * Handling results and arguments in all call funcs
 
-### Neglect
-Input management
-
 ### Occulus
 Memory introspector
 

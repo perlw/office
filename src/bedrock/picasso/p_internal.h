@@ -5,6 +5,7 @@
 #include "glad/glad.h"
 
 #include "occulus/occulus.h"
+#include "gossip/gossip.h"
 
 #include "picasso.h"
 

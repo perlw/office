@@ -44,6 +44,8 @@ void boombox_destroy(Boombox *boombox) {
     FMOD_System_Close(boombox->fmod.system);
     FMOD_System_Release(boombox->fmod.system);
   }
+
+  free(boombox);
 }
 
 void boombox_update(Boombox *boombox) {
