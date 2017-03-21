@@ -1,6 +1,9 @@
 #include "bedrock.h"
 
 #ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
+#define WIN32_EXTRA_LEAN
+#include <windows.h>
 double bedrock_time(void) {
   static int initialized = 0;
   static uint64_t freq, start;

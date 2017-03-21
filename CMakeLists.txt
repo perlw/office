@@ -25,3 +25,6 @@ endif (USE_OCCULUS)
 
 target_link_libraries (office bedrock)
 add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets $<TARGET_FILE_DIR:office>)
+if (WIN32)
+  add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/deps/fmod/windows/fmod64.dll $<TARGET_FILE_DIR:office>)
+endif (WIN32)
