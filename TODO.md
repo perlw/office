@@ -21,6 +21,9 @@ Lua wrapper
 * Creation of modules
 * Handling results and arguments in all call funcs
 
+### Sound/Music
+Boombox/Cassette
+
 ### Occulus
 Memory introspector
 
@@ -31,6 +34,3 @@ Networking
 
 ### Tome
 Pak/resource file support
-
-### Sound/Music
-Boombox/Cassette
