@@ -37,14 +37,14 @@ PicassoTexture *picasso_texture_create(PicassoTextureTarget target, uintmax_t wi
   glTextureParameterf(texture->id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTextureParameterf(texture->id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-  glTextureStorage2D(texture->id, 1, TextureChannelToFormatGL[channels], texture->width, texture->height);
+  glTextureStorage2D(texture->id, 1, TextureChannelToFormatGL[channels], (GLsizei)texture->width, (GLsizei)texture->height);
 
   return texture;
 }
 
 PicassoTexture *picasso_texture_load(PicassoTextureTarget target, PicassoTextureChannels channels, uintmax_t size, const uint8_t *data) {
   int w, h;
-  uint8_t *imagedata = stbi_load_from_memory(data, size, &w, &h, 0, channels);
+  uint8_t *imagedata = stbi_load_from_memory(data, (int)size, &w, &h, 0, channels);
   if (!imagedata) {
     return NULL;
   }
@@ -70,7 +70,7 @@ PicassoTextureResult picasso_texture_set_data(PicassoTexture *texture, uintmax_t
     return PICASSO_TEXTURE_OUT_OF_BOUNDS;
   }
 
-  glTextureSubImage2D(texture->id, 0, offset_x, offset_y, width, height, texture->gl.channels, GL_UNSIGNED_BYTE, data);
+  glTextureSubImage2D(texture->id, 0, (GLint)offset_x, (GLint)offset_y, (GLsizei)width, (GLsizei)height, texture->gl.channels, GL_UNSIGNED_BYTE, data);
 
   return PICASSO_TEXTURE_OK;
 }

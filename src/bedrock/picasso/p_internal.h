@@ -21,13 +21,13 @@ struct PicassoProgram {
 
 struct PicassoBuffer {
   uint32_t id;
+  uintmax_t num_fields;
 
   PicassoBufferGroup *group;
 
   struct {
     GLenum type;
     GLenum usage;
-    GLenum num_fields;
     GLenum data_type;
   } gl;
 };
