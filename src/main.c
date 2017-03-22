@@ -247,10 +247,9 @@ void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *argumen
   MuseFunctionRef ref = *(MuseFunctionRef*)arguments[1].argument;
 
   ActionRef action_ref = {
-    .action = calloc(strlen(action) + 1, sizeof(char)),
+    .action = rectify_memory_alloc_copy(action, strlen(action) + 1),
     .ref = ref,
   };
-  strcpy(action_ref.action, action);
   action_refs = rectify_array_push(action_refs, &action_ref);
 }
 // -INPUT

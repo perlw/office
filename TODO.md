@@ -27,6 +27,9 @@ Boombox/Cassette
 ### Occulus
 Memory introspector
 
+### Rectify
+Data, memory, sorting
+
 ## TODO
 
 ### Synapse

@@ -133,10 +133,9 @@ void picasso_window_add_binding(PicassoWindowInputBinding *binding) {
   num_bindings++;
   input_bindings = realloc(input_bindings, num_bindings * sizeof(PicassoWindowInputBinding));
   input_bindings[num_bindings - 1] = (PicassoWindowInputBinding){
-    .action = calloc(length, sizeof(char)),
+    .action = rectify_memory_alloc_copy(binding->action, length),
     .key = binding->key,
     .callback = binding->callback,
     .userdata = binding->userdata,
   };
-  strncpy(input_bindings[num_bindings - 1].action, binding->action, length);
 }

@@ -1,9 +1,4 @@
-#include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
-#include <string.h>
-
-#include <occulus/occulus.h>
+#include "r_internal.h"
 
 typedef struct {
   uintmax_t chunk_size;
@@ -70,4 +65,3 @@ uintmax_t rectify_array_size(void *ptr) {
   ArrayMetadata *meta = (ArrayMetadata*)unfenced_ptr;
   return meta->size;
 }
-
