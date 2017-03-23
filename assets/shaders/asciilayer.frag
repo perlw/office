@@ -21,7 +21,8 @@ void main() {
   // Actual tile texture coords
   vec2 index = vec2(mod(tileIndex, 16), tileIndex / 16);
   vec2 origin = floor(index) / 16.0;
-  vec2 tileCoord = mod(vec2(texCoord.s * 80, texCoord.t * 60), 1) / 16.0;
+  // TODO: Fetch from app
+  vec2 tileCoord = mod(vec2(texCoord.s * 80, texCoord.t * 60), 1) / 15.5;
 
   vec4 sample = texture(font_texture, origin + tileCoord);
   if (sample == vec4(1, 1, 1, 1)) {

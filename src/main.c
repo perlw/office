@@ -15,6 +15,8 @@
 // +AsciiLayer
 #define ASCIIMAP_WIDTH 80
 #define ASCIIMAP_HEIGHT 60
+//#define ASCIIMAP_WIDTH 160
+//#define ASCIIMAP_HEIGHT 120
 #define ASCIIMAP_SIZE ASCIIMAP_WIDTH * ASCIIMAP_HEIGHT
 typedef struct {
   uint8_t rune;
@@ -166,7 +168,7 @@ void asciilayer_tick(AsciiLayer *layer) {
       uint8_t color = (uintmax_t)(final_color * 255.0);
       if (color < 96) {
         layer->asciimap[i].rune = '.';
-      } else if (color < 192) {
+      } else if (color < 178) {
         layer->asciimap[i].rune = '+';
       } else {
         layer->asciimap[i].rune = '*';
