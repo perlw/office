@@ -52,9 +52,9 @@ Config read_config(void) {
     .name = "resolution",
     .func = &set_resolution,
     .num_arguments = 2,
-    .arguments = (MuseArgumentType[]){
-      MUSE_ARGUMENT_NUMBER,
-      MUSE_ARGUMENT_NUMBER,
+    .arguments = (MuseType[]){
+      MUSE_TYPE_NUMBER,
+      MUSE_TYPE_NUMBER,
     },
     .userdata = &config,
   };
@@ -62,8 +62,8 @@ Config read_config(void) {
     .name = "gl_debug",
     .func = &set_gl_debug,
     .num_arguments = 1,
-    .arguments = (MuseArgumentType[]){
-      MUSE_ARGUMENT_BOOLEAN,
+    .arguments = (MuseType[]){
+      MUSE_TYPE_BOOLEAN,
     },
     .userdata = &config,
   };
@@ -71,8 +71,8 @@ Config read_config(void) {
     .name = "frame_lock",
     .func = &set_frame_lock,
     .num_arguments = 1,
-    .arguments = (MuseArgumentType[]){
-      MUSE_ARGUMENT_NUMBER,
+    .arguments = (MuseType[]){
+      MUSE_TYPE_NUMBER,
     },
     .userdata = &config,
   };
@@ -80,9 +80,9 @@ Config read_config(void) {
     .name = "bind",
     .func = &set_key_bind,
     .num_arguments = 2,
-    .arguments = (MuseArgumentType[]){
-      MUSE_ARGUMENT_STRING,
-      MUSE_ARGUMENT_NUMBER,
+    .arguments = (MuseType[]){
+      MUSE_TYPE_STRING,
+      MUSE_TYPE_NUMBER,
     },
     .userdata = &config,
   };
@@ -90,9 +90,9 @@ Config read_config(void) {
     .name = "ascii_resolution",
     .func = &set_ascii_resolution,
     .num_arguments = 2,
-    .arguments = (MuseArgumentType[]){
-      MUSE_ARGUMENT_NUMBER,
-      MUSE_ARGUMENT_NUMBER,
+    .arguments = (MuseType[]){
+      MUSE_TYPE_NUMBER,
+      MUSE_TYPE_NUMBER,
     },
     .userdata = &config,
   };

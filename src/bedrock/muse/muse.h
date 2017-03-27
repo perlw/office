@@ -13,17 +13,17 @@ typedef enum {
 } MuseResult;
 
 typedef enum {
-  MUSE_ARGUMENT_NUMBER = 1,
-  MUSE_ARGUMENT_STRING,
-  MUSE_ARGUMENT_BOOLEAN,
-  MUSE_ARGUMENT_FUNCTION,
-} MuseArgumentType;
+  MUSE_TYPE_NUMBER = 1,
+  MUSE_TYPE_STRING,
+  MUSE_TYPE_BOOLEAN,
+  MUSE_TYPE_FUNCTION,
+} MuseType;
 
 typedef struct Muse Muse;
 
 typedef struct {
   void *argument;
-  MuseArgumentType type;
+  MuseType type;
 } MuseArgument;
 
 typedef void (*MuseFunc)(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata);
@@ -32,7 +32,7 @@ typedef struct {
   char *name;
   MuseFunc func;
   uintmax_t num_arguments;
-  MuseArgumentType *arguments;
+  MuseType *arguments;
   void *userdata;
 } MuseFunctionDef;
 
@@ -42,7 +42,7 @@ Muse *muse_create(void);
 Muse *muse_create_lite(void);
 void muse_destroy(Muse *muse);
 MuseResult muse_call_simple(Muse *muse, const char *name);
-MuseResult muse_call(Muse *muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments);
+MuseResult muse_call(Muse *muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments, uintmax_t num_results, MuseArgument *results);
 MuseResult muse_call_func_ref(Muse *muse, MuseFunctionRef ref);
 MuseResult muse_load_file(Muse *muse, const char *filename);
 MuseResult muse_add_module(Muse *muse, uintmax_t num_funcs, const MuseFunctionDef *funcs);

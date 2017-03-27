@@ -312,9 +312,9 @@ int main() {
     .name = "action",
     .func = &lua_action,
     .num_arguments = 2,
-    .arguments = (MuseArgumentType[]){
-      MUSE_ARGUMENT_STRING,
-      MUSE_ARGUMENT_FUNCTION,
+    .arguments = (MuseType[]){
+      MUSE_TYPE_STRING,
+      MUSE_TYPE_FUNCTION,
     },
     .userdata = NULL,
   };
@@ -331,6 +331,19 @@ int main() {
 
   boombox_cassette_play(sound);
 
+  double test_me_val = 1000;
+  MuseArgument result = {
+    .type = MUSE_TYPE_NUMBER,
+  };
+  muse_call(muse, "make_leet", 1, (MuseArgument[]){
+    {
+      .type = MUSE_TYPE_NUMBER,
+      .argument = &test_me_val,
+    },
+  }, 1, &result);
+  printf("--> %d leeted becomes %d <--\n", (uint32_t)test_me_val, (uint32_t)*(double*)result.argument);
+  free(result.argument);
+
   uint32_t frames = 0;
   while (!picasso_window_should_close()) {
     double tick = bedrock_time();
@@ -341,10 +354,10 @@ int main() {
 
     muse_call(muse, "update", 1, (MuseArgument[]){
       {
-        .type = MUSE_ARGUMENT_NUMBER,
-        .argument = &current_second,
+        .type = MUSE_TYPE_NUMBER,
+        .argument = &delta,
       },
-    });
+    }, 0, NULL);
 
     screen_update(screen, delta);
 

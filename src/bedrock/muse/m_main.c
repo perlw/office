@@ -87,34 +87,77 @@ MuseResult muse_call_simple(Muse *muse, const char *name) {
   return MUSE_RESULT_OK;
 }
 
-// TODO: Read results
-MuseResult muse_call(Muse *muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments) {
+MuseResult muse_call(Muse *muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments, uintmax_t num_results, MuseArgument *results) {
   assert(muse);
 
   lua_getglobal(muse->state, name);
   for (uintmax_t t = 0; t < num_arguments; t++) {
     switch (arguments[t].type) {
-      case MUSE_ARGUMENT_NUMBER:
+      case MUSE_TYPE_NUMBER:
         lua_pushnumber(muse->state, *(double*)arguments[t].argument);
         break;
 
-      case MUSE_ARGUMENT_BOOLEAN:
+      case MUSE_TYPE_BOOLEAN:
         lua_pushboolean(muse->state, *(bool*)arguments[t].argument);
         break;
 
-      case MUSE_ARGUMENT_STRING:
+      case MUSE_TYPE_STRING:
       default:
         printf("MUSE (%s:%d): unknown/unimplemented type %d\n", __FILE__, __LINE__, arguments[t].type);
         break;
     }
   }
 
-  int result = lua_pcall(muse->state, num_arguments, 0, 0);
+  int result = lua_pcall(muse->state, num_arguments, num_results, 0);
   if (result != LUA_OK) {
     const char *message = lua_tostring(muse->state, -1);
     printf("MUSE: %s: %s\n", __func__, message);
     lua_pop(muse->state, 1);
     return MUSE_RESULT_MISSING_FUNC;
+  }
+
+  for (uintmax_t t = 0; t < num_results; t++) {
+    switch (results[t].type) {
+      case MUSE_TYPE_NUMBER:
+        if (!lua_isnumber(muse->state, t + 1)) {
+          printf("MUSE (%s:%d): incorrect result type, expected number!\n", __FILE__, __LINE__);
+        }
+
+        results[t].argument = calloc(1, sizeof(double));
+        *(double*)results[t].argument = (double)lua_tonumber(muse->state, t + 1);
+        break;
+
+      case MUSE_TYPE_STRING:
+        if (!lua_isstring(muse->state, t + 1)) {
+          printf("MUSE (%s:%d): incorrect result type, expected string!\n", __FILE__, __LINE__);
+        }
+
+        uintmax_t length = 0;
+        const char *string = lua_tolstring(muse->state, t + 1, &length);
+        results[t].argument = calloc(length + 1, sizeof(char)),
+        memcpy(results[t].argument, string, length * sizeof(char));
+        break;
+
+      case MUSE_TYPE_BOOLEAN:
+        if (!lua_isboolean(muse->state, t + 1)) {
+          printf("MUSE (%s:%d): incorrect result type, expected boolean!\n", __FILE__, __LINE__);
+        }
+
+        results[t].argument = calloc(1, sizeof(bool));
+        *(bool*)results[t].argument = (bool)lua_toboolean(muse->state, t + 1);
+        break;
+
+      case MUSE_TYPE_FUNCTION:
+        luaL_checktype(muse->state, t + 1, LUA_TFUNCTION);
+
+        results[t].argument = calloc(1, sizeof(MuseFunctionRef));
+        *(MuseFunctionRef*)results[t].argument = (MuseFunctionRef)luaL_ref(muse->state, LUA_REGISTRYINDEX);
+        break;
+
+      default:
+        printf("MUSE (%s:%d): unknown/unimplemented type %d\n", __FILE__, __LINE__, results[t].type);
+        break;
+    }
   }
 
   return MUSE_RESULT_OK;
@@ -179,7 +222,7 @@ static int lua_callback(lua_State *state) {
     arguments = calloc(num_arguments, sizeof(MuseArgument));
     for (uintmax_t t = 0; t < func_def->num_arguments; t++) {
       switch (func_def->arguments[t]) {
-        case MUSE_ARGUMENT_NUMBER:
+        case MUSE_TYPE_NUMBER:
           if (!lua_isnumber(muse->state, t + 1)) {
             printf("MUSE (%s:%d): incorrect arg type, expected number!\n", __FILE__, __LINE__);
           }
@@ -191,7 +234,7 @@ static int lua_callback(lua_State *state) {
           *(double*)arguments[t].argument = (double)lua_tonumber(muse->state, t + 1);
           break;
 
-        case MUSE_ARGUMENT_STRING:
+        case MUSE_TYPE_STRING:
           if (!lua_isstring(muse->state, t + 1)) {
             printf("MUSE (%s:%d): incorrect arg type, expected string!\n", __FILE__, __LINE__);
           }
@@ -205,19 +248,19 @@ static int lua_callback(lua_State *state) {
           memcpy(arguments[t].argument, string, length * sizeof(char));
           break;
 
-        case MUSE_ARGUMENT_BOOLEAN:
+        case MUSE_TYPE_BOOLEAN:
           if (!lua_isboolean(muse->state, t + 1)) {
             printf("MUSE (%s:%d): incorrect arg type, expected boolean!\n", __FILE__, __LINE__);
           }
 
           arguments[t] = (MuseArgument){
-            .argument = calloc(1, sizeof(double)),
+            .argument = calloc(1, sizeof(bool)),
             .type = func_def->arguments[t],
           };
           *(bool*)arguments[t].argument = (bool)lua_toboolean(muse->state, t + 1);
           break;
 
-        case MUSE_ARGUMENT_FUNCTION:
+        case MUSE_TYPE_FUNCTION:
           luaL_checktype(muse->state, t + 1, LUA_TFUNCTION);
 
           arguments[t] = (MuseArgument){
@@ -225,7 +268,6 @@ static int lua_callback(lua_State *state) {
             .type = func_def->arguments[t],
           };
           *(MuseFunctionRef*)arguments[t].argument = (MuseFunctionRef)luaL_ref(muse->state, LUA_REGISTRYINDEX);
-
           break;
 
         default:
@@ -261,8 +303,8 @@ MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
       muse->func_defs[t]->userdata = func_def->userdata;
       if (func_def->num_arguments > 0) {
         muse->func_defs[t]->num_arguments = func_def->num_arguments;
-        muse->func_defs[t]->arguments = calloc(func_def->num_arguments, sizeof(MuseArgumentType));
-        memcpy(muse->func_defs[t]->arguments, func_def->arguments, func_def->num_arguments * sizeof(MuseArgumentType));
+        muse->func_defs[t]->arguments = calloc(func_def->num_arguments, sizeof(MuseType));
+        memcpy(muse->func_defs[t]->arguments, func_def->arguments, func_def->num_arguments * sizeof(MuseType));
       } else {
         muse->func_defs[t]->num_arguments = 0;
         muse->func_defs[t]->arguments = NULL;

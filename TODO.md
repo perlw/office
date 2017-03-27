@@ -18,7 +18,6 @@ Lua wrapper
 * Cleanups
 * Go over error management
 * Creation of modules
-* Handling results and arguments in all call funcs
 
 ### Sound/Music
 Boombox/Cassette
