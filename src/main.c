@@ -267,7 +267,7 @@ void input_action(PicassoWindowInputBinding *binding, void *userdata) {
 
   for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
     if (strcmp(action_refs[t].action, binding->action) == 0) {
-      muse_call_func_ref((Muse*)userdata, action_refs[t].ref);
+      muse_call_funcref((Muse*)userdata, action_refs[t].ref, 0, NULL, 0, NULL);
     }
   }
 }
@@ -331,18 +331,34 @@ int main() {
 
   boombox_cassette_play(sound);
 
-  double test_me_val = 1000;
-  MuseArgument result = {
-    .type = MUSE_TYPE_NUMBER,
-  };
-  muse_call(muse, "make_leet", 1, (MuseArgument[]){
-    {
+  {
+    double test_me_val = 1000;
+    MuseArgument result = {
       .type = MUSE_TYPE_NUMBER,
-      .argument = &test_me_val,
-    },
-  }, 1, &result);
-  printf("--> %d leeted becomes %d <--\n", (uint32_t)test_me_val, (uint32_t)*(double*)result.argument);
-  free(result.argument);
+    };
+    muse_call_name(muse, "make_leet", 1, (MuseArgument[]){
+        {
+        .type = MUSE_TYPE_NUMBER,
+        .argument = &test_me_val,
+        },
+        }, 1, &result);
+    printf("--> %d leeted becomes %d <--\n", (uint32_t)test_me_val, (uint32_t)*(double*)result.argument);
+    free(result.argument);
+  }
+  {
+    double test_me_val = 2000;
+    MuseArgument result = {
+      .type = MUSE_TYPE_NUMBER,
+    };
+    muse_call_name(muse, "make_leet", 1, (MuseArgument[]){
+        {
+        .type = MUSE_TYPE_NUMBER,
+        .argument = &test_me_val,
+        },
+        }, 1, &result);
+    printf("--> %d leeted becomes %d <--\n", (uint32_t)test_me_val, (uint32_t)*(double*)result.argument);
+    free(result.argument);
+  }
 
   uint32_t frames = 0;
   while (!picasso_window_should_close()) {
@@ -352,7 +368,7 @@ int main() {
 
     boombox_update(boombox);
 
-    muse_call(muse, "update", 1, (MuseArgument[]){
+    muse_call_name(muse, "update", 1, (MuseArgument[]){
       {
         .type = MUSE_TYPE_NUMBER,
         .argument = &delta,
