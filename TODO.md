@@ -2,7 +2,6 @@ TODO
 ===
 ## Game
 The actual game
-* Initial text rendering?
 * Ingame graphical debugging?
 
 ## Bedrock

@@ -1,9 +1,8 @@
-resolution(640, 480)
 gl_debug(true)
+resolution(640, 480)
+ascii_resolution(80, 60);
 --frame_lock(60);
 
--- TODO: Add support to create complex combinations
--- Callbacks?
 bind("close", KEY_ESCAPE)
 bind("test", KEY_SPACE)
 bind("foo", KEY_F)

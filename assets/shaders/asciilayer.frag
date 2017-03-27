@@ -4,6 +4,8 @@ in vec2 texCoord;
 
 uniform sampler2D font_texture;
 uniform sampler2D asciimap_texture;
+uniform int ascii_res_width;
+uniform int ascii_res_height;
 
 out vec4 fragment;
 
@@ -21,8 +23,7 @@ void main() {
   // Actual tile texture coords
   vec2 index = vec2(mod(tileIndex, 16), tileIndex / 16);
   vec2 origin = floor(index) / 16.0;
-  // TODO: Fetch from app
-  vec2 tileCoord = mod(vec2(texCoord.s * 80, texCoord.t * 60), 1) / 15.5;
+  vec2 tileCoord = mod(vec2(texCoord.s * ascii_res_width, texCoord.t * ascii_res_height), 1) / 15.5;
 
   vec4 sample = texture(font_texture, origin + tileCoord);
   if (sample == vec4(1, 1, 1, 1)) {

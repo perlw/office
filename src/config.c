@@ -4,15 +4,12 @@
 #include "config.h"
 
 void set_resolution(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
-  double width = *(double*)arguments[0].argument;
-  double height = *(double*)arguments[1].argument;
-
   Config *config = (Config*)userdata;
-  config->res_width = (uint32_t)width;
-  config->res_height = (uint32_t)height;
+  config->res_width = (uint32_t)*(double*)arguments[0].argument;
+  config->res_height = (uint32_t)*(double*)arguments[1].argument;
 }
 
-void gl_debug(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
+void set_gl_debug(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
   Config *config = (Config*)userdata;
   config->gl_debug = *(bool*)arguments[0].argument;
 }
@@ -22,7 +19,7 @@ void set_frame_lock(Muse *muse, uintmax_t num_arguments, const MuseArgument *arg
   config->frame_lock = (uint32_t)*(double*)arguments[0].argument;
 }
 
-void key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
+void set_key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
   char *action = (char*)arguments[0].argument;
   int32_t key = (int32_t)*(double*)arguments[1].argument;
 
@@ -35,15 +32,23 @@ void key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments
   picasso_window_add_binding(&binding);
 }
 
+void set_ascii_resolution(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
+  Config *config = (Config*)userdata;
+  config->ascii_width = (uint32_t)*(double*)arguments[0].argument;
+  config->ascii_height = (uint32_t)*(double*)arguments[1].argument;
+}
+
 Config read_config(void) {
   Config config = {
     .res_width = 640,
     .res_height = 480,
     .gl_debug = false,
     .frame_lock = 0,
+    .ascii_width = 80,
+    .ascii_height = 60,
   };
 
-  MuseFunctionDef set_resolution_def = {
+  MuseFunctionDef resolution_def = {
     .name = "resolution",
     .func = &set_resolution,
     .num_arguments = 2,
@@ -55,7 +60,7 @@ Config read_config(void) {
   };
   MuseFunctionDef gl_debug_def = {
     .name = "gl_debug",
-    .func = &gl_debug,
+    .func = &set_gl_debug,
     .num_arguments = 1,
     .arguments = (MuseArgumentType[]){
       MUSE_ARGUMENT_BOOLEAN,
@@ -73,7 +78,7 @@ Config read_config(void) {
   };
   MuseFunctionDef bind_def = {
     .name = "bind",
-    .func = &key_bind,
+    .func = &set_key_bind,
     .num_arguments = 2,
     .arguments = (MuseArgumentType[]){
       MUSE_ARGUMENT_STRING,
@@ -81,13 +86,24 @@ Config read_config(void) {
     },
     .userdata = &config,
   };
+  MuseFunctionDef ascii_resolution_def = {
+    .name = "ascii_resolution",
+    .func = &set_ascii_resolution,
+    .num_arguments = 2,
+    .arguments = (MuseArgumentType[]){
+      MUSE_ARGUMENT_NUMBER,
+      MUSE_ARGUMENT_NUMBER,
+    },
+    .userdata = &config,
+  };
 
   Muse *muse = muse_create_lite();
 
-  muse_add_func(muse, &set_resolution_def);
+  muse_add_func(muse, &resolution_def);
   muse_add_func(muse, &gl_debug_def);
   muse_add_func(muse, &frame_lock_def);
   muse_add_func(muse, &bind_def);
+  muse_add_func(muse, &ascii_resolution_def);
 
   muse_set_global_number(muse, "KEY_SPACE", PICASSO_KEY_SPACE);
   muse_set_global_number(muse, "KEY_APOSTROPHE", PICASSO_KEY_APOSTROPHE);

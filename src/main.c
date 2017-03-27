@@ -13,11 +13,6 @@
 #include "config.h"
 
 // +AsciiLayer
-#define ASCIIMAP_WIDTH 80
-#define ASCIIMAP_HEIGHT 60
-//#define ASCIIMAP_WIDTH 160
-//#define ASCIIMAP_HEIGHT 120
-#define ASCIIMAP_SIZE ASCIIMAP_WIDTH * ASCIIMAP_HEIGHT
 typedef struct {
   uint8_t rune;
   uint8_t fore;
@@ -30,23 +25,26 @@ typedef struct {
   PicassoTexture *font_texture;
 
   double offset;
-  Glyph asciimap[ASCIIMAP_SIZE];
+  uint32_t ascii_width;
+  uint32_t ascii_height;
+  uint32_t ascii_size;
+  Glyph *asciimap;
   PicassoTexture *asciimap_texture;
 } AsciiLayer;
 
-AsciiLayer *asciilayer_create(uint32_t res_width, uint32_t res_height) {
+AsciiLayer *asciilayer_create(const Config *config) {
   AsciiLayer *layer = calloc(1, sizeof(AsciiLayer));
 
   layer->quad = picasso_buffergroup_create();
 
   int32_t vertex_data[] = {
     0, 0,
-    res_width, res_height,
-    0, res_height,
+    config->res_width, config->res_height,
+    0, config->res_height,
 
     0, 0,
-    res_width, 0,
-    res_width, res_height,
+    config->res_width, 0,
+    config->res_width, config->res_height,
   };
   float coord_data[] = {
     0, 1,
@@ -95,7 +93,7 @@ AsciiLayer *asciilayer_create(uint32_t res_width, uint32_t res_height) {
     int32_t coord_attr = picasso_program_attrib_location(layer->program, "coord");
     picasso_buffer_shader_attrib(coord_buffer, coord_attr);
 
-    mat4_t ortho = m4_ortho(0, (float)res_width, 0, (float)res_height, 1, 0);
+    mat4_t ortho = m4_ortho(0, (float)config->res_width, 0, (float)config->res_height, 1, 0);
     mat4_t model = m4_identity();
 
     int32_t pmatrix_uniform = picasso_program_uniform_location(layer->program, "pMatrix");
@@ -119,19 +117,29 @@ AsciiLayer *asciilayer_create(uint32_t res_width, uint32_t res_height) {
   }
 
   {
+    layer->ascii_width = config->ascii_width;
+    layer->ascii_height = config->ascii_height;
+    layer->ascii_size = layer->ascii_width * layer->ascii_height;
+    layer->asciimap = calloc(layer->ascii_size, sizeof(Glyph));
+
     layer->offset = 0;
-    for (uintmax_t t = 0; t < ASCIIMAP_SIZE; t++) {
+    for (uintmax_t t = 0; t < layer->ascii_size; t++) {
       layer->asciimap[t].rune = 0;
       layer->asciimap[t].fore = 0;
       layer->asciimap[t].back = 0;
     }
 
-    layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, ASCIIMAP_WIDTH, ASCIIMAP_HEIGHT, PICASSO_TEXTURE_RGB);
+    layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->ascii_width, layer->ascii_height, PICASSO_TEXTURE_RGB);
     picasso_texture_bind_to(layer->asciimap_texture, 1);
-    picasso_texture_set_data(layer->asciimap_texture, 0, 0, ASCIIMAP_WIDTH, ASCIIMAP_HEIGHT, layer->asciimap);
+    picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, layer->asciimap);
 
     int32_t texture_uniform = picasso_program_uniform_location(layer->program, "asciimap_texture");
     picasso_program_uniform_int(layer->program, texture_uniform, 1);
+
+    int32_t ascii_width_uniform = picasso_program_uniform_location(layer->program, "ascii_res_width");
+    int32_t ascii_height_uniform = picasso_program_uniform_location(layer->program, "ascii_res_height");
+    picasso_program_uniform_int(layer->program, ascii_width_uniform, layer->ascii_width);
+    picasso_program_uniform_int(layer->program, ascii_height_uniform, layer->ascii_height);
   }
 
   return layer;
@@ -139,6 +147,8 @@ AsciiLayer *asciilayer_create(uint32_t res_width, uint32_t res_height) {
 
 void asciilayer_destroy(AsciiLayer *layer) {
   assert(layer);
+
+  free(layer->asciimap);
 
   picasso_texture_destroy(layer->asciimap_texture);
   picasso_texture_destroy(layer->font_texture);
@@ -153,10 +163,10 @@ void asciilayer_tick(AsciiLayer *layer) {
 
   double wave_depth = 0.25;
   double wave_thickness = M_PI * 4.0;
-  double cx = ASCIIMAP_WIDTH / 2;
-  double cy = ASCIIMAP_HEIGHT / 2;
-  for (uintmax_t y = 0; y < ASCIIMAP_HEIGHT; y++) {
-    for (uintmax_t x = 0; x < ASCIIMAP_WIDTH; x++) {
+  double cx = layer->ascii_width / 2;
+  double cy = layer->ascii_height / 2;
+  for (uintmax_t y = 0; y < layer->ascii_height; y++) {
+    for (uintmax_t x = 0; x < layer->ascii_width; x++) {
       double dx = abs((double)x - cx);
       double dy = abs((double)y - cy);
       double dist = sqrt(pow(dx, 2) + pow(dy, 2));
@@ -164,7 +174,7 @@ void asciilayer_tick(AsciiLayer *layer) {
 
       double final_color = ((cos((ndist * wave_thickness) + layer->offset) + 1.0) / 4.0) + wave_depth;
 
-      uintmax_t i = (y * ASCIIMAP_WIDTH) + x;
+      uintmax_t i = (y * layer->ascii_width) + x;
       uint8_t color = (uintmax_t)(final_color * 255.0);
       if (color < 96) {
         layer->asciimap[i].rune = '.';
@@ -178,7 +188,7 @@ void asciilayer_tick(AsciiLayer *layer) {
     }
   }
 
-  picasso_texture_set_data(layer->asciimap_texture, 0, 0, ASCIIMAP_WIDTH, ASCIIMAP_HEIGHT, layer->asciimap);
+  picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, layer->asciimap);
 }
 
 void asciilayer_draw(AsciiLayer *layer) {
@@ -199,7 +209,7 @@ typedef struct {
 Screen *screen_create(const Config *config) {
   Screen *screen = calloc(1, sizeof(Screen));
 
-  screen->asciilayer = asciilayer_create(config->res_width, config->res_height);
+  screen->asciilayer = asciilayer_create(config);
   screen->timing = 1 / 30.0;
   screen->since_update = screen->timing;
 
