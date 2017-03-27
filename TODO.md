@@ -2,7 +2,9 @@ TODO
 ===
 ## Game
 The actual game
-* Ingame graphical debugging?
+* Initial text input support
+* "Window" support, to specify areas for text, map, and so on
+* Networking?
 
 ## Bedrock
 
