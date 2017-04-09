@@ -277,7 +277,7 @@ Scene *scene_create(const Config *config) {
 
   scene->surface = surface_create(scene->screen, 0, 0, config->ascii_width, config->ascii_height);
   scene->surface2 = surface_create(scene->screen, 0, 0, 32, 32);
-  scene->surface3 = surface_create(scene->screen, 16, 16, 32, 32);
+  scene->surface3 = surface_create(scene->screen, 24, 16, 32, 32);
 
   return scene;
 }
@@ -328,6 +328,11 @@ void scene_update(Scene *scene, double delta) {
           scene->surface->asciimap[i].back = 0;
         }
       }
+    }
+
+    // Moving surface
+    {
+      scene->surface3->x = 24 + (cos(scene->offset) * 12);
     }
 
     scene->dirty = true;
