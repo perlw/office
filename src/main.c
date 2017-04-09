@@ -24,7 +24,6 @@ typedef struct {
   PicassoProgram *program;
   PicassoTexture *font_texture;
 
-  double offset;
   uint32_t ascii_width;
   uint32_t ascii_height;
   uint32_t ascii_size;
@@ -32,19 +31,19 @@ typedef struct {
   PicassoTexture *asciimap_texture;
 } AsciiLayer;
 
-AsciiLayer *asciilayer_create(const Config *config) {
+AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height) {
   AsciiLayer *layer = calloc(1, sizeof(AsciiLayer));
 
   layer->quad = picasso_buffergroup_create();
 
   int32_t vertex_data[] = {
     0, 0,
-    config->res_width, config->res_height,
-    0, config->res_height,
+    width, height,
+    0, height,
 
     0, 0,
-    config->res_width, 0,
-    config->res_width, config->res_height,
+    width, 0,
+    width, height,
   };
   float coord_data[] = {
     0, 1,
@@ -93,7 +92,7 @@ AsciiLayer *asciilayer_create(const Config *config) {
     int32_t coord_attr = picasso_program_attrib_location(layer->program, "coord");
     picasso_buffer_shader_attrib(coord_buffer, coord_attr);
 
-    mat4_t ortho = m4_ortho(0, (float)config->res_width, 0, (float)config->res_height, 1, 0);
+    mat4_t ortho = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
     mat4_t model = m4_identity();
 
     int32_t pmatrix_uniform = picasso_program_uniform_location(layer->program, "pMatrix");
@@ -117,12 +116,11 @@ AsciiLayer *asciilayer_create(const Config *config) {
   }
 
   {
-    layer->ascii_width = config->ascii_width;
-    layer->ascii_height = config->ascii_height;
+    layer->ascii_width = ascii_width;
+    layer->ascii_height = ascii_height;
     layer->ascii_size = layer->ascii_width * layer->ascii_height;
     layer->asciimap = calloc(layer->ascii_size, sizeof(Glyph));
 
-    layer->offset = 0;
     for (uintmax_t t = 0; t < layer->ascii_size; t++) {
       layer->asciimap[t].rune = 0;
       layer->asciimap[t].fore = 0;
@@ -158,60 +156,73 @@ void asciilayer_destroy(AsciiLayer *layer) {
   free(layer);
 }
 
-void asciilayer_tick(AsciiLayer *layer) {
-  layer->offset += 0.1;
-
-  double wave_depth = 0.25;
-  double wave_thickness = M_PI * 4.0;
-  double cx = layer->ascii_width / 2;
-  double cy = layer->ascii_height / 2;
-  for (uintmax_t y = 0; y < layer->ascii_height; y++) {
-    for (uintmax_t x = 0; x < layer->ascii_width; x++) {
-      double dx = abs((double)x - cx);
-      double dy = abs((double)y - cy);
-      double dist = sqrt(pow(dx, 2) + pow(dy, 2));
-      double ndist = dist / 50.0;
-
-      double final_color = ((cos((ndist * wave_thickness) + layer->offset) + 1.0) / 4.0) + wave_depth;
-
-      uintmax_t i = (y * layer->ascii_width) + x;
-      uint8_t color = (uintmax_t)(final_color * 255.0);
-      if (color < 96) {
-        layer->asciimap[i].rune = '.';
-      } else if (color < 178) {
-        layer->asciimap[i].rune = '+';
-      } else {
-        layer->asciimap[i].rune = '*';
-      }
-      layer->asciimap[i].fore = color;
-      layer->asciimap[i].back = 0;
-    }
-  }
-
-  picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, layer->asciimap);
-}
-
-void asciilayer_draw(AsciiLayer *layer) {
+void asciilayer_draw(AsciiLayer *layer, bool dirty) {
   assert(layer);
+
+  if (dirty) {
+    picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, layer->asciimap);
+  }
 
   picasso_program_use(layer->program);
   picasso_buffergroup_draw(layer->quad, PICASSO_BUFFER_MODE_TRIANGLES, 6);
 }
 // -AsciiLayer
 
-// +Screen
+// +Surface
+typedef struct {
+  uint32_t x;
+  uint32_t y;
+  uint32_t width;
+  uint32_t height;
+  uint32_t size;
+  Glyph *asciimap;
+} Surface;
+
 typedef struct {
   AsciiLayer *asciilayer;
-  double timing;
-  double since_update;
+  Surface **surfaces;
 } Screen;
 
+Surface *surface_create(Screen *screen, uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t height) {
+  Surface *surface = calloc(1, sizeof(Surface));
+
+  // TODO: Rethink, screen should control lifecycle?
+  assert(screen);
+  screen->surfaces = rectify_array_push(screen->surfaces, &surface);
+
+  surface->x = pos_x;
+  surface->y = pos_y;
+  surface->width = width;
+  surface->height = height;
+  surface->size = surface->width * surface->height;
+  surface->asciimap = calloc(surface->size, sizeof(Glyph));
+
+  for (uintmax_t y = 0; y < surface->height; y++) {
+    for (uintmax_t x = 0; x < surface->width; x++) {
+      uintmax_t index = (y * surface->width) + x;
+      surface->asciimap[index].rune = 1;
+      surface->asciimap[index].fore = (uint8_t)((x ^ y) + 32);
+    }
+  }
+
+  return surface;
+}
+
+void surface_destroy(Surface *surface) {
+  assert(surface);
+
+  free(surface->asciimap);
+
+  free(surface);
+}
+// -Surface
+
+// +Screen
 Screen *screen_create(const Config *config) {
   Screen *screen = calloc(1, sizeof(Screen));
 
-  screen->asciilayer = asciilayer_create(config);
-  screen->timing = 1 / 30.0;
-  screen->since_update = screen->timing;
+  screen->asciilayer = asciilayer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
+  screen->surfaces = rectify_array_alloc(10, sizeof(Surface*));
 
   return screen;
 }
@@ -219,24 +230,115 @@ Screen *screen_create(const Config *config) {
 void screen_destroy(Screen *screen) {
   assert(screen);
 
+  rectify_array_free(screen->surfaces);
   asciilayer_destroy(screen->asciilayer);
 
   free(screen);
 }
 
-void screen_update(Screen *screen, double delta) {
-  screen->since_update += delta;
-  while (screen->since_update >= screen->timing) {
-    screen->since_update -= screen->timing;
+void screen_draw(Screen *screen, bool dirty) {
+  for (uintmax_t t = 0; t < rectify_array_size(screen->surfaces); t++) {
+    Surface *surface = screen->surfaces[t];
+    for (uintmax_t y = 0; y < surface->height; y++) {
+      for (uintmax_t x = 0; x < surface->width; x++) {
+        uintmax_t s_index = (y * surface->width) + x;
+        uintmax_t index = ((y + surface->y) * screen->asciilayer->ascii_width) + (x + surface->x);
+        screen->asciilayer->asciimap[index] = surface->asciimap[s_index];
+      }
+    }
+  }
 
-    asciilayer_tick(screen->asciilayer);
+  asciilayer_draw(screen->asciilayer, dirty);
+}
+// -Screen
+
+// +Scene
+typedef struct {
+  double offset;
+  double timing;
+  double since_update;
+  bool dirty;
+
+  Screen *screen;
+
+  Surface *surface;
+  Surface *surface2;
+  Surface *surface3;
+} Scene;
+
+Scene *scene_create(const Config *config) {
+  Scene *scene = calloc(1, sizeof(Scene));
+
+  scene->offset = 0.0;
+  scene->timing = 1 / 30.0;
+  scene->since_update = scene->timing;
+  scene->dirty = true;
+  scene->screen = screen_create(config);
+
+  scene->surface = surface_create(scene->screen, 0, 0, config->ascii_width, config->ascii_height);
+  scene->surface2 = surface_create(scene->screen, 0, 0, 32, 32);
+  scene->surface3 = surface_create(scene->screen, 16, 16, 32, 32);
+
+  return scene;
+}
+
+void scene_destroy(Scene *scene) {
+  assert(scene);
+
+  surface_destroy(scene->surface3);
+  surface_destroy(scene->surface2);
+  surface_destroy(scene->surface);
+  screen_destroy(scene->screen);
+
+  free(scene);
+}
+
+void scene_update(Scene *scene, double delta) {
+  scene->since_update += delta;
+  while (scene->since_update >= scene->timing) {
+    scene->since_update -= scene->timing;
+
+    // Wave
+    {
+      scene->offset += 0.1;
+
+      double wave_depth = 0.25;
+      double wave_thickness = M_PI * 4.0;
+      double cx = scene->surface->width  / 2;
+      double cy = scene->surface->height / 2;
+      for (uintmax_t y = 0; y < scene->surface->height; y++) {
+        for (uintmax_t x = 0; x < scene->surface->width; x++) {
+          double dx = fabs((double)x - cx);
+          double dy = fabs((double)y - cy);
+          double dist = sqrt(pow(dx, 2) + pow(dy, 2));
+          double ndist = dist / 50.0;
+
+          double final_color = ((cos((ndist * wave_thickness) + scene->offset) + 1.0) / 4.0) + wave_depth;
+
+          uintmax_t i = (y * scene->surface->width) + x;
+          uint8_t color = (uintmax_t)(final_color * 255.0);
+          if (color < 96) {
+            scene->surface->asciimap[i].rune = '.';
+          } else if (color < 178) {
+            scene->surface->asciimap[i].rune = '+';
+          } else {
+            scene->surface->asciimap[i].rune = '*';
+          }
+          scene->surface->asciimap[i].fore = color;
+          scene->surface->asciimap[i].back = 0;
+        }
+      }
+    }
+
+    scene->dirty = true;
   }
 }
 
-void screen_draw(Screen *screen) {
-  asciilayer_draw(screen->asciilayer);
+void scene_draw(Scene *scene) {
+  screen_draw(scene->screen, scene->dirty);
+  scene->dirty = false;
 }
-// -Screen
+// -Scene
 
 // +INPUT
 typedef struct {
@@ -321,7 +423,7 @@ int main() {
   muse_add_func(muse, &action_def);
   muse_load_file(muse, "main.lua");
 
-  Screen *screen = screen_create(&config);
+  Scene *scene = scene_create(&config);
 
   double last_tick = bedrock_time();
   double current_second = 0;
@@ -375,7 +477,7 @@ int main() {
       },
     }, 0, NULL);
 
-    screen_update(screen, delta);
+    scene_update(scene, delta);
 
     next_frame += delta;
     if (next_frame >= frame_timing) {
@@ -383,7 +485,7 @@ int main() {
       frames++;
 
       picasso_window_clear();
-      screen_draw(screen);
+      scene_draw(scene);
       picasso_window_swap();
     }
 
@@ -397,7 +499,7 @@ int main() {
     picasso_window_update();
   }
 
-  screen_destroy(screen);
+  scene_destroy(scene);
   input_kill();
 
   muse_destroy(muse);
