@@ -15,8 +15,7 @@ typedef struct {
 } Config;
 
 typedef enum {
-  INPUT_ACTION_CLOSE = GOSSIP_ID_LAST + 1,
-  INPUT_ACTION_TEST,
+  INPUT_ACTION_KEYBOARD = GOSSIP_ID_LAST + 1,
 } InputAction;
 
 Config read_config(void);

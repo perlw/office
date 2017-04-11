@@ -144,6 +144,14 @@ struct PicassoWindowInputBinding {
   void *userdata;
 };
 
+typedef struct {
+  int32_t key;
+  int32_t scancode;
+  bool pressed;
+  bool released;
+  bool shift;
+} PicassoWindowInputEvent;
+
 PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug);
 void picasso_window_kill(void);
 void picasso_window_clear(void);

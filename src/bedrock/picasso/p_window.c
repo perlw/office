@@ -17,6 +17,14 @@ void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, in
     return;
   }
 
+  gossip_emit(GOSSIP_ID_INPUT_KEY, &(PicassoWindowInputEvent){
+    .key = key,
+    .scancode = scancode,
+    .pressed = (action == GLFW_PRESS),
+    .released = (action == GLFW_RELEASE),
+    .shift = (mods & GLFW_MOD_SHIFT),
+  });
+
   if (action == GLFW_RELEASE) {
     return;
   }
@@ -36,7 +44,7 @@ void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
   printf("PICASSO: GL %s\n", message);
 }
 
-void should_close_callback(void *userdata) {
+void should_close_callback(void *subscriberdata, void *userdata) {
   quit = true;
 }
 
@@ -85,7 +93,7 @@ PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, u
     glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);
   }
 
-  gossip_subscribe(GOSSIP_ID_CLOSE, &should_close_callback);
+  gossip_subscribe(GOSSIP_ID_CLOSE, &should_close_callback, NULL);
 
   return PICASSO_WINDOW_OK;
 }

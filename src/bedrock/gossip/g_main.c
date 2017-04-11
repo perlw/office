@@ -5,15 +5,20 @@
 #include "occulus/occulus.h"
 
 typedef struct {
+  void *subscriberdata;
+  GossipCallback callback;
+} Listener;
+
+typedef struct {
   size_t max_listeners;
   size_t num_listeners;
-  GossipCallback *listeners;
+  Listener *listeners;
 } Gossiper;
 Gossiper gossipers[GOSSIP_ID_MAX] = { { 0, 0, NULL } };
 
 #define LISTENER_CHUNK 4
 
-GossipResult gossip_subscribe(GossipID id, GossipCallback callback) {
+GossipResult gossip_subscribe(GossipID id, GossipCallback callback, void *subscriberdata) {
   if (id < 1 || id > GOSSIP_ID_MAX) {
     return GOSSIP_RESULT_OUT_OF_RANGE;
   }
@@ -22,13 +27,14 @@ GossipResult gossip_subscribe(GossipID id, GossipCallback callback) {
 
   if (!g->listeners) {
     g->max_listeners = LISTENER_CHUNK;
-    g->listeners = calloc(g->max_listeners, sizeof(GossipCallback));
+    g->listeners = calloc(g->max_listeners, sizeof(Listener));
   } else if (g->num_listeners == g->max_listeners) {
     g->max_listeners += LISTENER_CHUNK;
-    g->listeners = realloc(g->listeners, sizeof(GossipCallback) * g->max_listeners);
+    g->listeners = realloc(g->listeners, sizeof(Listener) * g->max_listeners);
   }
 
-  g->listeners[g->num_listeners] = callback;
+  g->listeners[g->num_listeners].subscriberdata = subscriberdata;
+  g->listeners[g->num_listeners].callback = callback;
   g->num_listeners += 1;
 
   return GOSSIP_RESULT_OK;
@@ -42,7 +48,8 @@ GossipResult gossip_emit(GossipID id, void *userdata) {
   Gossiper *g = &gossipers[id];
 
   for (size_t t = 0; t < g->num_listeners; t += 1) {
-    g->listeners[t](userdata);
+    GossipCallback callback = g->listeners[t].callback;
+    callback(g->listeners[t].subscriberdata, userdata);
   }
 
   return GOSSIP_RESULT_OK;

@@ -252,6 +252,120 @@ void screen_draw(Screen *screen, bool dirty) {
 }
 // -Screen
 
+// +TextInput
+typedef struct {
+  double cursor_blink_timing;
+  double cursor_since_blink;
+  bool cursor_visible;
+  uint8_t cursor_pos;
+  uint32_t cursor_max_pos;
+  char buffer[128];
+  Surface *surface;
+} TextInput;
+
+void textinput_event(void *subscriberdata, void *userdata);
+
+TextInput *textinput_create(Screen *screen, uint32_t x, uint32_t y, uint32_t width) {
+  TextInput *input = calloc(1, sizeof(TextInput));
+
+  input->cursor_blink_timing = 0.75;
+  input->cursor_pos = 0;
+  input->cursor_max_pos = width - 1;
+  input->cursor_visible = true;
+  memset(input->buffer, 0, 128);
+
+  input->surface = surface_create(screen, x, y, width, 1);
+  input->surface->asciimap[0].rune = 219;
+  input->surface->asciimap[0].fore = 255;
+  for (uint32_t t = 1; t < width; t++) {
+    input->surface->asciimap[t].rune = ' ';
+    input->surface->asciimap[t].fore = 255;
+  }
+
+  gossip_subscribe(GOSSIP_ID_INPUT_KEY, &textinput_event, input);
+
+  return input;
+}
+
+void textinput_destroy(TextInput *input) {
+  assert(input);
+
+  surface_destroy(input->surface);
+
+  free(input);
+}
+
+void textinput_update(TextInput *input, double delta) {
+  input->cursor_since_blink += delta;
+  while (input->cursor_since_blink >= input->cursor_blink_timing) {
+    input->cursor_since_blink -= input->cursor_blink_timing;
+
+    input->cursor_visible = !input->cursor_visible;
+  }
+
+  if (input->cursor_visible) {
+    input->surface->asciimap[input->cursor_pos].rune = 219;
+    input->surface->asciimap[input->cursor_pos].fore = 255;
+  } else {
+    input->surface->asciimap[input->cursor_pos].rune = ' ';
+    input->surface->asciimap[input->cursor_pos].fore = 0;
+  }
+}
+
+void textinput_event(void *subscriberdata, void *userdata) {
+  TextInput *input = (TextInput*)subscriberdata;
+  PicassoWindowInputEvent *event = (PicassoWindowInputEvent*)userdata;
+
+  if (event->pressed) {
+    //printf("TEXTINPUT: %d %d %d\n", event->key, event->scancode, event->shift);
+
+    if (event->key == PICASSO_KEY_ENTER) {
+      input->cursor_pos = 0;
+      input->cursor_visible = true;
+      printf("TEXTINPUT: YOU WROTE \"%s\"\n", input->buffer);
+      memset(input->buffer, 0, 128);
+
+      input->surface->asciimap[0].rune = 219;
+      input->surface->asciimap[0].fore = 255;
+      for (uint32_t t = 1; t < input->cursor_max_pos + 1; t++) {
+        input->surface->asciimap[t].rune = ' ';
+        input->surface->asciimap[t].fore = 0;
+      }
+
+      return;
+    }
+
+    if (event->key == PICASSO_KEY_BACKSPACE) {
+      if (input->cursor_pos > 0) {
+        input->surface->asciimap[input->cursor_pos].rune = ' ';
+        input->surface->asciimap[input->cursor_pos].fore = 0;
+        input->cursor_visible = true;
+        input->cursor_pos--;
+        input->buffer[input->cursor_pos] = 0;
+      }
+    }
+
+    if (event->key >= 32 && event->key <= 96) {
+      if (input->cursor_pos < input->cursor_max_pos) {
+        uint8_t offset = 0;
+        if (event->shift) {
+          offset = (event->key < 65 ? -16 : 0);
+        } else {
+          offset = (event->key >= 65 && event->key <= 90 ? +32 : 0);
+        }
+
+        input->buffer[input->cursor_pos] = event->key + offset;
+
+        input->surface->asciimap[input->cursor_pos + 1] = input->surface->asciimap[input->cursor_pos];
+        input->surface->asciimap[input->cursor_pos].rune = event->key + offset;
+        input->surface->asciimap[input->cursor_pos].fore = 255;
+        input->cursor_pos++;
+      }
+    }
+  }
+}
+// -TextInput
+
 // +Scene
 typedef struct {
   double offset;
@@ -264,6 +378,8 @@ typedef struct {
   Surface *surface;
   Surface *surface2;
   Surface *surface3;
+
+  TextInput *input;
 } Scene;
 
 Scene *scene_create(const Config *config) {
@@ -279,11 +395,15 @@ Scene *scene_create(const Config *config) {
   scene->surface2 = surface_create(scene->screen, 0, 0, 32, 32);
   scene->surface3 = surface_create(scene->screen, 24, 16, 32, 32);
 
+  scene->input = textinput_create(scene->screen, 1, config->ascii_height - 2, config->ascii_width - 2);
+
   return scene;
 }
 
 void scene_destroy(Scene *scene) {
   assert(scene);
+
+  textinput_destroy(scene->input);
 
   surface_destroy(scene->surface3);
   surface_destroy(scene->surface2);
@@ -335,6 +455,8 @@ void scene_update(Scene *scene, double delta) {
       scene->surface3->x = 24 + (cos(scene->offset) * 12);
     }
 
+    textinput_update(scene->input, scene->timing);
+
     scene->dirty = true;
   }
 }
@@ -370,6 +492,7 @@ void input_action(PicassoWindowInputBinding *binding, void *userdata) {
 
   if (strcmp(binding->action, "close") == 0) {
     gossip_emit(GOSSIP_ID_CLOSE, NULL);
+    return;
   }
 
   for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {

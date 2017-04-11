@@ -1,6 +1,6 @@
 #pragma once
 
-typedef void (*GossipCallback)(void *userdata);
+typedef void (*GossipCallback)(void *subscriberdata, void *userdata);
 
 #define GOSSIP_ID_MAX 0xffff
 typedef enum {
@@ -15,6 +15,6 @@ typedef enum {
   GOSSIP_RESULT_OUT_OF_RANGE,
 } GossipResult;
 
-GossipResult gossip_subscribe(GossipID id, GossipCallback callback);
+GossipResult gossip_subscribe(GossipID id, GossipCallback callback, void *subscriberdata);
 GossipResult gossip_emit(GossipID id, void *userdata);
 void gossip_cleanup();

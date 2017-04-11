@@ -3,7 +3,7 @@ TODO
 ## Game
 The actual game
 * Initial text input support
-* "Window" support, to specify areas for text, map, and so on
+* Clean up main.c
 * Networking?
 
 ## Bedrock
