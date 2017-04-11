@@ -44,7 +44,7 @@ void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
   printf("PICASSO: GL %s\n", message);
 }
 
-void should_close_callback(void *subscriberdata, void *userdata) {
+void should_close_callback(int32_t id, void *subscriberdata, void *userdata) {
   quit = true;
 }
 

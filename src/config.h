@@ -15,7 +15,8 @@ typedef struct {
 } Config;
 
 typedef enum {
-  INPUT_ACTION_KEYBOARD = GOSSIP_ID_LAST + 1,
-} InputAction;
+  MSG_GAME_INIT = GOSSIP_ID_LAST + 1,
+  MSG_KEY_PRESS,
+} Messages;
 
 Config read_config(void);

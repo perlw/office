@@ -49,7 +49,7 @@ GossipResult gossip_emit(GossipID id, void *userdata) {
 
   for (size_t t = 0; t < g->num_listeners; t += 1) {
     GossipCallback callback = g->listeners[t].callback;
-    callback(g->listeners[t].subscriberdata, userdata);
+    callback(id, g->listeners[t].subscriberdata, userdata);
   }
 
   return GOSSIP_RESULT_OK;

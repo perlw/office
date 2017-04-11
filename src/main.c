@@ -263,7 +263,7 @@ typedef struct {
   Surface *surface;
 } TextInput;
 
-void textinput_event(void *subscriberdata, void *userdata);
+void textinput_event(int32_t id, void *subscriberdata, void *userdata);
 
 TextInput *textinput_create(Screen *screen, uint32_t x, uint32_t y, uint32_t width) {
   TextInput *input = calloc(1, sizeof(TextInput));
@@ -312,11 +312,12 @@ void textinput_update(TextInput *input, double delta) {
   }
 }
 
-void textinput_event(void *subscriberdata, void *userdata) {
+void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
   TextInput *input = (TextInput*)subscriberdata;
   PicassoWindowInputEvent *event = (PicassoWindowInputEvent*)userdata;
 
   if (event->pressed) {
+    gossip_emit(MSG_KEY_PRESS, NULL);
     //printf("TEXTINPUT: %d %d %d\n", event->key, event->scancode, event->shift);
 
     if (event->key == PICASSO_KEY_ENTER) {
@@ -414,6 +415,8 @@ void scene_destroy(Scene *scene) {
 }
 
 void scene_update(Scene *scene, double delta) {
+  assert(scene);
+
   scene->since_update += delta;
   while (scene->since_update >= scene->timing) {
     scene->since_update -= scene->timing;
@@ -462,12 +465,14 @@ void scene_update(Scene *scene, double delta) {
 }
 
 void scene_draw(Scene *scene) {
+  assert(scene);
+
   screen_draw(scene->screen, scene->dirty);
   scene->dirty = false;
 }
 // -Scene
 
-// +INPUT
+// +Input
 typedef struct {
   char *action;
   MuseFunctionRef ref;
@@ -511,20 +516,81 @@ void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *argumen
   };
   action_refs = rectify_array_push(action_refs, &action_ref);
 }
-// -INPUT
+// -Input
+
+// +Sound
+typedef struct {
+  Boombox *boombox;
+  BoomboxCassette *init_sound;
+  BoomboxCassette *tap_sound;
+} SoundSys;
+
+void soundsys_event(int32_t id, void *subscriberdata, void *userdata);
+
+SoundSys *soundsys_create(void) {
+  SoundSys *soundsys = calloc(1, sizeof(SoundSys));
+
+  soundsys->boombox = boombox_create();
+  if (boombox_init(soundsys->boombox) != BOOMBOX_OK) {
+    printf("Boombox: failed to init\n");
+    return NULL;
+  }
+
+  soundsys->init_sound = boombox_cassette_create(soundsys->boombox);
+  soundsys->tap_sound = boombox_cassette_create(soundsys->boombox);
+
+  if (boombox_cassette_load_sound(soundsys->init_sound, "swish.wav") != BOOMBOX_OK) {
+    printf("Boombox: failed to load init sound\n");
+    boombox_destroy(soundsys->boombox);
+    return NULL;
+  }
+  if (boombox_cassette_load_sound(soundsys->tap_sound, "tap.ogg") != BOOMBOX_OK) {
+    printf("Boombox: failed to load tap sound\n");
+    boombox_destroy(soundsys->boombox);
+    return NULL;
+  }
+
+  gossip_subscribe(MSG_GAME_INIT, &soundsys_event, soundsys);
+  gossip_subscribe(MSG_KEY_PRESS, &soundsys_event, soundsys);
+
+  return soundsys;
+}
+
+void soundsys_destroy(SoundSys *soundsys) {
+  assert(soundsys);
+
+  boombox_cassette_destroy(soundsys->tap_sound);
+  boombox_cassette_destroy(soundsys->init_sound);
+  boombox_destroy(soundsys->boombox);
+
+  free(soundsys);
+}
+
+void soundsys_update(SoundSys *soundsys, double delta) {
+  assert(soundsys);
+
+  boombox_update(soundsys->boombox);
+}
+
+void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
+  SoundSys *soundsys = (SoundSys*)subscriberdata;
+
+  switch (id) {
+    case MSG_GAME_INIT:
+      boombox_cassette_play(soundsys->init_sound);
+      break;
+
+    case MSG_KEY_PRESS:
+      boombox_cassette_play(soundsys->tap_sound);
+      break;
+
+    default:
+      break;
+  }
+}
+// -Sound
 
 int main() {
-  Boombox *boombox = boombox_create();
-  if (boombox_init(boombox) != BOOMBOX_OK) {
-    printf("Boombox: failed to init\n");
-    return -1;
-  }
-  BoomboxCassette *sound = boombox_cassette_create(boombox);
-  if (boombox_cassette_load_sound(sound, "swish.wav") != BOOMBOX_OK) {
-    printf("Boombox: failed to load sound\n");
-    return -1;
-  }
-
   Muse *muse = muse_create();
 
   picasso_window_action_callback(&input_action, muse);
@@ -551,6 +617,7 @@ int main() {
   muse_add_func(muse, &action_def);
   muse_load_file(muse, "main.lua");
 
+  SoundSys *soundsys = soundsys_create();
   Scene *scene = scene_create(&config);
 
   double last_tick = bedrock_time();
@@ -558,8 +625,6 @@ int main() {
 
   double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
   double next_frame = frame_timing;
-
-  boombox_cassette_play(sound);
 
   {
     double test_me_val = 1000;
@@ -590,13 +655,13 @@ int main() {
     free(result.argument);
   }
 
+  gossip_emit(MSG_GAME_INIT, NULL);
+
   uint32_t frames = 0;
   while (!picasso_window_should_close()) {
     double tick = bedrock_time();
     double delta = tick - last_tick;
     last_tick = tick;
-
-    boombox_update(boombox);
 
     muse_call_name(muse, "update", 1, (MuseArgument[]){
       {
@@ -605,6 +670,7 @@ int main() {
       },
     }, 0, NULL);
 
+    soundsys_update(soundsys, delta);
     scene_update(scene, delta);
 
     next_frame += delta;
@@ -628,13 +694,11 @@ int main() {
   }
 
   scene_destroy(scene);
+  soundsys_destroy(soundsys);
   input_kill();
 
   muse_destroy(muse);
   picasso_window_kill();
-
-  boombox_cassette_destroy(sound);
-  boombox_destroy(boombox);
 
 #ifdef MEM_DEBUG
   occulus_print(false);
