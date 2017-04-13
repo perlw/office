@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
+#include <time.h>
 
 #include "glad/glad.h"
 
@@ -582,6 +583,7 @@ void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
 
     case MSG_KEY_PRESS:
       boombox_cassette_play(soundsys->tap_sound);
+      boombox_cassette_set_pitch(soundsys->tap_sound, 0.9f + ((float)(rand() % 20) / 100.0f));
       break;
 
     default:
@@ -591,6 +593,8 @@ void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
 // -Sound
 
 int main() {
+  srand(time(NULL));
+
   Muse *muse = muse_create();
 
   picasso_window_action_callback(&input_action, muse);

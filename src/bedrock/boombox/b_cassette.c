@@ -45,3 +45,18 @@ BoomboxResult boombox_cassette_play(BoomboxCassette *cassette) {
 
   return BOOMBOX_OK;
 }
+
+BoomboxResult boombox_cassette_set_pitch(BoomboxCassette *cassette, float pitch) {
+  assert(cassette);
+  if (!cassette->loaded) {
+    return BOOMBOX_NO_SOUND_LOADED;
+  }
+
+  FMOD_RESULT result = FMOD_Channel_SetPitch(cassette->fmod.channel, pitch);
+  if (result != FMOD_OK) {
+    printf("FMOD: (%d) %s\n", result, FMOD_ErrorString(result));
+    return BOOMBOX_FAIL;
+  }
+
+  return BOOMBOX_OK;
+}

@@ -22,4 +22,5 @@ BoomboxCassette *boombox_cassette_create(Boombox *boombox);
 void boombox_cassette_destroy(BoomboxCassette *cassette);
 BoomboxResult boombox_cassette_load_sound(BoomboxCassette *cassette, const char *filepath);
 BoomboxResult boombox_cassette_play(BoomboxCassette *cassette);
+BoomboxResult boombox_cassette_set_pitch(BoomboxCassette *cassette, float pitch);
 // -Cassette
