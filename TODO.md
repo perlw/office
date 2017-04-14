@@ -2,9 +2,11 @@ TODO
 ===
 ## Game
 The actual game
-* Initial text input support
 * Clean up main.c
-* Networking?
+* Bedrock modules should not be interdependant
+  * Remove input<->action management from bedrock/picasso
+  * Remove dependencies to gossip, fine if apps use it but bedrock should not
+  * Potentially pull occulus out of bedrock?
 
 ## Bedrock
 
@@ -23,6 +25,7 @@ Lua wrapper
 
 ### Sound/Music
 Boombox/Cassette
+* Deeper look at cassette usage etc, channels and so
 
 ### Occulus
 Memory introspector
@@ -30,7 +33,7 @@ Memory introspector
 ### Rectify
 Data, memory, sorting
 
-## TODO
+## Planned modules
 
 ### Synapse
 Networking
