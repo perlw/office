@@ -4,48 +4,29 @@
 
 #include "GLFW/glfw3.h"
 
-bool quit = false;
 GLFWwindow *window = NULL;
 
-uintmax_t num_bindings = 0;
-PicassoWindowInputBinding *input_bindings = NULL;
-PicassoWindowInputCallback main_callback = NULL;
-void *main_callback_userdata = NULL;
+void dummy_keyboard_callback(const PicassoWindowInputEvent *event) {
+  printf("No keyboard callback..\n");
+};
+PicassoWindowKeyboardCallback picasso_keyboard_callback = &dummy_keyboard_callback;
 
 void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
   if (action == GLFW_REPEAT) {
     return;
   }
 
-  gossip_emit(GOSSIP_ID_INPUT_KEY, &(PicassoWindowInputEvent){
+  picasso_keyboard_callback(&(PicassoWindowInputEvent){
     .key = key,
     .scancode = scancode,
     .pressed = (action == GLFW_PRESS),
     .released = (action == GLFW_RELEASE),
     .shift = (mods & GLFW_MOD_SHIFT),
   });
-
-  if (action == GLFW_RELEASE) {
-    return;
-  }
-
-  for (uintmax_t t = 0; t < num_bindings; t++) {
-    if (input_bindings[t].key == key) {
-      if (input_bindings[t].callback) {
-        input_bindings[t].callback(&input_bindings[t], input_bindings[t].userdata);
-      }
-
-      main_callback(&input_bindings[t], main_callback_userdata);
-    }
-  }
 }
 
 void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *user_param) {
   printf("PICASSO: GL %s\n", message);
-}
-
-void should_close_callback(int32_t id, void *subscriberdata, void *userdata) {
-  quit = true;
 }
 
 PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug) {
@@ -93,19 +74,11 @@ PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, u
     glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);
   }
 
-  gossip_subscribe(GOSSIP_ID_CLOSE, &should_close_callback, NULL);
-
   return PICASSO_WINDOW_OK;
 }
 
 void picasso_window_kill(void) {
-  for (uintmax_t t = 0; t < num_bindings; t++) {
-    free(input_bindings[t].action);
-  }
-  free(input_bindings);
-
   glfwTerminate();
-  gossip_cleanup();
 }
 
 void picasso_window_clear(void) {
@@ -121,29 +94,12 @@ void picasso_window_update(void) {
 }
 
 bool picasso_window_should_close(void) {
-  return glfwWindowShouldClose(window) || quit;
+  return glfwWindowShouldClose(window);
 }
 
-void picasso_window_action_callback(PicassoWindowInputCallback callback, void *userdata) {
+void picasso_window_keyboard_callback(PicassoWindowKeyboardCallback callback) {
   assert(callback);
 
-  main_callback = callback;
-  main_callback_userdata = userdata;
+  picasso_keyboard_callback = callback;
 }
 
-void picasso_window_add_binding(PicassoWindowInputBinding *binding) {
-  assert(binding);
-  if (!input_bindings) {
-    input_bindings = calloc(1, sizeof(PicassoWindowInputBinding));
-  }
-
-  uintmax_t length = strlen(binding->action) + 1;
-  num_bindings++;
-  input_bindings = realloc(input_bindings, num_bindings * sizeof(PicassoWindowInputBinding));
-  input_bindings[num_bindings - 1] = (PicassoWindowInputBinding){
-    .action = rectify_memory_alloc_copy(binding->action, length),
-    .key = binding->key,
-    .callback = binding->callback,
-    .userdata = binding->userdata,
-  };
-}

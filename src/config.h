@@ -15,8 +15,12 @@ typedef struct {
 } Config;
 
 typedef enum {
-  MSG_GAME_INIT = GOSSIP_ID_LAST + 1,
-  MSG_KEY_PRESS,
+  MSG_GAME_INIT = 0x001,
+  MSG_GAME_KILL,
+
+  MSG_SOUND_PLAY_TAP,
+
+  MSG_INPUT_KEYBOARD,
 } Messages;
 
 Config read_config(void);

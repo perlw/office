@@ -131,18 +131,6 @@ typedef enum {
   PICASSO_WINDOW_CREATION_FAIL,
   PICASSO_WINDOW_GL_CONTEXT_FAIL,
 } PicassoWindowResult;
-typedef struct PicassoWindow PicassoWindow;
-
-typedef struct PicassoWindowInputBinding PicassoWindowInputBinding;
-typedef void (*PicassoWindowInputCallback)(PicassoWindowInputBinding*, void*);
-
-struct PicassoWindowInputBinding {
-  char *action;
-  // TODO: Combinations, modifiers, controllers
-  int32_t key;
-  PicassoWindowInputCallback callback;
-  void *userdata;
-};
 
 typedef struct {
   int32_t key;
@@ -151,6 +139,7 @@ typedef struct {
   bool released;
   bool shift;
 } PicassoWindowInputEvent;
+typedef void (*PicassoWindowKeyboardCallback)(const PicassoWindowInputEvent*);
 
 PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug);
 void picasso_window_kill(void);
@@ -158,8 +147,7 @@ void picasso_window_clear(void);
 void picasso_window_swap(void);
 void picasso_window_update(void);
 bool picasso_window_should_close(void);
-void picasso_window_action_callback(PicassoWindowInputCallback callback, void *userdata);
-void picasso_window_add_binding(PicassoWindowInputBinding *binding);
+void picasso_window_keyboard_callback(PicassoWindowKeyboardCallback callback);
 // -Window
 
 // +Shaders

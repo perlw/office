@@ -12,6 +12,7 @@
 #include "bedrock/bedrock.h"
 
 #include "config.h"
+#include "input.h"
 
 // +AsciiLayer
 typedef struct {
@@ -283,7 +284,7 @@ TextInput *textinput_create(Screen *screen, uint32_t x, uint32_t y, uint32_t wid
     input->surface->asciimap[t].fore = 255;
   }
 
-  gossip_subscribe(GOSSIP_ID_INPUT_KEY, &textinput_event, input);
+  gossip_subscribe(MSG_INPUT_KEYBOARD, &textinput_event, input);
 
   return input;
 }
@@ -318,8 +319,7 @@ void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
   PicassoWindowInputEvent *event = (PicassoWindowInputEvent*)userdata;
 
   if (event->pressed) {
-    gossip_emit(MSG_KEY_PRESS, NULL);
-    //printf("TEXTINPUT: %d %d %d\n", event->key, event->scancode, event->shift);
+    gossip_emit(MSG_SOUND_PLAY_TAP, NULL);
 
     if (event->key == PICASSO_KEY_ENTER) {
       input->cursor_pos = 0;
@@ -473,52 +473,6 @@ void scene_draw(Scene *scene) {
 }
 // -Scene
 
-// +Input
-typedef struct {
-  char *action;
-  MuseFunctionRef ref;
-} ActionRef;
-ActionRef *action_refs;
-
-void input_init() {
-  action_refs = rectify_array_alloc(10, sizeof(ActionRef));
-}
-
-void input_kill() {
-  for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
-    if (action_refs[t].action) {
-      free(action_refs[t].action);
-    }
-  }
-  rectify_array_free(action_refs);
-}
-
-void input_action(PicassoWindowInputBinding *binding, void *userdata) {
-  printf("->binding %s\n", binding->action);
-
-  if (strcmp(binding->action, "close") == 0) {
-    gossip_emit(GOSSIP_ID_CLOSE, NULL);
-    return;
-  }
-
-  for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
-    if (strcmp(action_refs[t].action, binding->action) == 0) {
-      muse_call_funcref((Muse*)userdata, action_refs[t].ref, 0, NULL, 0, NULL);
-    }
-  }
-}
-void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
-  char *action = (char*)arguments[0].argument;
-  MuseFunctionRef ref = *(MuseFunctionRef*)arguments[1].argument;
-
-  ActionRef action_ref = {
-    .action = rectify_memory_alloc_copy(action, strlen(action) + 1),
-    .ref = ref,
-  };
-  action_refs = rectify_array_push(action_refs, &action_ref);
-}
-// -Input
-
 // +Sound
 typedef struct {
   Boombox *boombox;
@@ -552,7 +506,7 @@ SoundSys *soundsys_create(void) {
   }
 
   gossip_subscribe(MSG_GAME_INIT, &soundsys_event, soundsys);
-  gossip_subscribe(MSG_KEY_PRESS, &soundsys_event, soundsys);
+  gossip_subscribe(MSG_SOUND_PLAY_TAP, &soundsys_event, soundsys);
 
   return soundsys;
 }
@@ -581,7 +535,7 @@ void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
       boombox_cassette_play(soundsys->init_sound);
       break;
 
-    case MSG_KEY_PRESS:
+    case MSG_SOUND_PLAY_TAP:
       boombox_cassette_play(soundsys->tap_sound);
       boombox_cassette_set_pitch(soundsys->tap_sound, 0.9f + ((float)(rand() % 20) / 100.0f));
       break;
@@ -591,6 +545,11 @@ void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
   }
 }
 // -Sound
+
+bool quit_game = false;
+void game_kill_event(int32_t id, void *subscriberdata, void *userdata) {
+  quit_game = true;
+}
 
 int main() {
   srand(time(NULL));
@@ -607,6 +566,7 @@ int main() {
     printf("Window: failed to init\n");
     return -1;
   }
+  picasso_window_keyboard_callback(&input_keyboard_callback);
 
   MuseFunctionDef action_def = {
     .name = "action",
@@ -636,11 +596,11 @@ int main() {
       .type = MUSE_TYPE_NUMBER,
     };
     muse_call_name(muse, "make_leet", 1, (MuseArgument[]){
-        {
+      {
         .type = MUSE_TYPE_NUMBER,
         .argument = &test_me_val,
-        },
-        }, 1, &result);
+      },
+    }, 1, &result);
     printf("--> %d leeted becomes %d <--\n", (uint32_t)test_me_val, (uint32_t)*(double*)result.argument);
     free(result.argument);
   }
@@ -659,10 +619,12 @@ int main() {
     free(result.argument);
   }
 
+  gossip_subscribe(MSG_GAME_KILL, &game_kill_event, NULL);
+
   gossip_emit(MSG_GAME_INIT, NULL);
 
   uint32_t frames = 0;
-  while (!picasso_window_should_close()) {
+  while (!picasso_window_should_close() && !quit_game) {
     double tick = bedrock_time();
     double delta = tick - last_tick;
     last_tick = tick;
@@ -696,6 +658,8 @@ int main() {
 
     picasso_window_update();
   }
+
+  gossip_cleanup();
 
   scene_destroy(scene);
   soundsys_destroy(soundsys);

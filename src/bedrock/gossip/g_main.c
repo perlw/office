@@ -18,7 +18,7 @@ Gossiper gossipers[GOSSIP_ID_MAX] = { { 0, 0, NULL } };
 
 #define LISTENER_CHUNK 4
 
-GossipResult gossip_subscribe(GossipID id, GossipCallback callback, void *subscriberdata) {
+GossipResult gossip_subscribe(uint32_t id, GossipCallback callback, void *subscriberdata) {
   if (id < 1 || id > GOSSIP_ID_MAX) {
     return GOSSIP_RESULT_OUT_OF_RANGE;
   }
@@ -40,7 +40,7 @@ GossipResult gossip_subscribe(GossipID id, GossipCallback callback, void *subscr
   return GOSSIP_RESULT_OK;
 }
 
-GossipResult gossip_emit(GossipID id, void *userdata) {
+GossipResult gossip_emit(uint32_t id, void *userdata) {
   if (id < 1 || id > GOSSIP_ID_MAX) {
     return GOSSIP_RESULT_OUT_OF_RANGE;
   }

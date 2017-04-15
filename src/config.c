@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "input.h"
 
 void set_resolution(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
   Config *config = (Config*)userdata;
