@@ -556,7 +556,7 @@ int main() {
 
   Muse *muse = muse_create();
 
-  picasso_window_action_callback(&input_action, muse);
+  input_action_callback(&input_action, muse);
 
   input_init();
 

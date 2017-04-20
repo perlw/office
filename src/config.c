@@ -24,13 +24,12 @@ void set_key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *argum
   char *action = (char*)arguments[0].argument;
   int32_t key = (int32_t)*(double*)arguments[1].argument;
 
-  PicassoWindowInputBinding binding = (PicassoWindowInputBinding){
+  InputActionBinding binding = (InputActionBinding){
     .action = action,
     .key = key,
-    .callback = NULL,
   };
 
-  picasso_window_add_binding(&binding);
+  input_action_add_binding(&binding);
 }
 
 void set_ascii_resolution(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {

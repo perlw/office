@@ -9,8 +9,8 @@
 ActionRef *action_refs;
 
 uintmax_t num_bindings = 0;
-PicassoWindowInputBinding *input_bindings = NULL;
-PicassoWindowInputCallback main_callback = NULL;
+InputActionBinding *input_bindings = NULL;
+InputActionCallback main_callback = NULL;
 void *main_callback_userdata = NULL;
 
 void input_init() {
@@ -41,16 +41,12 @@ void input_keyboard_callback(const PicassoWindowInputEvent *event) {
 
   for (uintmax_t t = 0; t < num_bindings; t++) {
     if (input_bindings[t].key == event->key) {
-      if (input_bindings[t].callback) {
-        input_bindings[t].callback(&input_bindings[t], input_bindings[t].userdata);
-      }
-
       main_callback(&input_bindings[t], main_callback_userdata);
     }
   }
 }
 
-void input_action(PicassoWindowInputBinding *binding, void *userdata) {
+void input_action(InputActionBinding *binding, void *userdata) {
   printf("->binding %s\n", binding->action);
 
   if (strcmp(binding->action, "close") == 0) {
@@ -76,26 +72,24 @@ void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *argumen
   action_refs = rectify_array_push(action_refs, &action_ref);
 }
 
-void picasso_window_action_callback(PicassoWindowInputCallback callback, void *userdata) {
+void input_action_callback(InputActionCallback callback, void *userdata) {
   assert(callback);
 
   main_callback = callback;
   main_callback_userdata = userdata;
 }
 
-void picasso_window_add_binding(PicassoWindowInputBinding *binding) {
+void input_action_add_binding(InputActionBinding *binding) {
   assert(binding);
   if (!input_bindings) {
-    input_bindings = calloc(1, sizeof(PicassoWindowInputBinding));
+    input_bindings = calloc(1, sizeof(InputActionBinding));
   }
 
   uintmax_t length = strlen(binding->action) + 1;
   num_bindings++;
-  input_bindings = realloc(input_bindings, num_bindings * sizeof(PicassoWindowInputBinding));
-  input_bindings[num_bindings - 1] = (PicassoWindowInputBinding){
+  input_bindings = realloc(input_bindings, num_bindings * sizeof(InputActionBinding));
+  input_bindings[num_bindings - 1] = (InputActionBinding){
     .action = rectify_memory_alloc_copy(binding->action, length),
     .key = binding->key,
-    .callback = binding->callback,
-    .userdata = binding->userdata,
   };
 }
