@@ -7,7 +7,7 @@ action("foo", function ()
 end)
 
 function make_leet(arg)
-  return (1337 - arg) + arg
+  return (1337 - arg)
 end
 
 function update(dt)

@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <stdint.h>
 #include <assert.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -75,10 +75,10 @@ AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_wi
     picasso_shader_compile(fragment_shader, frag_length, frag_source);
 
     layer->program = picasso_program_create();
-    picasso_program_link_shaders(layer->program, 2, (const PicassoShader*[]){
-      vertex_shader,
-      fragment_shader,
-    });
+    picasso_program_link_shaders(layer->program, 2, (const PicassoShader *[]){
+                                                      vertex_shader,
+                                                      fragment_shader,
+                                                    });
 
     picasso_shader_destroy(vertex_shader);
     picasso_shader_destroy(fragment_shader);
@@ -99,8 +99,8 @@ AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_wi
 
     int32_t pmatrix_uniform = picasso_program_uniform_location(layer->program, "pMatrix");
     int32_t mvmatrix_uniform = picasso_program_uniform_location(layer->program, "mvMatrix");
-    picasso_program_uniform_mat4(layer->program, pmatrix_uniform, (float*)&ortho);
-    picasso_program_uniform_mat4(layer->program, mvmatrix_uniform, (float*)&model);
+    picasso_program_uniform_mat4(layer->program, pmatrix_uniform, (float *)&ortho);
+    picasso_program_uniform_mat4(layer->program, mvmatrix_uniform, (float *)&model);
   }
 
   {
@@ -224,7 +224,7 @@ Screen *screen_create(const Config *config) {
   Screen *screen = calloc(1, sizeof(Screen));
 
   screen->asciilayer = asciilayer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
-  screen->surfaces = rectify_array_alloc(10, sizeof(Surface*));
+  screen->surfaces = rectify_array_alloc(10, sizeof(Surface *));
 
   return screen;
 }
@@ -315,8 +315,8 @@ void textinput_update(TextInput *input, double delta) {
 }
 
 void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
-  TextInput *input = (TextInput*)subscriberdata;
-  PicassoWindowInputEvent *event = (PicassoWindowInputEvent*)userdata;
+  TextInput *input = (TextInput *)subscriberdata;
+  PicassoWindowInputEvent *event = (PicassoWindowInputEvent *)userdata;
 
   if (event->pressed) {
     gossip_emit(MSG_SOUND_PLAY_TAP, NULL);
@@ -428,7 +428,7 @@ void scene_update(Scene *scene, double delta) {
 
       double wave_depth = 0.25;
       double wave_thickness = M_PI * 4.0;
-      double cx = scene->surface->width  / 2;
+      double cx = scene->surface->width / 2;
       double cy = scene->surface->height / 2;
       for (uintmax_t y = 0; y < scene->surface->height; y++) {
         for (uintmax_t x = 0; x < scene->surface->width; x++) {
@@ -528,7 +528,7 @@ void soundsys_update(SoundSys *soundsys, double delta) {
 }
 
 void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
-  SoundSys *soundsys = (SoundSys*)subscriberdata;
+  SoundSys *soundsys = (SoundSys *)subscriberdata;
 
   switch (id) {
     case MSG_GAME_INIT:
@@ -595,13 +595,12 @@ int main() {
     MuseArgument result = {
       .type = MUSE_TYPE_NUMBER,
     };
-    muse_call_name(muse, "make_leet", 1, (MuseArgument[]){
-      {
-        .type = MUSE_TYPE_NUMBER,
-        .argument = &test_me_val,
-      },
-    }, 1, &result);
-    printf("--> %d leeted becomes %d <--\n", (uint32_t)test_me_val, (uint32_t)*(double*)result.argument);
+    MuseArgument arg = {
+      .type = MUSE_TYPE_NUMBER,
+      .argument = &test_me_val,
+    };
+    muse_call_name(muse, "make_leet", 1, &arg, 1, &result);
+    printf("--> %d needs %d to become 1337 <--\n", (uint32_t)test_me_val, (uint32_t) * (double *)result.argument);
     free(result.argument);
   }
   {
@@ -609,13 +608,12 @@ int main() {
     MuseArgument result = {
       .type = MUSE_TYPE_NUMBER,
     };
-    muse_call_name(muse, "make_leet", 1, (MuseArgument[]){
-        {
-        .type = MUSE_TYPE_NUMBER,
-        .argument = &test_me_val,
-        },
-        }, 1, &result);
-    printf("--> %d leeted becomes %d <--\n", (uint32_t)test_me_val, (uint32_t)*(double*)result.argument);
+    MuseArgument arg = {
+      .type = MUSE_TYPE_NUMBER,
+      .argument = &test_me_val,
+    };
+    muse_call_name(muse, "make_leet", 1, &arg, 1, &result);
+    printf("--> %d needs %d to become 1337 <--\n", (uint32_t)test_me_val, (uint32_t) * (double *)result.argument);
     free(result.argument);
   }
 
@@ -629,12 +627,11 @@ int main() {
     double delta = tick - last_tick;
     last_tick = tick;
 
-    muse_call_name(muse, "update", 1, (MuseArgument[]){
-      {
-        .type = MUSE_TYPE_NUMBER,
-        .argument = &delta,
-      },
-    }, 0, NULL);
+    MuseArgument arg = {
+      .type = MUSE_TYPE_NUMBER,
+      .argument = &delta,
+    };
+    muse_call_name(muse, "update", 1, &arg, 0, NULL);
 
     soundsys_update(soundsys, delta);
     scene_update(scene, delta);
