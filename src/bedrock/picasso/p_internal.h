@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <stdint.h>
 #include <assert.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #include "glad/glad.h"
 

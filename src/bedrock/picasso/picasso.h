@@ -139,7 +139,7 @@ typedef struct {
   bool released;
   bool shift;
 } PicassoWindowInputEvent;
-typedef void (*PicassoWindowKeyboardCallback)(const PicassoWindowInputEvent*);
+typedef void (*PicassoWindowKeyboardCallback)(const PicassoWindowInputEvent *);
 
 PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug);
 void picasso_window_kill(void);
@@ -166,7 +166,7 @@ typedef struct PicassoProgram PicassoProgram;
 
 PicassoShader *picasso_shader_create(PicassoShaderType type);
 void picasso_shader_destroy(PicassoShader *shader);
-PicassoShaderResult picasso_shader_compile(PicassoShader* shader, uintmax_t length, const uint8_t *source);
+PicassoShaderResult picasso_shader_compile(PicassoShader *shader, uintmax_t length, const uint8_t *source);
 
 PicassoProgram *picasso_program_create(void);
 void picasso_program_destroy(PicassoProgram *program);
@@ -185,7 +185,7 @@ typedef enum {
 } PicassoBufferType;
 
 typedef enum {
-  PICASSO_BUFFER_USAGE_STREAM  = 1,
+  PICASSO_BUFFER_USAGE_STREAM = 1,
   PICASSO_BUFFER_USAGE_STATIC,
   PICASSO_BUFFER_USAGE_DYNAMIC,
 } PicassoBufferUsage;
@@ -240,4 +240,3 @@ void picasso_texture_destroy(PicassoTexture *texture);
 PicassoTextureResult picasso_texture_set_data(PicassoTexture *texture, uintmax_t offset_x, uintmax_t offset_y, uintmax_t width, uintmax_t height, const void *data);
 void picasso_texture_bind_to(PicassoTexture *texture, uint32_t index);
 // -Textures
-

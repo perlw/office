@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 typedef void (*GossipCallback)(int32_t id, void *subscriberdata, void *userdata);
 
 #define GOSSIP_ID_MAX 0xffff

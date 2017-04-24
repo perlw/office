@@ -91,11 +91,11 @@ MuseResult internal_call(Muse *muse, uintmax_t num_arguments, const MuseArgument
   for (uintmax_t t = 0; t < num_arguments; t++) {
     switch (arguments[t].type) {
       case MUSE_TYPE_NUMBER:
-        lua_pushnumber(muse->state, *(double*)arguments[t].argument);
+        lua_pushnumber(muse->state, *(double *)arguments[t].argument);
         break;
 
       case MUSE_TYPE_BOOLEAN:
-        lua_pushboolean(muse->state, *(bool*)arguments[t].argument);
+        lua_pushboolean(muse->state, *(bool *)arguments[t].argument);
         break;
 
       case MUSE_TYPE_STRING:
@@ -122,7 +122,7 @@ MuseResult internal_call(Muse *muse, uintmax_t num_arguments, const MuseArgument
         }
 
         results[t].argument = calloc(1, sizeof(double));
-        *(double*)results[t].argument = (double)lua_tonumber(muse->state, state_index);
+        *(double *)results[t].argument = (double)lua_tonumber(muse->state, state_index);
         break;
 
       case MUSE_TYPE_STRING:
@@ -142,14 +142,14 @@ MuseResult internal_call(Muse *muse, uintmax_t num_arguments, const MuseArgument
         }
 
         results[t].argument = calloc(1, sizeof(bool));
-        *(bool*)results[t].argument = (bool)lua_toboolean(muse->state, state_index);
+        *(bool *)results[t].argument = (bool)lua_toboolean(muse->state, state_index);
         break;
 
       case MUSE_TYPE_FUNCTION:
         luaL_checktype(muse->state, state_index, LUA_TFUNCTION);
 
         results[t].argument = calloc(1, sizeof(MuseFunctionRef));
-        *(MuseFunctionRef*)results[t].argument = (MuseFunctionRef)luaL_ref(muse->state, LUA_REGISTRYINDEX);
+        *(MuseFunctionRef *)results[t].argument = (MuseFunctionRef)luaL_ref(muse->state, LUA_REGISTRYINDEX);
         break;
 
       default:
@@ -233,7 +233,7 @@ static int lua_callback(lua_State *state) {
             .argument = calloc(1, sizeof(double)),
             .type = func_def->arguments[t],
           };
-          *(double*)arguments[t].argument = (double)lua_tonumber(muse->state, t + 1);
+          *(double *)arguments[t].argument = (double)lua_tonumber(muse->state, t + 1);
           break;
 
         case MUSE_TYPE_STRING:
@@ -259,7 +259,7 @@ static int lua_callback(lua_State *state) {
             .argument = calloc(1, sizeof(bool)),
             .type = func_def->arguments[t],
           };
-          *(bool*)arguments[t].argument = (bool)lua_toboolean(muse->state, t + 1);
+          *(bool *)arguments[t].argument = (bool)lua_toboolean(muse->state, t + 1);
           break;
 
         case MUSE_TYPE_FUNCTION:
@@ -269,7 +269,7 @@ static int lua_callback(lua_State *state) {
             .argument = calloc(1, sizeof(MuseFunctionRef)),
             .type = func_def->arguments[t],
           };
-          *(MuseFunctionRef*)arguments[t].argument = (MuseFunctionRef)luaL_ref(muse->state, LUA_REGISTRYINDEX);
+          *(MuseFunctionRef *)arguments[t].argument = (MuseFunctionRef)luaL_ref(muse->state, LUA_REGISTRYINDEX);
           break;
 
         default:

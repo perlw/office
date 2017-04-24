@@ -11,10 +11,10 @@ double bedrock_time(void) {
 
   if (!initialized) {
     initialized = 1;
-    QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
-    QueryPerformanceCounter((LARGE_INTEGER*)&start);
+    QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
+    QueryPerformanceCounter((LARGE_INTEGER *)&start);
   }
-  QueryPerformanceCounter((LARGE_INTEGER*)&curr);
+  QueryPerformanceCounter((LARGE_INTEGER *)&curr);
 
   return (double)(curr - start) / freq;
 }

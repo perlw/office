@@ -3,7 +3,7 @@
 PicassoProgram *picasso_program_create(void) {
   PicassoProgram *program = calloc(1, sizeof(PicassoProgram));
 
-  *program = (PicassoProgram) {
+  *program = (PicassoProgram){
     .id = glCreateProgram(),
   };
 
@@ -59,5 +59,5 @@ void picasso_program_uniform_int(PicassoProgram *program, int32_t uniform, int32
 void picasso_program_uniform_mat4(PicassoProgram *program, int32_t uniform, float *mat) {
   assert(program);
 
-  glProgramUniformMatrix4fv(program->id, uniform, 1, GL_FALSE, (const GLfloat*)mat);
+  glProgramUniformMatrix4fv(program->id, uniform, 1, GL_FALSE, (const GLfloat *)mat);
 }

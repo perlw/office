@@ -3,7 +3,7 @@
 #include "bedrock/bedrock.h"
 
 typedef struct InputActionBinding InputActionBinding;
-typedef void (*InputActionCallback)(InputActionBinding*, void*);
+typedef void (*InputActionCallback)(InputActionBinding *, void *);
 
 struct InputActionBinding {
   char *action;

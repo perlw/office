@@ -1,11 +1,11 @@
-#include <stdio.h>
-#include <malloc.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <inttypes.h>
-#include <string.h>
 #include <assert.h>
+#include <inttypes.h>
+#include <malloc.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define FILEPATH_LENGTH 128
 #define FUNCTION_LENGTH 128
@@ -56,12 +56,12 @@ void *occulus_malloc(size_t size, const char *filepath, uintmax_t line, const ch
   assert(ptr);
 
   for (uintmax_t t = 0; t < 3; t++) {
-    ((uint8_t*)ptr)[t] = fence[t];
-    ((uint8_t*)ptr)[size + (2 - t) + 3] = fence[t];
+    ((uint8_t *)ptr)[t] = fence[t];
+    ((uint8_t *)ptr)[size + (2 - t) + 3] = fence[t];
   }
 
   log_allocation(ptr, size, filepath, line, function);
-  return (void*)((uintptr_t)ptr + 3);
+  return (void *)((uintptr_t)ptr + 3);
 }
 
 void *occulus_calloc(size_t num, size_t size, const char *filepath, uintmax_t line, const char *function) {
@@ -69,18 +69,18 @@ void *occulus_calloc(size_t num, size_t size, const char *filepath, uintmax_t li
   void *ptr = malloc(total + 6);
   assert(ptr);
 
-  memset((void*)((uintptr_t)ptr + 3), 0, total);
+  memset((void *)((uintptr_t)ptr + 3), 0, total);
   for (uintmax_t t = 0; t < 3; t++) {
-    ((uint8_t*)ptr)[t] = fence[t];
-    ((uint8_t*)ptr)[total + (2 - t) + 3] = fence[t];
+    ((uint8_t *)ptr)[t] = fence[t];
+    ((uint8_t *)ptr)[total + (2 - t) + 3] = fence[t];
   }
 
   log_allocation(ptr, total, filepath, line, function);
-  return (void*)((uintptr_t)ptr + 3);
+  return (void *)((uintptr_t)ptr + 3);
 }
 
 void *occulus_realloc(void *old_ptr, size_t size, const char *filepath, uintmax_t line, const char *function) {
-  void *fenced_ptr = (void*)((uintptr_t)old_ptr - 3);
+  void *fenced_ptr = (void *)((uintptr_t)old_ptr - 3);
   void *ptr = realloc(fenced_ptr, size + 6);
   assert(ptr);
   for (uintmax_t t = 0; t < num_allocations; t++) {
@@ -91,16 +91,16 @@ void *occulus_realloc(void *old_ptr, size_t size, const char *filepath, uintmax_
   }
 
   for (uintmax_t t = 0; t < 3; t++) {
-    ((uint8_t*)ptr)[size + (2 - t) + 3] = fence[t];
+    ((uint8_t *)ptr)[size + (2 - t) + 3] = fence[t];
   }
 
   log_allocation(ptr, size, filepath, line, function);
-  return (void*)((uintptr_t)ptr + 3);
+  return (void *)((uintptr_t)ptr + 3);
 }
 
 void occulus_free(void *ptr, const char *filepath, uintmax_t line, const char *function) {
   assert(ptr);
-  void *fenced_ptr = (void*)((uintptr_t)ptr - 3);
+  void *fenced_ptr = (void *)((uintptr_t)ptr - 3);
 
   bool found = false;
   for (uintmax_t t = 0; t < num_allocations; t++) {
@@ -110,9 +110,8 @@ void occulus_free(void *ptr, const char *filepath, uintmax_t line, const char *f
       found = true;
 
       for (uintmax_t u = 0; u < 3; u++) {
-        if (((uint8_t*)fenced_ptr)[u] != fence[u] ||
-            ((uint8_t*)fenced_ptr)[allocations[t].size + (2 - u) + 3] != fence[u]) {
-          printf("%s:%" PRIuMAX "/%s> fence failed on memory originally allocated at %s:%" PRIuMAX"/%s\n", filepath, line, function, allocations[t].filepath, allocations[t].line, allocations[t].function);
+        if (((uint8_t *)fenced_ptr)[u] != fence[u] || ((uint8_t *)fenced_ptr)[allocations[t].size + (2 - u) + 3] != fence[u]) {
+          printf("%s:%" PRIuMAX "/%s> fence failed on memory originally allocated at %s:%" PRIuMAX "/%s\n", filepath, line, function, allocations[t].filepath, allocations[t].line, allocations[t].function);
           break;
         }
       }
@@ -159,7 +158,7 @@ void occulus_print(bool detailed) {
           .filepath = { 0 },
           .num_allocations = 0,
           .allocations_size = chunk,
-          .allocations = calloc(chunk, sizeof(Allocation*)),
+          .allocations = calloc(chunk, sizeof(Allocation *)),
         };
         strncpy(stats[index].filepath, allocations[t].filepath, FILEPATH_LENGTH);
 
@@ -174,7 +173,7 @@ void occulus_print(bool detailed) {
       stats[index].num_allocations++;
       if (stats[index].num_allocations >= stats[index].allocations_size) {
         stats[index].allocations_size += chunk;
-        stats[index].allocations = realloc(stats[index].allocations, sizeof(Allocation*) * stats[index].allocations_size);
+        stats[index].allocations = realloc(stats[index].allocations, sizeof(Allocation *) * stats[index].allocations_size);
       }
     }
 

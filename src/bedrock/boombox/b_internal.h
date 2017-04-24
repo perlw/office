@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <stdbool.h>
 #include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 #include "fmod/fmod.h"
 #include "fmod/fmod_errors.h"

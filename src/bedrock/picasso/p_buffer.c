@@ -31,7 +31,7 @@ PicassoBufferGroup *picasso_buffergroup_create(void) {
   PicassoBufferGroup *buffergroup = calloc(1, sizeof(PicassoBufferGroup));
 
   glCreateVertexArrays(1, &buffergroup->id);
-  buffergroup->buffers = rectify_array_alloc(1, sizeof(PicassoBuffer*));
+  buffergroup->buffers = rectify_array_alloc(1, sizeof(PicassoBuffer *));
 
   return buffergroup;
 }

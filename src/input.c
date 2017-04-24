@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <stdint.h>
 #include <assert.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "config.h"
@@ -29,11 +29,10 @@ void input_kill() {
     free(input_bindings[t].action);
   }
   free(input_bindings);
-
 }
 
 void input_keyboard_callback(const PicassoWindowInputEvent *event) {
-  gossip_emit(MSG_INPUT_KEYBOARD, (void*)event);
+  gossip_emit(MSG_INPUT_KEYBOARD, (void *)event);
 
   if (event->released) {
     return;
@@ -56,14 +55,14 @@ void input_action(InputActionBinding *binding, void *userdata) {
 
   for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
     if (strcmp(action_refs[t].action, binding->action) == 0) {
-      muse_call_funcref((Muse*)userdata, action_refs[t].ref, 0, NULL, 0, NULL);
+      muse_call_funcref((Muse *)userdata, action_refs[t].ref, 0, NULL, 0, NULL);
     }
   }
 }
 
 void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
-  char *action = (char*)arguments[0].argument;
-  MuseFunctionRef ref = *(MuseFunctionRef*)arguments[1].argument;
+  char *action = (char *)arguments[0].argument;
+  MuseFunctionRef ref = *(MuseFunctionRef *)arguments[1].argument;
 
   ActionRef action_ref = {
     .action = rectify_memory_alloc_copy(action, strlen(action) + 1),

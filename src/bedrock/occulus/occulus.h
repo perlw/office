@@ -1,8 +1,8 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 void *occulus_malloc(size_t size, const char *filepath, uintmax_t line, const char *function);
 void *occulus_calloc(size_t num, size_t size, const char *filepath, uintmax_t line, const char *function);

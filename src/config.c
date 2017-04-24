@@ -5,24 +5,24 @@
 #include "input.h"
 
 void set_resolution(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
-  Config *config = (Config*)userdata;
-  config->res_width = (uint32_t)*(double*)arguments[0].argument;
-  config->res_height = (uint32_t)*(double*)arguments[1].argument;
+  Config *config = (Config *)userdata;
+  config->res_width = (uint32_t) * (double *)arguments[0].argument;
+  config->res_height = (uint32_t) * (double *)arguments[1].argument;
 }
 
 void set_gl_debug(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
-  Config *config = (Config*)userdata;
-  config->gl_debug = *(bool*)arguments[0].argument;
+  Config *config = (Config *)userdata;
+  config->gl_debug = *(bool *)arguments[0].argument;
 }
 
 void set_frame_lock(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
-  Config *config = (Config*)userdata;
-  config->frame_lock = (uint32_t)*(double*)arguments[0].argument;
+  Config *config = (Config *)userdata;
+  config->frame_lock = (uint32_t) * (double *)arguments[0].argument;
 }
 
 void set_key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
-  char *action = (char*)arguments[0].argument;
-  int32_t key = (int32_t)*(double*)arguments[1].argument;
+  char *action = (char *)arguments[0].argument;
+  int32_t key = (int32_t) * (double *)arguments[1].argument;
 
   InputActionBinding binding = (InputActionBinding){
     .action = action,
@@ -33,9 +33,9 @@ void set_key_bind(Muse *muse, uintmax_t num_arguments, const MuseArgument *argum
 }
 
 void set_ascii_resolution(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
-  Config *config = (Config*)userdata;
-  config->ascii_width = (uint32_t)*(double*)arguments[0].argument;
-  config->ascii_height = (uint32_t)*(double*)arguments[1].argument;
+  Config *config = (Config *)userdata;
+  config->ascii_width = (uint32_t) * (double *)arguments[0].argument;
+  config->ascii_height = (uint32_t) * (double *)arguments[1].argument;
 }
 
 Config read_config(void) {

@@ -52,7 +52,7 @@ PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, u
   glfwSwapInterval(0);
 
   /* OpenGL */
-  if(!gladLoadGL()) {
+  if (!gladLoadGL()) {
     return PICASSO_WINDOW_GL_CONTEXT_FAIL;
   }
 
@@ -102,4 +102,3 @@ void picasso_window_keyboard_callback(PicassoWindowKeyboardCallback callback) {
 
   picasso_keyboard_callback = callback;
 }
-
