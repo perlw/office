@@ -4,8 +4,6 @@ TODO
 The actual game
 * Clean up main.c
 * Bedrock modules should not be interdependant
-  * Remove input<->action management from bedrock/picasso
-  * Remove dependencies to gossip, fine if apps use it but bedrock should not
   * Potentially pull occulus out of bedrock?
 
 ## Bedrock
