@@ -3,6 +3,7 @@ TODO
 ## Game
 The actual game
 * Clean up main.c
+* Make asciilayer support colors, multiple fonts, etc
 * Bedrock modules should not be interdependant
   * Potentially pull occulus out of bedrock?
 
