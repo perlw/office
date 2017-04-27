@@ -14,13 +14,4 @@ typedef struct {
   uint32_t ascii_height;
 } Config;
 
-typedef enum {
-  MSG_GAME_INIT = 0x001,
-  MSG_GAME_KILL,
-
-  MSG_SOUND_PLAY_TAP,
-
-  MSG_INPUT_KEYBOARD,
-} Messages;
-
 Config read_config(void);

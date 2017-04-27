@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "input.h"
+#include "messages.h"
 
 ActionRef *action_refs;
 
