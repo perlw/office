@@ -4,5 +4,3 @@ ascii_resolution(80, 60);
 --frame_lock(60);
 
 bind("close", KEY_ESCAPE)
-bind("test", KEY_SPACE)
-bind("foo", KEY_F)

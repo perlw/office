@@ -217,6 +217,26 @@ void surface_destroy(Surface *surface) {
 
   free(surface);
 }
+
+void surface_text(Surface *surface, uint32_t x, uint32_t y, uintmax_t length, const char *string) {
+  assert(surface);
+
+  if (x >= surface->width || y >= surface->height) {
+    return;
+  }
+
+  uint32_t index = (y * surface->width) + x;
+  uint32_t max = index + (x + length >= surface->width ? surface->width - x : x + length);
+  for (uint32_t t = index, u = 0; t < max; t++, u++) {
+    if (string[u] == '\0') {
+      break;
+    }
+
+    surface->asciimap[t].rune = string[u];
+    surface->asciimap[t].fore = 255;
+    surface->asciimap[t].back = 0;
+  }
+}
 // -Surface
 
 // +Screen
@@ -373,6 +393,9 @@ typedef struct {
   double offset;
   double timing;
   double since_update;
+  uint32_t frames;
+  char fps_buffer[16];
+  double current_second;
   bool dirty;
 
   Screen *screen;
@@ -380,6 +403,8 @@ typedef struct {
   Surface *surface;
   Surface *surface2;
   Surface *surface3;
+
+  Surface *fps_surface;
 
   TextInput *input;
 } Scene;
@@ -390,12 +415,18 @@ Scene *scene_create(const Config *config) {
   scene->offset = 0.0;
   scene->timing = 1 / 30.0;
   scene->since_update = scene->timing;
+  scene->frames = 0;
+  snprintf(scene->fps_buffer, 16, "FPS: 0");
+  scene->current_second = 0.0;
   scene->dirty = true;
   scene->screen = screen_create(config);
 
   scene->surface = surface_create(scene->screen, 0, 0, config->ascii_width, config->ascii_height);
   scene->surface2 = surface_create(scene->screen, 0, 0, 32, 32);
   scene->surface3 = surface_create(scene->screen, 24, 16, 32, 32);
+
+  scene->fps_surface = surface_create(scene->screen, 0, 0, 16, 1);
+  surface_text(scene->fps_surface, 0, 0, 16, scene->fps_buffer);
 
   scene->input = textinput_create(scene->screen, 1, config->ascii_height - 2, config->ascii_width - 2);
 
@@ -407,6 +438,7 @@ void scene_destroy(Scene *scene) {
 
   textinput_destroy(scene->input);
 
+  surface_destroy(scene->fps_surface);
   surface_destroy(scene->surface3);
   surface_destroy(scene->surface2);
   surface_destroy(scene->surface);
@@ -463,13 +495,25 @@ void scene_update(Scene *scene, double delta) {
 
     scene->dirty = true;
   }
+
+  scene->current_second += delta;
+  if (scene->current_second >= 1) {
+    snprintf(scene->fps_buffer, 16, "FPS: %d", scene->frames);
+    surface_text(scene->fps_surface, 0, 0, 16, scene->fps_buffer);
+
+    scene->current_second = 0;
+    scene->frames = 0;
+    scene->dirty = true;
+  }
 }
 
 void scene_draw(Scene *scene) {
   assert(scene);
 
   screen_draw(scene->screen, scene->dirty);
+
   scene->dirty = false;
+  scene->frames++;
 }
 // -Scene
 
@@ -585,43 +629,14 @@ int main() {
   Scene *scene = scene_create(&config);
 
   double last_tick = bedrock_time();
-  double current_second = 0;
 
   double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
   double next_frame = frame_timing;
-
-  {
-    double test_me_val = 1000;
-    MuseArgument result = {
-      .type = MUSE_TYPE_NUMBER,
-    };
-    MuseArgument arg = {
-      .type = MUSE_TYPE_NUMBER,
-      .argument = &test_me_val,
-    };
-    muse_call_name(muse, "make_leet", 1, &arg, 1, &result);
-    printf("--> %d needs %d to become 1337 <--\n", (uint32_t)test_me_val, (uint32_t) * (double *)result.argument);
-    free(result.argument);
-  }
-  {
-    double test_me_val = 2000;
-    MuseArgument result = {
-      .type = MUSE_TYPE_NUMBER,
-    };
-    MuseArgument arg = {
-      .type = MUSE_TYPE_NUMBER,
-      .argument = &test_me_val,
-    };
-    muse_call_name(muse, "make_leet", 1, &arg, 1, &result);
-    printf("--> %d needs %d to become 1337 <--\n", (uint32_t)test_me_val, (uint32_t) * (double *)result.argument);
-    free(result.argument);
-  }
 
   gossip_subscribe(MSG_GAME_KILL, &game_kill_event, NULL);
 
   gossip_emit(MSG_GAME_INIT, NULL);
 
-  uint32_t frames = 0;
   while (!picasso_window_should_close() && !quit_game) {
     double tick = bedrock_time();
     double delta = tick - last_tick;
@@ -639,18 +654,10 @@ int main() {
     next_frame += delta;
     if (next_frame >= frame_timing) {
       next_frame = 0.0;
-      frames++;
 
       picasso_window_clear();
       scene_draw(scene);
       picasso_window_swap();
-    }
-
-    current_second += delta;
-    if (current_second >= 1) {
-      current_second = 0;
-      printf("FPS: %d\n", frames);
-      frames = 0;
     }
 
     picasso_window_update();
