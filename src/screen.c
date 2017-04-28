@@ -249,7 +249,7 @@ Surface *surface_create(Screen *screen, uint32_t pos_x, uint32_t pos_y, uint32_t
     for (uintmax_t x = 0; x < surface->width; x++) {
       uintmax_t index = (y * surface->width) + x;
       uint8_t shade = (uint8_t)((x ^ y) + 32);
-      surface->asciimap[index].rune = 1;
+      surface->asciimap[index].rune = 219;
       surface->asciimap[index].fore.r = shade;
       surface->asciimap[index].fore.g = shade;
       surface->asciimap[index].fore.b = shade;
