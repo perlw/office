@@ -215,8 +215,10 @@ void scene_test_update(SceneTest *scene, double delta) {
           } else {
             scene->surface->asciimap[i].rune = '*';
           }
-          scene->surface->asciimap[i].fore = (GlyphColor){ color, color, color };
-          scene->surface->asciimap[i].back = (GlyphColor){ 0, 0, 0 };
+          //scene->surface->asciimap[i].fore = (GlyphColor){ color, color, color };
+          scene->surface->asciimap[i].fore.r = (uint8_t)(255.0 * (1.0 - final_color));
+          scene->surface->asciimap[i].fore.g = (uint8_t)(255.0 * final_color);
+          scene->surface->asciimap[i].fore.b = 255;
         }
       }
     }
