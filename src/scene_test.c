@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -33,10 +34,10 @@ TextInput *textinput_create(Screen *screen, uint32_t x, uint32_t y, uint32_t wid
 
   input->surface = surface_create(screen, x, y, width, 1);
   input->surface->asciimap[0].rune = 219;
-  input->surface->asciimap[0].fore = 255;
+  input->surface->asciimap[0].fore = (GlyphColor){ 255, 255, 255 };
   for (uint32_t t = 1; t < width; t++) {
     input->surface->asciimap[t].rune = ' ';
-    input->surface->asciimap[t].fore = 255;
+    input->surface->asciimap[t].fore = (GlyphColor){ 255, 255, 255 };
   }
 
   gossip_subscribe(MSG_INPUT_KEYBOARD, &textinput_event, input);
@@ -62,10 +63,10 @@ void textinput_update(TextInput *input, double delta) {
 
   if (input->cursor_visible) {
     input->surface->asciimap[input->cursor_pos].rune = 219;
-    input->surface->asciimap[input->cursor_pos].fore = 255;
+    input->surface->asciimap[input->cursor_pos].fore = (GlyphColor){ 255, 255, 255 };
   } else {
     input->surface->asciimap[input->cursor_pos].rune = ' ';
-    input->surface->asciimap[input->cursor_pos].fore = 0;
+    input->surface->asciimap[input->cursor_pos].fore = (GlyphColor){ 0, 0, 0 };
   }
 }
 
@@ -83,10 +84,10 @@ void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
       memset(input->buffer, 0, 128);
 
       input->surface->asciimap[0].rune = 219;
-      input->surface->asciimap[0].fore = 255;
+      input->surface->asciimap[0].fore = (GlyphColor){ 255, 255, 255 };
       for (uint32_t t = 1; t < input->cursor_max_pos + 1; t++) {
         input->surface->asciimap[t].rune = ' ';
-        input->surface->asciimap[t].fore = 0;
+        input->surface->asciimap[t].fore = (GlyphColor){ 0, 0, 0 };
       }
 
       return;
@@ -95,7 +96,7 @@ void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
     if (event->key == PICASSO_KEY_BACKSPACE) {
       if (input->cursor_pos > 0) {
         input->surface->asciimap[input->cursor_pos].rune = ' ';
-        input->surface->asciimap[input->cursor_pos].fore = 0;
+        input->surface->asciimap[input->cursor_pos].fore = (GlyphColor){ 0, 0, 0 };
         input->cursor_visible = true;
         input->cursor_pos--;
         input->buffer[input->cursor_pos] = 0;
@@ -115,7 +116,7 @@ void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
 
         input->surface->asciimap[input->cursor_pos + 1] = input->surface->asciimap[input->cursor_pos];
         input->surface->asciimap[input->cursor_pos].rune = event->key + offset;
-        input->surface->asciimap[input->cursor_pos].fore = 255;
+        input->surface->asciimap[input->cursor_pos].fore = (GlyphColor){ 255, 255, 255 };
         input->cursor_pos++;
       }
     }
@@ -129,7 +130,7 @@ typedef struct {
   double timing;
   double since_update;
   uint32_t frames;
-  char fps_buffer[16];
+  char fps_buffer[32];
   double current_second;
   bool dirty;
 
@@ -151,7 +152,7 @@ SceneTest *scene_test_create(Screen *screen, const Config *config) {
   scene->timing = 1 / 30.0;
   scene->since_update = scene->timing;
   scene->frames = 0;
-  snprintf(scene->fps_buffer, 16, "FPS: 0");
+  snprintf(scene->fps_buffer, 32, "FPS: 0 | MEM: 0.00kb");
   scene->current_second = 0.0;
   scene->dirty = true;
   scene->screen = screen;
@@ -160,8 +161,8 @@ SceneTest *scene_test_create(Screen *screen, const Config *config) {
   scene->surface2 = surface_create(scene->screen, 0, 0, 32, 32);
   scene->surface3 = surface_create(scene->screen, 24, 16, 32, 32);
 
-  scene->fps_surface = surface_create(scene->screen, 0, 0, 16, 1);
-  surface_text(scene->fps_surface, 0, 0, 16, scene->fps_buffer);
+  scene->fps_surface = surface_create(scene->screen, 0, 0, 32, 1);
+  surface_text(scene->fps_surface, 0, 0, 32, scene->fps_buffer);
 
   scene->input = textinput_create(scene->screen, 1, config->ascii_height - 2, config->ascii_width - 2);
 
@@ -214,8 +215,8 @@ void scene_test_update(SceneTest *scene, double delta) {
           } else {
             scene->surface->asciimap[i].rune = '*';
           }
-          scene->surface->asciimap[i].fore = color;
-          scene->surface->asciimap[i].back = 0;
+          scene->surface->asciimap[i].fore = (GlyphColor){ color, color, color };
+          scene->surface->asciimap[i].back = (GlyphColor){ 0, 0, 0 };
         }
       }
     }
@@ -232,8 +233,8 @@ void scene_test_update(SceneTest *scene, double delta) {
 
   scene->current_second += delta;
   if (scene->current_second >= 1) {
-    snprintf(scene->fps_buffer, 16, "FPS: %d", scene->frames);
-    surface_text(scene->fps_surface, 0, 0, 16, scene->fps_buffer);
+    snprintf(scene->fps_buffer, 32, "FPS: %d | MEM: %.2fkb", scene->frames, (double)occulus_current_allocated() / 1024.0);
+    surface_text(scene->fps_surface, 0, 0, 32, scene->fps_buffer);
 
     scene->current_second = 0;
     scene->frames = 0;

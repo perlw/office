@@ -7,9 +7,15 @@
 
 // +AsciiLayer
 typedef struct {
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+} GlyphColor;
+
+typedef struct {
   uint8_t rune;
-  uint8_t fore;
-  uint8_t back;
+  GlyphColor fore;
+  GlyphColor back;
 } Glyph;
 
 typedef struct AsciiLayer AsciiLayer;

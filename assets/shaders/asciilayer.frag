@@ -4,6 +4,8 @@ in vec2 texCoord;
 
 uniform sampler2D font_texture;
 uniform sampler2D asciimap_texture;
+uniform sampler2D forecolors_texture;
+uniform sampler2D backcolors_texture;
 uniform int ascii_res_width;
 uniform int ascii_res_height;
 
@@ -12,13 +14,13 @@ out vec4 fragment;
 void main() {
   // Which tile to render
   vec2 coord = vec2(texCoord.s, texCoord.t);
-  vec4 tile = texture(asciimap_texture, coord);
-  int tileIndex = int(floor(tile.r * 255.0));
+  float tile = texture(asciimap_texture, coord).r;
+  int tileIndex = int(floor(tile * 255.0));
   if (tileIndex == 0) {
     discard;
   }
-  float tileFore = tile.g;
-  float tileBack = tile.b;
+  vec4 tileFore = texture(forecolors_texture, coord);
+  vec4 tileBack = texture(backcolors_texture, coord);
 
   // Actual tile texture coords
   vec2 index = vec2(mod(tileIndex, 16), tileIndex / 16);
@@ -27,8 +29,8 @@ void main() {
 
   vec4 sample = texture(font_texture, origin + tileCoord);
   if (sample == vec4(1, 1, 1, 1)) {
-    fragment = vec4(tileFore, tileFore, tileFore, 1);
+    fragment = tileFore;
   } else {
-    fragment = vec4(tileBack, tileBack, tileBack, 1);
+    fragment = tileBack;
   }
 }

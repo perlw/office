@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "arkanis/math_3d.h"
 #include "glad/glad.h"
@@ -9,9 +10,15 @@
 
 // +AsciiLayer
 typedef struct {
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+} GlyphColor;
+
+typedef struct {
   uint8_t rune;
-  uint8_t fore;
-  uint8_t back;
+  GlyphColor fore;
+  GlyphColor back;
 } Glyph;
 
 typedef struct {
@@ -23,7 +30,10 @@ typedef struct {
   uint32_t ascii_height;
   uint32_t ascii_size;
   Glyph *asciimap;
+
   PicassoTexture *asciimap_texture;
+  PicassoTexture *forecolors_texture;
+  PicassoTexture *backcolors_texture;
 } AsciiLayer;
 
 AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height) {
@@ -117,17 +127,45 @@ AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_wi
     layer->asciimap = calloc(layer->ascii_size, sizeof(Glyph));
 
     for (uintmax_t t = 0; t < layer->ascii_size; t++) {
-      layer->asciimap[t].rune = 0;
-      layer->asciimap[t].fore = 0;
-      layer->asciimap[t].back = 0;
+      memset(&layer->asciimap[t], 0, sizeof(Glyph));
     }
 
-    layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->ascii_width, layer->ascii_height, PICASSO_TEXTURE_RGB);
-    picasso_texture_bind_to(layer->asciimap_texture, 1);
-    picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, layer->asciimap);
+    {
+      layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->ascii_width, layer->ascii_height, PICASSO_TEXTURE_R);
+      picasso_texture_bind_to(layer->asciimap_texture, 1);
+      layer->forecolors_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->ascii_width, layer->ascii_height, PICASSO_TEXTURE_RGB);
+      picasso_texture_bind_to(layer->forecolors_texture, 2);
+      layer->backcolors_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->ascii_width, layer->ascii_height, PICASSO_TEXTURE_RGB);
+      picasso_texture_bind_to(layer->backcolors_texture, 3);
 
-    int32_t texture_uniform = picasso_program_uniform_location(layer->program, "asciimap_texture");
-    picasso_program_uniform_int(layer->program, texture_uniform, 1);
+      uint8_t *runes = calloc(layer->ascii_size, sizeof(uint8_t));
+      GlyphColor *fore = calloc(layer->ascii_size, sizeof(GlyphColor));
+      GlyphColor *back = calloc(layer->ascii_size, sizeof(GlyphColor));
+      for (uintmax_t t = 0; t < layer->ascii_size; t++) {
+        runes[t] = layer->asciimap[t].rune;
+        fore[t] = layer->asciimap[t].fore;
+        back[t] = layer->asciimap[t].back;
+      }
+      picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, runes);
+      picasso_texture_set_data(layer->forecolors_texture, 0, 0, layer->ascii_width, layer->ascii_height, fore);
+      picasso_texture_set_data(layer->backcolors_texture, 0, 0, layer->ascii_width, layer->ascii_height, back);
+      free(back);
+      free(fore);
+      free(runes);
+    }
+
+    {
+      int32_t texture_uniform = picasso_program_uniform_location(layer->program, "asciimap_texture");
+      picasso_program_uniform_int(layer->program, texture_uniform, 1);
+    }
+    {
+      int32_t texture_uniform = picasso_program_uniform_location(layer->program, "forecolors_texture");
+      picasso_program_uniform_int(layer->program, texture_uniform, 2);
+    }
+    {
+      int32_t texture_uniform = picasso_program_uniform_location(layer->program, "backcolors_texture");
+      picasso_program_uniform_int(layer->program, texture_uniform, 3);
+    }
 
     int32_t ascii_width_uniform = picasso_program_uniform_location(layer->program, "ascii_res_width");
     int32_t ascii_height_uniform = picasso_program_uniform_location(layer->program, "ascii_res_height");
@@ -143,6 +181,8 @@ void asciilayer_destroy(AsciiLayer *layer) {
 
   free(layer->asciimap);
 
+  picasso_texture_destroy(layer->backcolors_texture);
+  picasso_texture_destroy(layer->forecolors_texture);
   picasso_texture_destroy(layer->asciimap_texture);
   picasso_texture_destroy(layer->font_texture);
   picasso_program_destroy(layer->program);
@@ -155,7 +195,20 @@ void asciilayer_draw(AsciiLayer *layer, bool dirty) {
   assert(layer);
 
   if (dirty) {
-    picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, layer->asciimap);
+    uint8_t *runes = calloc(layer->ascii_size, sizeof(uint8_t));
+    GlyphColor *fore = calloc(layer->ascii_size, sizeof(GlyphColor));
+    GlyphColor *back = calloc(layer->ascii_size, sizeof(GlyphColor));
+    for (uintmax_t t = 0; t < layer->ascii_size; t++) {
+      runes[t] = layer->asciimap[t].rune;
+      fore[t] = layer->asciimap[t].fore;
+      back[t] = layer->asciimap[t].back;
+    }
+    picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, runes);
+    picasso_texture_set_data(layer->forecolors_texture, 0, 0, layer->ascii_width, layer->ascii_height, fore);
+    picasso_texture_set_data(layer->backcolors_texture, 0, 0, layer->ascii_width, layer->ascii_height, back);
+    free(back);
+    free(fore);
+    free(runes);
   }
 
   picasso_program_use(layer->program);
@@ -195,8 +248,11 @@ Surface *surface_create(Screen *screen, uint32_t pos_x, uint32_t pos_y, uint32_t
   for (uintmax_t y = 0; y < surface->height; y++) {
     for (uintmax_t x = 0; x < surface->width; x++) {
       uintmax_t index = (y * surface->width) + x;
+      uint8_t shade = (uint8_t)((x ^ y) + 32);
       surface->asciimap[index].rune = 1;
-      surface->asciimap[index].fore = (uint8_t)((x ^ y) + 32);
+      surface->asciimap[index].fore.r = shade;
+      surface->asciimap[index].fore.g = shade;
+      surface->asciimap[index].fore.b = shade;
     }
   }
 
@@ -226,8 +282,12 @@ void surface_text(Surface *surface, uint32_t x, uint32_t y, uintmax_t length, co
     }
 
     surface->asciimap[t].rune = string[u];
-    surface->asciimap[t].fore = 255;
-    surface->asciimap[t].back = 0;
+    surface->asciimap[t].fore.r = 255;
+    surface->asciimap[t].fore.g = 255;
+    surface->asciimap[t].fore.b = 255;
+    surface->asciimap[t].back.r = 128;
+    surface->asciimap[t].back.g = 0;
+    surface->asciimap[t].back.b = 0;
   }
 }
 // -Surface

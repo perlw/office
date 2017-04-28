@@ -198,3 +198,7 @@ void occulus_print(bool detailed) {
   }
   printf("<MEM_DEBUG\n");
 }
+
+uintmax_t occulus_current_allocated(void) {
+  return mem_leaked;
+}
