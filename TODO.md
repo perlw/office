@@ -2,12 +2,7 @@ TODO
 ===
 ## Game
 The actual game
-* Clean up main.c
-* Make asciilayer support colors, multiple fonts, etc
-  * Multiple kinds of colormanagement
-    * Grayscale pixel (rgb = same) is multiplied with tile color
-    * Not grayscale pixel (rgb != same) is shown verbatim
-    * Alpha channel < 1 is discard
+* Check .so loading on linuxes
 * Bedrock modules should not be interdependant
   * Potentially pull occulus out of bedrock?
 
