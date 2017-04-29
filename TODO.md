@@ -2,7 +2,8 @@ TODO
 ===
 ## Game
 The actual game
-* Check .so loading on linuxes
+* Move slightly away from pure ascii but not quite full tile-game
+  * Multiple tile-layers
 * Bedrock modules should not be interdependant
   * Potentially pull occulus out of bedrock?
 
