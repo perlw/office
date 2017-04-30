@@ -97,12 +97,14 @@ AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_wi
     int32_t coord_attr = picasso_program_attrib_location(layer->program, "coord");
     picasso_buffer_shader_attrib(coord_buffer, coord_attr);
 
-    mat4_t ortho = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
+    //mat4_t projection = m4_perspective(45, (float)width / (float)height, 1, 1000);
+    //mat4_t model = m4_translation((vec3_t){ -320, -240, -640});
+    mat4_t projection = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
     mat4_t model = m4_identity();
 
     int32_t pmatrix_uniform = picasso_program_uniform_location(layer->program, "pMatrix");
     int32_t mvmatrix_uniform = picasso_program_uniform_location(layer->program, "mvMatrix");
-    picasso_program_uniform_mat4(layer->program, pmatrix_uniform, (float *)&ortho);
+    picasso_program_uniform_mat4(layer->program, pmatrix_uniform, (float *)&projection);
     picasso_program_uniform_mat4(layer->program, mvmatrix_uniform, (float *)&model);
   }
 
