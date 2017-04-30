@@ -34,8 +34,10 @@ PicassoTexture *picasso_texture_create(PicassoTextureTarget target, uintmax_t wi
   texture->gl.channels = TextureChannelToGL[channels];
 
   glCreateTextures(texture->gl.target, 1, &texture->id);
-  glTextureParameterf(texture->id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTextureParameterf(texture->id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTextureParameteri(texture->id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTextureParameteri(texture->id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTextureParameteri(texture->id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTextureParameteri(texture->id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   glTextureStorage2D(texture->id, 1, TextureChannelToFormatGL[channels], (GLsizei)texture->width, (GLsizei)texture->height);
 

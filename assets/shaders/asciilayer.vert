@@ -9,6 +9,6 @@ uniform mat4 pMatrix;
 out vec2 texCoord;
 
 void main() {
-    texCoord = coord;
-    gl_Position = pMatrix * mvMatrix * vec4(vertex, 0.0f, 1.0f);
+  texCoord = coord;
+  gl_Position = pMatrix * mvMatrix * vec4(vertex, 0.0, 1.0);
 }

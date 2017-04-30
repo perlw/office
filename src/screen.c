@@ -196,6 +196,7 @@ void asciilayer_draw(AsciiLayer *layer, bool dirty) {
 
   picasso_program_use(layer->program);
 
+  picasso_texture_bind_to(layer->font_texture, 0);
   picasso_texture_bind_to(layer->asciimap_texture, 1);
   picasso_texture_bind_to(layer->forecolors_texture, 2);
   picasso_texture_bind_to(layer->backcolors_texture, 3);
