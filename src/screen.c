@@ -194,6 +194,12 @@ void asciilayer_destroy(AsciiLayer *layer) {
 void asciilayer_draw(AsciiLayer *layer, bool dirty) {
   assert(layer);
 
+  picasso_program_use(layer->program);
+
+  picasso_texture_bind_to(layer->asciimap_texture, 1);
+  picasso_texture_bind_to(layer->forecolors_texture, 2);
+  picasso_texture_bind_to(layer->backcolors_texture, 3);
+
   if (dirty) {
     uint8_t *runes = calloc(layer->ascii_size, sizeof(uint8_t));
     GlyphColor *fore = calloc(layer->ascii_size, sizeof(GlyphColor));
@@ -211,7 +217,6 @@ void asciilayer_draw(AsciiLayer *layer, bool dirty) {
     free(runes);
   }
 
-  picasso_program_use(layer->program);
   picasso_buffergroup_draw(layer->quad, PICASSO_BUFFER_MODE_TRIANGLES, 6);
 }
 // -AsciiLayer
@@ -228,6 +233,7 @@ typedef struct {
 
 typedef struct {
   AsciiLayer *asciilayer;
+  AsciiLayer *asciilayer2;
   Surface **surfaces;
 } Screen;
 
@@ -297,7 +303,20 @@ Screen *screen_create(const Config *config) {
   Screen *screen = calloc(1, sizeof(Screen));
 
   screen->asciilayer = asciilayer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
+  screen->asciilayer2 = asciilayer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
   screen->surfaces = rectify_array_alloc(10, sizeof(Surface *));
+
+  for (uintmax_t t = 0; t < screen->asciilayer2->ascii_size; t++) {
+    if (t % 16) {
+      screen->asciilayer2->asciimap[t].rune = 0;
+      screen->asciilayer2->asciimap[t].fore = (GlyphColor){ 0, 0, 0 };
+      screen->asciilayer2->asciimap[t].back = (GlyphColor){ 255, 0, 255 };
+    } else {
+      screen->asciilayer2->asciimap[t].rune = 2;
+      screen->asciilayer2->asciimap[t].fore = (GlyphColor){ 128, 0, 0 };
+      screen->asciilayer2->asciimap[t].back = (GlyphColor){ 192, 255, 0 };
+    }
+  }
 
   return screen;
 }
@@ -306,6 +325,7 @@ void screen_destroy(Screen *screen) {
   assert(screen);
 
   rectify_array_free(screen->surfaces);
+  asciilayer_destroy(screen->asciilayer2);
   asciilayer_destroy(screen->asciilayer);
 
   free(screen);
@@ -318,11 +338,16 @@ void screen_draw(Screen *screen, bool dirty) {
       for (uintmax_t x = 0; x < surface->width; x++) {
         uintmax_t s_index = (y * surface->width) + x;
         uintmax_t index = ((y + surface->y) * screen->asciilayer->ascii_width) + (x + surface->x);
+        if (index >= screen->asciilayer->ascii_size) {
+          continue;
+        }
+
         screen->asciilayer->asciimap[index] = surface->asciimap[s_index];
       }
     }
   }
 
+  asciilayer_draw(screen->asciilayer2, dirty);
   asciilayer_draw(screen->asciilayer, dirty);
 }
 // -Screen

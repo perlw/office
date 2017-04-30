@@ -191,7 +191,7 @@ void scene_test_update(SceneTest *scene, double delta) {
 
     // Wave
     {
-      scene->offset += 0.1;
+      //scene->offset += 0.1;
 
       double wave_depth = 0.25;
       double wave_thickness = M_PI * 4.0;

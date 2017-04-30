@@ -22,11 +22,13 @@ void main() {
   // Actual tile texture coords
   vec2 index = vec2(mod(tileIndex, 16), tileIndex / 16);
   vec2 origin = floor(index) / 16.0;
-  vec2 tileCoord = mod(vec2(texCoord.s * ascii_res_width, texCoord.t * ascii_res_height), 1) / 15.5;
+  vec2 tileCoord = mod(vec2(texCoord.s * ascii_res_width, texCoord.t * ascii_res_height), 1.0) / 16.0;
 
   vec4 sample = texture(font_texture, origin + tileCoord);
   if (sample.r == sample.g && sample.g == sample.b) {
     fragment = sample * tileFore;
+  } else if (tileBack.r == 1.0 && tileBack.g == 0.0 && tileBack.b == 1.0) {
+    discard;
   } else {
     fragment = tileBack;
   }

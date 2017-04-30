@@ -4,6 +4,8 @@ TODO
 The actual game
 * Move slightly away from pure ascii but not quite full tile-game
   * Multiple tile-layers
+    * Status effects etc
+    * Move moveables to own layer? Smooth movement? Too much?
 * Bedrock modules should not be interdependant
   * Potentially pull occulus out of bedrock?
 
