@@ -15,6 +15,7 @@ Tests?
 
 ### Picasso
 Graphics, pipeline
+* Fullscreen support
 
 ### Archivist module
 File management
