@@ -3,6 +3,7 @@ TODO
 ## Game
 The actual game
 * Move slightly away from pure ascii but not quite full tile-game
+  * Rename asciilayer to tilelayer? Keep it but create similar for graphical tiles?
   * Multiple tile-layers
     * Status effects etc
     * Move moveables to own layer? Smooth movement? Too much?
