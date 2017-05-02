@@ -8,7 +8,9 @@ The actual game
     * Move moveables to own layer? Smooth movement? Too much?
 * Bedrock modules should not be interdependant
   * Potentially pull occulus out of bedrock?
-* Asset management to not load same file multiple times
+* Asset management to not load same asset multiple times
+  * Textures
+  * Shaders
 
 ## Bedrock
 Tests?

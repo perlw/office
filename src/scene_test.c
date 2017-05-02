@@ -154,7 +154,6 @@ SceneTest *scene_test_create(Screen *screen, const Config *config) {
   scene->frames = 0;
   snprintf(scene->fps_buffer, 32, "FPS: 0 | MEM: 0.00kb");
   scene->current_second = 0.0;
-  scene->dirty = true;
   scene->screen = screen;
 
   scene->surface = surface_create(scene->screen, 0, 0, config->ascii_width, config->ascii_height);
@@ -228,8 +227,6 @@ void scene_test_update(SceneTest *scene, double delta) {
     }
 
     textinput_update(scene->input, scene->timing);
-
-    scene->dirty = true;
   }
 
   scene->current_second += delta;
@@ -239,16 +236,13 @@ void scene_test_update(SceneTest *scene, double delta) {
 
     scene->current_second = 0;
     scene->frames = 0;
-    scene->dirty = true;
   }
 }
 
 void scene_test_draw(SceneTest *scene) {
   assert(scene);
 
-  screen_draw(scene->screen, scene->dirty);
-
-  scene->dirty = false;
+  screen_draw(scene->screen);
   scene->frames++;
 }
 // -Scene

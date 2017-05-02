@@ -22,7 +22,7 @@ typedef struct AsciiLayer AsciiLayer;
 
 AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height);
 void asciilayer_destroy(AsciiLayer *layer);
-void asciilayer_draw(AsciiLayer *layer, bool dirty);
+void asciilayer_draw(AsciiLayer *layer);
 // -AsciiLayer
 
 // +Screen
@@ -30,7 +30,7 @@ typedef struct Screen Screen;
 
 Screen *screen_create(const Config *config);
 void screen_destroy(Screen *screen);
-void screen_draw(Screen *screen, bool dirty);
+void screen_draw(Screen *screen);
 // -Screen
 
 // +Surface

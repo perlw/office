@@ -30,6 +30,7 @@ typedef struct {
   uint32_t ascii_height;
   uint32_t ascii_size;
   Glyph *asciimap;
+  Glyph *last_asciimap;
 
   PicassoTexture *asciimap_texture;
   PicassoTexture *forecolors_texture;
@@ -127,10 +128,10 @@ AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_wi
     layer->ascii_height = ascii_height;
     layer->ascii_size = layer->ascii_width * layer->ascii_height;
     layer->asciimap = calloc(layer->ascii_size, sizeof(Glyph));
+    layer->last_asciimap = calloc(layer->ascii_size, sizeof(Glyph));
 
-    for (uintmax_t t = 0; t < layer->ascii_size; t++) {
-      memset(&layer->asciimap[t], 0, sizeof(Glyph));
-    }
+    memset(layer->asciimap, 0, sizeof(Glyph) * layer->ascii_size);
+    memset(layer->last_asciimap, 0, sizeof(Glyph) * layer->ascii_size);
 
     {
       layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->ascii_width, layer->ascii_height, PICASSO_TEXTURE_R);
@@ -181,6 +182,7 @@ AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_wi
 void asciilayer_destroy(AsciiLayer *layer) {
   assert(layer);
 
+  free(layer->last_asciimap);
   free(layer->asciimap);
 
   picasso_texture_destroy(layer->backcolors_texture);
@@ -193,17 +195,10 @@ void asciilayer_destroy(AsciiLayer *layer) {
   free(layer);
 }
 
-void asciilayer_draw(AsciiLayer *layer, bool dirty) {
+void asciilayer_draw(AsciiLayer *layer) {
   assert(layer);
 
-  picasso_program_use(layer->program);
-
-  picasso_texture_bind_to(layer->font_texture, 0);
-  picasso_texture_bind_to(layer->asciimap_texture, 1);
-  picasso_texture_bind_to(layer->forecolors_texture, 2);
-  picasso_texture_bind_to(layer->backcolors_texture, 3);
-
-  if (dirty) {
+  if (memcmp(layer->asciimap, layer->last_asciimap, sizeof(Glyph) * layer->ascii_size) != 0) {
     uint8_t *runes = calloc(layer->ascii_size, sizeof(uint8_t));
     GlyphColor *fore = calloc(layer->ascii_size, sizeof(GlyphColor));
     GlyphColor *back = calloc(layer->ascii_size, sizeof(GlyphColor));
@@ -218,7 +213,19 @@ void asciilayer_draw(AsciiLayer *layer, bool dirty) {
     free(back);
     free(fore);
     free(runes);
+
+    memcpy(layer->last_asciimap, layer->asciimap, sizeof(Glyph) * layer->ascii_size);
+    Glyph *swp = layer->last_asciimap;
+    layer->last_asciimap = layer->asciimap;
+    layer->asciimap = swp;
   }
+
+  picasso_program_use(layer->program);
+
+  picasso_texture_bind_to(layer->font_texture, 0);
+  picasso_texture_bind_to(layer->asciimap_texture, 1);
+  picasso_texture_bind_to(layer->forecolors_texture, 2);
+  picasso_texture_bind_to(layer->backcolors_texture, 3);
 
   picasso_buffergroup_draw(layer->quad, PICASSO_BUFFER_MODE_TRIANGLES, 6);
 }
@@ -334,7 +341,7 @@ void screen_destroy(Screen *screen) {
   free(screen);
 }
 
-void screen_draw(Screen *screen, bool dirty) {
+void screen_draw(Screen *screen) {
   for (uintmax_t t = 0; t < rectify_array_size(screen->surfaces); t++) {
     Surface *surface = screen->surfaces[t];
     for (uintmax_t y = 0; y < surface->height; y++) {
@@ -350,7 +357,7 @@ void screen_draw(Screen *screen, bool dirty) {
     }
   }
 
-  asciilayer_draw(screen->asciilayer2, dirty);
-  asciilayer_draw(screen->asciilayer, dirty);
+  asciilayer_draw(screen->asciilayer2);
+  asciilayer_draw(screen->asciilayer);
 }
 // -Screen
