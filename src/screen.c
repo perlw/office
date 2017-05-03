@@ -170,6 +170,7 @@ void asciilayer_destroy(AsciiLayer *layer) {
   picasso_texture_destroy(layer->asciimap_texture);
 
   tome_erase(ASSET_TEXTURE, "font");
+  tome_erase(ASSET_SHADER, "asciilayer");
 
   picasso_buffergroup_destroy(layer->quad);
 

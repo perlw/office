@@ -36,14 +36,21 @@ void tome_init(void) {
 void tome_kill(void) {
   assert(tome);
 
+  printf("TOME: Cleaning up...\n");
   for (uintmax_t t = 0; t < rectify_array_size(tome->handlers); t++) {
-    for (uintmax_t u = 0; u < rectify_array_size(tome->handlers[t].records); u++) {
-      if (tome->handlers[t].records[u].data) { // Workaround until list is pruned
-        free(tome->handlers[t].records[u].name);
-        tome->handlers[t].destroyer(tome->handlers[t].records[u].data);
+    Handler *handler = &tome->handlers[t];
+
+    for (uintmax_t u = 0; u < rectify_array_size(handler->records); u++) {
+      Record *record = &handler->records[u];
+
+      if (record->data) { // Workaround until list is pruned
+        printf("TOME: Asset \"%s\" still hanging around, killed\n", record->name);
+
+        free(record->name);
+        handler->destroyer(record->data);
       }
     }
-    rectify_array_free(tome->handlers[t].records);
+    rectify_array_free(handler->records);
   }
   rectify_array_free(tome->handlers);
 
@@ -55,16 +62,20 @@ void *tome_fetch(int32_t type, const char *name, const char *path) {
 
   printf("TOME: Fetching #%d asset \"%s\"@\"%s\"...", type, name, path);
   for (uintmax_t t = 0; t < rectify_array_size(tome->handlers); t++) {
-    if (tome->handlers[t].type == type) {
-      for (uintmax_t u = 0; u < rectify_array_size(tome->handlers[t].records); u++) {
-        if (strcmp(tome->handlers[t].records[u].name, name) == 0) {
-          tome->handlers[t].records[u].refs++;
-          printf("FOUND, now %" PRIuMAX " refs\n", tome->handlers[t].records[u].refs);
-          return tome->handlers[t].records[u].data;
+    Handler *handler = &tome->handlers[t];
+
+    if (handler->type == type) {
+      for (uintmax_t u = 0; u < rectify_array_size(handler->records); u++) {
+        Record *record = &handler->records[u];
+
+        if (strcmp(record->name, name) == 0) {
+          record->refs++;
+          printf("FOUND, now %" PRIuMAX " refs\n", record->refs);
+          return record->data;
         }
       }
 
-      void *data = tome->handlers[t].loader(name, path);
+      void *data = handler->loader(name, path);
       if (!data) {
         printf("HANDLER FAILED\n");
         return NULL;
@@ -86,9 +97,13 @@ void tome_record(int32_t type, const char *name, const void *data) {
 
   printf("TOME: Recording #%d asset \"%s\"...", type, name);
   for (uintmax_t t = 0; t < rectify_array_size(tome->handlers); t++) {
-    if (tome->handlers[t].type == type) {
-      for (uintmax_t u = 0; u < rectify_array_size(tome->handlers[t].records); u++) {
-        if (strcmp(tome->handlers[t].records[u].name, name) == 0) {
+    Handler *handler = &tome->handlers[t];
+
+    if (handler->type == type) {
+      for (uintmax_t u = 0; u < rectify_array_size(handler->records); u++) {
+        Record *record = &handler->records[u];
+
+        if (strcmp(record->name, name) == 0) {
           printf("ALREADY RECORDED\n");
           return;
         }
@@ -101,7 +116,7 @@ void tome_record(int32_t type, const char *name, const void *data) {
       };
       memcpy(record.name, name, sizeof(char) * (strlen(name) + 1));
 
-      tome->handlers[t].records = rectify_array_push(tome->handlers[t].records, &record);
+      handler->records = rectify_array_push(handler->records, &record);
 
       printf("DONE\n");
       return;
@@ -114,22 +129,26 @@ void tome_record(int32_t type, const char *name, const void *data) {
 void tome_erase(int32_t type, const char *name) {
   printf("TOME: Destroying #%d asset \"%s\"...", type, name);
   for (uintmax_t t = 0; t < rectify_array_size(tome->handlers); t++) {
-    if (tome->handlers[t].type == type) {
-      for (uintmax_t u = 0; u < rectify_array_size(tome->handlers[t].records); u++) {
-        if (strcmp(tome->handlers[t].records[u].name, name) == 0) {
-          tome->handlers[t].records[u].refs--;
+    Handler *handler = &tome->handlers[t];
 
-          if (tome->handlers[t].records[u].refs == 0) {
+    if (handler->type == type) {
+      for (uintmax_t u = 0; u < rectify_array_size(handler->records); u++) {
+        Record *record = &handler->records[u];
+
+        if (strcmp(record->name, name) == 0) {
+          record->refs--;
+
+          if (record->refs == 0) {
             printf("KILLED\n");
-            free(tome->handlers[t].records[u].name);
-            tome->handlers[t].destroyer(tome->handlers[t].records[u].data);
+            free(record->name);
+            handler->destroyer(record->data);
 
             // Workaround until list is pruned
-            tome->handlers[t].records[u].data = NULL;
+            record->data = NULL;
             return;
           }
 
-          printf("DONE, now %" PRIuMAX " refs\n", tome->handlers[t].records[u].refs);
+          printf("DONE, now %" PRIuMAX " refs\n", record->refs);
           return;
         }
       }
@@ -146,11 +165,14 @@ void tome_handler(int32_t type, TomeLoader loader, TomeDestroyer destroyer) {
 
   printf("TOME: Registering #%d loader...", type);
   for (uintmax_t t = 0; t < rectify_array_size(tome->handlers); t++) {
-    if (tome->handlers[t].type == type) {
+    Handler *handler = &tome->handlers[t];
+
+    if (handler->type == type) {
       printf("FOUND, ignoring...\n");
       return;
     }
   }
+
   tome->handlers = rectify_array_push(tome->handlers, &(Handler){
                                                         .type = type,
                                                         .loader = loader,
