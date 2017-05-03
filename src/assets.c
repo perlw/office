@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "bedrock/bedrock.h"
 
@@ -8,8 +9,18 @@
 void *shader_loader(const char *name, const char *path) {
   uintmax_t vert_length = 0, frag_length = 0;
   uint8_t *vert_source, *frag_source;
-  archivist_read_file("shaders/asciilayer.vert", &vert_length, &vert_source);
-  archivist_read_file("shaders/asciilayer.frag", &frag_length, &frag_source);
+
+  uintmax_t filepath_length = strlen(path) + 6;
+  char *vert_filepath = calloc(filepath_length, sizeof(char));
+  char *frag_filepath = calloc(filepath_length, sizeof(char));
+  snprintf(vert_filepath, filepath_length, "%s.vert", path);
+  snprintf(frag_filepath, filepath_length, "%s.frag", path);
+
+  archivist_read_file(vert_filepath, &vert_length, &vert_source);
+  archivist_read_file(frag_filepath, &frag_length, &frag_source);
+
+  free(vert_filepath);
+  free(frag_filepath);
 
   PicassoShader *vertex_shader = picasso_shader_create(PICASSO_SHADER_VERTEX);
   PicassoShader *fragment_shader = picasso_shader_create(PICASSO_SHADER_FRAGMENT);
@@ -51,7 +62,7 @@ void *texture_loader(const char *name, const char *path) {
   uintmax_t buffer_size = 0;
   uint8_t *buffer;
 
-  if (!archivist_read_file("fonts/cp437_8x8.png", &buffer_size, &buffer)) {
+  if (!archivist_read_file(path, &buffer_size, &buffer)) {
     return NULL;
   }
 
