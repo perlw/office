@@ -66,7 +66,7 @@ void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *argumen
   MuseFunctionRef ref = *(MuseFunctionRef *)arguments[1].argument;
 
   ActionRef action_ref = {
-    .action = rectify_memory_alloc_copy(action, strlen(action) + 1),
+    .action = rectify_memory_alloc_copy(action, sizeof(char) * (strlen(action) + 1)),
     .ref = ref,
   };
   action_refs = rectify_array_push(action_refs, &action_ref);
@@ -89,7 +89,7 @@ void input_action_add_binding(InputActionBinding *binding) {
   num_bindings++;
   input_bindings = realloc(input_bindings, num_bindings * sizeof(InputActionBinding));
   input_bindings[num_bindings - 1] = (InputActionBinding){
-    .action = rectify_memory_alloc_copy(binding->action, length),
+    .action = rectify_memory_alloc_copy(binding->action, sizeof(char) * length),
     .key = binding->key,
   };
 }

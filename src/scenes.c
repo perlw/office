@@ -81,7 +81,7 @@ void scenes_register(Scenes *scenes, Scene *scene) {
   assert(scenes);
 
   Scene scene_cpy = {
-    .name = rectify_memory_alloc_copy(scene->name, strlen(scene->name) + 1),
+    .name = rectify_memory_alloc_copy(scene->name, sizeof(char) * (strlen(scene->name) + 1)),
     .create = scene->create,
     .destroy = scene->destroy,
     .update = scene->update,
