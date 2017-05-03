@@ -8,5 +8,6 @@
 #include "muse/muse.h"
 #include "picasso/picasso.h"
 #include "rectify/rectify.h"
+#include "tome/tome.h"
 
 double bedrock_time(void);

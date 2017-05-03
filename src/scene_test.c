@@ -1,10 +1,13 @@
 #include <assert.h>
 #include <inttypes.h>
+#include <malloc.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
 #include "arkanis/math_3d.h"
+
+#include "bedrock/bedrock.h"
 
 #include "config.h"
 #include "messages.h"

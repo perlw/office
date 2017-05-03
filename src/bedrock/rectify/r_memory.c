@@ -1,6 +1,6 @@
 #include "r_internal.h"
 
-void *rectify_memory_alloc_copy(void *ptr, uintmax_t size) {
+void *rectify_memory_alloc_copy(const void *ptr, uintmax_t size) {
   assert(ptr);
 
   void *cptr = malloc(size);

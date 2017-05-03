@@ -38,6 +38,7 @@ add_subdirectory (muse)
 add_subdirectory (occulus)
 add_subdirectory (picasso)
 add_subdirectory (boombox)
+add_subdirectory (tome)
 add_dependencies (bedrock glad lua glfw)
 
 if (USE_OCCULUS)

@@ -9,9 +9,6 @@ The actual game
     * Move moveables to own layer? Smooth movement? Too much?
 * Bedrock modules should not be interdependant
   * Potentially pull occulus out of bedrock?
-* Asset management to not load same asset multiple times
-  * Textures
-  * Shaders
 
 ## Bedrock
 Tests?
@@ -40,10 +37,11 @@ Memory introspector
 ### Rectify
 Data, memory, sorting
 
+### Tome
+Asset management
+* Prune list when erasing manually
+
 ## Planned modules
 
 ### Synapse
 Networking
-
-### Tome
-Pak/resource file support

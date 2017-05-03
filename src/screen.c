@@ -6,6 +6,8 @@
 #include "glad/glad.h"
 
 #include "bedrock/bedrock.h"
+
+#include "assets.h"
 #include "config.h"
 
 // +AsciiLayer
@@ -67,40 +69,9 @@ AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_wi
   PicassoBuffer *coord_buffer = picasso_buffer_create(layer->quad, PICASSO_BUFFER_TYPE_ARRAY, PICASSO_BUFFER_USAGE_STATIC);
   picasso_buffer_set_data(coord_buffer, 2, PICASSO_TYPE_FLOAT, sizeof(*coord_data) * 12, coord_data);
 
-  {
-    uintmax_t vert_length = 0, frag_length = 0;
-    uint8_t *vert_source, *frag_source;
-    archivist_read_file("shaders/asciilayer.vert", &vert_length, &vert_source);
-    archivist_read_file("shaders/asciilayer.frag", &frag_length, &frag_source);
-
-    PicassoShader *vertex_shader = picasso_shader_create(PICASSO_SHADER_VERTEX);
-    PicassoShader *fragment_shader = picasso_shader_create(PICASSO_SHADER_FRAGMENT);
-    {
-      PicassoResult result = picasso_shader_compile(vertex_shader, vert_length, vert_source);
-      if (result.result != PICASSO_SHADER_OK) {
-        printf("PICASSO: Shader compile error!\n-=-\n%s\n-=-\n", result.detail);
-        exit(-1);
-      }
-    }
-    {
-      PicassoResult result = picasso_shader_compile(fragment_shader, frag_length, frag_source);
-      if (result.result != PICASSO_SHADER_OK) {
-        printf("PICASSO: Shader compile error!\n-=-\n%s\n-=-\n", result.detail);
-        exit(-1);
-      }
-    }
-
-    layer->program = picasso_program_create();
-    picasso_program_link_shaders(layer->program, 2, (const PicassoShader *[]){
-                                                      vertex_shader,
-                                                      fragment_shader,
-                                                    });
-
-    picasso_shader_destroy(vertex_shader);
-    picasso_shader_destroy(fragment_shader);
-
-    free(vert_source);
-    free(frag_source);
+  layer->program = (PicassoProgram *)tome_fetch(ASSET_SHADER, "asciilayer", "shaders/asciilayer");
+  if (!layer->program) {
+    exit(-1);
   }
 
   {
@@ -122,17 +93,14 @@ AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_wi
   }
 
   {
-    uintmax_t buffer_size = 0;
-    uint8_t *buffer;
-
-    archivist_read_file("fonts/cp437_8x8.png", &buffer_size, &buffer);
-    layer->font_texture = picasso_texture_load(PICASSO_TEXTURE_TARGET_2D, PICASSO_TEXTURE_RGB, buffer_size, buffer);
+    layer->font_texture = (PicassoTexture *)tome_fetch(ASSET_TEXTURE, "font", "fonts/cp437_8x8.png");
+    if (!layer->font_texture) {
+      exit(-1);
+    }
     picasso_texture_bind_to(layer->font_texture, 0);
 
     int32_t texture_uniform = picasso_program_uniform_location(layer->program, "font_texture");
     picasso_program_uniform_int(layer->program, texture_uniform, 0);
-
-    free(buffer);
   }
 
   {
@@ -200,8 +168,9 @@ void asciilayer_destroy(AsciiLayer *layer) {
   picasso_texture_destroy(layer->backcolors_texture);
   picasso_texture_destroy(layer->forecolors_texture);
   picasso_texture_destroy(layer->asciimap_texture);
-  picasso_texture_destroy(layer->font_texture);
-  picasso_program_destroy(layer->program);
+
+  tome_erase(ASSET_TEXTURE, "font");
+
   picasso_buffergroup_destroy(layer->quad);
 
   free(layer);

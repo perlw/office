@@ -10,6 +10,7 @@
 
 #include "bedrock/bedrock.h"
 
+#include "assets.h"
 #include "config.h"
 #include "input.h"
 #include "messages.h"
@@ -26,6 +27,9 @@ void game_kill_event(int32_t id, void *subscriberdata, void *userdata) {
 
 int main() {
   srand(time(NULL));
+
+  tome_init();
+  setup_asset_loaders();
 
   Muse *muse = muse_create();
 
@@ -109,10 +113,12 @@ int main() {
   scenes_destroy(scenes);
 
   screen_destroy(screen);
-  soundsys_destroy(soundsys);
 
   input_kill();
 
+  soundsys_destroy(soundsys);
+
+  tome_kill();
   muse_destroy(muse);
   picasso_window_kill();
 

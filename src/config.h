@@ -3,8 +3,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "bedrock/bedrock.h"
-
 typedef struct {
   uint32_t res_width;
   uint32_t res_height;

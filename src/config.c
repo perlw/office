@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "bedrock/bedrock.h"
+
 #include "config.h"
 #include "input.h"
 

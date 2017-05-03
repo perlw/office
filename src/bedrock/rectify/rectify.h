@@ -13,5 +13,5 @@ uintmax_t rectify_array_size(void *ptr);
 // -array
 
 // +memory
-void *rectify_memory_alloc_copy(void *ptr, uintmax_t size);
+void *rectify_memory_alloc_copy(const void *ptr, uintmax_t size);
 // +memory
