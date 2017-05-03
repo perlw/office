@@ -1,5 +1,11 @@
 #pragma once
 
+typedef struct {
+  int32_t result;
+  uint8_t length;
+  char detail[256];
+} PicassoResult;
+
 // +Window
 typedef enum {
   PICASSO_KEY_SPACE = 32,
@@ -166,11 +172,11 @@ typedef struct PicassoProgram PicassoProgram;
 
 PicassoShader *picasso_shader_create(PicassoShaderType type);
 void picasso_shader_destroy(PicassoShader *shader);
-PicassoShaderResult picasso_shader_compile(PicassoShader *shader, uintmax_t length, const uint8_t *source);
+PicassoResult picasso_shader_compile(PicassoShader *shader, uintmax_t length, const uint8_t *source);
 
 PicassoProgram *picasso_program_create(void);
 void picasso_program_destroy(PicassoProgram *program);
-void picasso_program_link_shaders(PicassoProgram *program, uintmax_t num_shaders, const PicassoShader **shaders);
+PicassoResult picasso_program_link_shaders(PicassoProgram *program, uintmax_t num_shaders, const PicassoShader **shaders);
 void picasso_program_use(PicassoProgram *program);
 int32_t picasso_program_attrib_location(PicassoProgram *program, const char *name);
 int32_t picasso_program_uniform_location(PicassoProgram *program, const char *name);

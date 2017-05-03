@@ -75,8 +75,20 @@ AsciiLayer *asciilayer_create(uint32_t width, uint32_t height, uint32_t ascii_wi
 
     PicassoShader *vertex_shader = picasso_shader_create(PICASSO_SHADER_VERTEX);
     PicassoShader *fragment_shader = picasso_shader_create(PICASSO_SHADER_FRAGMENT);
-    picasso_shader_compile(vertex_shader, vert_length, vert_source);
-    picasso_shader_compile(fragment_shader, frag_length, frag_source);
+    {
+      PicassoResult result = picasso_shader_compile(vertex_shader, vert_length, vert_source);
+      if (result.result != PICASSO_SHADER_OK) {
+        printf("PICASSO: Shader compile error!\n-=-\n%s\n-=-\n", result.detail);
+        exit(-1);
+      }
+    }
+    {
+      PicassoResult result = picasso_shader_compile(fragment_shader, frag_length, frag_source);
+      if (result.result != PICASSO_SHADER_OK) {
+        printf("PICASSO: Shader compile error!\n-=-\n%s\n-=-\n", result.detail);
+        exit(-1);
+      }
+    }
 
     layer->program = picasso_program_create();
     picasso_program_link_shaders(layer->program, 2, (const PicassoShader *[]){

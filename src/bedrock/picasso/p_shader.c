@@ -32,7 +32,7 @@ void picasso_shader_destroy(PicassoShader *shader) {
   free(shader);
 }
 
-PicassoShaderResult picasso_shader_compile(PicassoShader *shader, uintmax_t length, const uint8_t *source) {
+PicassoResult picasso_shader_compile(PicassoShader *shader, uintmax_t length, const uint8_t *source) {
   assert(shader);
 
   glShaderSource(shader->id, 1, (const GLchar *const *)&source, (const GLint *)&length);
@@ -41,12 +41,20 @@ PicassoShaderResult picasso_shader_compile(PicassoShader *shader, uintmax_t leng
   GLint log_length;
   glGetShaderiv(shader->id, GL_INFO_LOG_LENGTH, &log_length);
   if (log_length > 1) {
-    GLchar log[1024];
-    glGetShaderInfoLog(shader->id, log_length, 0, &log[0]);
-    log[log_length + 1] = '\0';
-    printf("--------------->\n%s\n<-------------\n", log);
-    return PICASSO_SHADER_COMPILE_FAILED;
+    PicassoResult result;
+    result.result = PICASSO_SHADER_COMPILE_FAILED;
+    result.length = log_length;
+
+    log_length = (log_length >= 255 ? 255 : log_length);
+    glGetShaderInfoLog(shader->id, log_length, 0, result.detail);
+    result.detail[log_length + 1] = '\0';
+
+    return result;
   }
 
-  return PICASSO_SHADER_OK;
+  return (PicassoResult){
+    .result = PICASSO_SHADER_OK,
+    .length = 0,
+    .detail = { 0 },
+  };
 }

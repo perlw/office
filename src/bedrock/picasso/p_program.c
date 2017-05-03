@@ -10,7 +10,7 @@ PicassoProgram *picasso_program_create(void) {
   return program;
 }
 
-void picasso_program_link_shaders(PicassoProgram *program, uintmax_t num_shaders, const PicassoShader **shaders) {
+PicassoResult picasso_program_link_shaders(PicassoProgram *program, uintmax_t num_shaders, const PicassoShader **shaders) {
   assert(program);
   assert(num_shaders > 0);
   assert(shaders);
@@ -21,6 +21,12 @@ void picasso_program_link_shaders(PicassoProgram *program, uintmax_t num_shaders
   glLinkProgram(program->id);
 
   picasso_program_use(NULL);
+
+  return (PicassoResult){
+    .result = PICASSO_SHADER_OK,
+    .length = 0,
+    .detail = { 0 },
+  };
 }
 
 void picasso_program_destroy(PicassoProgram *program) {
