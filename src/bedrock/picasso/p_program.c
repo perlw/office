@@ -62,6 +62,12 @@ void picasso_program_uniform_int(PicassoProgram *program, int32_t uniform, int32
   glProgramUniform1i(program->id, uniform, val);
 }
 
+void picasso_program_uniform_float(PicassoProgram *program, int32_t uniform, float val) {
+  assert(program);
+
+  glProgramUniform1f(program->id, uniform, val);
+}
+
 void picasso_program_uniform_mat4(PicassoProgram *program, int32_t uniform, float *mat) {
   assert(program);
 

@@ -181,6 +181,7 @@ void picasso_program_use(PicassoProgram *program);
 int32_t picasso_program_attrib_location(PicassoProgram *program, const char *name);
 int32_t picasso_program_uniform_location(PicassoProgram *program, const char *name);
 void picasso_program_uniform_int(PicassoProgram *program, int32_t uniform, int32_t val);
+void picasso_program_uniform_float(PicassoProgram *program, int32_t uniform, float val);
 void picasso_program_uniform_mat4(PicassoProgram *program, int32_t uniform, float *mat);
 // -Shaders
 

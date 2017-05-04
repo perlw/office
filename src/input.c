@@ -47,7 +47,7 @@ void input_keyboard_callback(const PicassoWindowInputEvent *event) {
 }
 
 void input_action(InputActionBinding *binding, void *userdata) {
-  printf("->binding %s\n", binding->action);
+  printf("INPUT: %s\n", binding->action);
 
   if (strcmp(binding->action, "close") == 0) {
     gossip_emit(MSG_GAME_KILL, NULL);
