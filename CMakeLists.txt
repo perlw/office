@@ -8,9 +8,22 @@ include_directories ("${PROJECT_SOURCE_DIR}/src")
 include_directories ("${PROJECT_SOURCE_DIR}/deps")
 
 option (USE_OCCULUS "Use memory debugger" OFF)
+
 add_subdirectory (src/bedrock)
 
-add_executable (office src/main.c src/assets.c src/config.c src/input.c src/sound.c src/screen.c src/scenes.c src/scene_test.c)
+set (
+  SOURCES
+  "src/main.c"
+  "src/assets.c"
+  "src/config.c"
+  "src/input.c"
+  "src/sound.c"
+  "src/screen.c"
+  "src/scenes.c"
+  "src/scene_test.c"
+  "src/tiles/t_ascii.c"
+)
+add_executable (office ${SOURCES})
 
 if (UNIX)
   target_compile_options (bedrock PRIVATE -std=gnu99 -march=native -Wall)
