@@ -33,8 +33,11 @@ SceneTest *scene_test2_create(const Config *config) {
       scene->tiles->tilemap[index] = (has_tile ? (x % 2) + 1 : 0);
     }
   }
+
+  scene->tiles->tilemap[(14 * 40) + 18] = 0;
   scene->tiles->tilemap[(14 * 40) + 19] = 3;
   scene->tiles->tilemap[(14 * 40) + 20] = 4;
+  scene->tiles->tilemap[(14 * 40) + 21] = 0;
 
   return scene;
 }
