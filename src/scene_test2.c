@@ -30,9 +30,11 @@ SceneTest *scene_test2_create(const Config *config) {
     for (uintmax_t x = 0; x < 40; x++) {
       uintmax_t index = (y * 40) + x;
       bool has_tile = (x + (y % 2)) % 2;
-      scene->tiles->tilemap[index] = (has_tile ? 1 : 0);
+      scene->tiles->tilemap[index] = (has_tile ? (x % 2) + 1 : 0);
     }
   }
+  scene->tiles->tilemap[(14 * 40) + 19] = 3;
+  scene->tiles->tilemap[(14 * 40) + 20] = 4;
 
   return scene;
 }
