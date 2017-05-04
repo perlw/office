@@ -336,6 +336,7 @@ void scene_test_draw(SceneTest *scene) {
   surface_draw(scene->surface, scene->tiles_ascii);
   surface_draw(scene->surface2, scene->tiles_ascii);
   surface_draw(scene->surface3, scene->tiles_ascii);
+  surface_draw(scene->input->surface, scene->tiles_ascii);
   surface_draw(scene->fps_surface, scene->tiles_ascii);
 
   tiles_ascii_draw(scene->tiles_ascii);

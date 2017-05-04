@@ -24,6 +24,20 @@ void game_kill_event(int32_t id, void *subscriberdata, void *userdata) {
   quit_game = true;
 }
 
+void navigate_scene(int32_t id, void *subscriberdata, void *userdata) {
+  Scenes *scenes = (Scenes *)subscriberdata;
+
+  switch (id) {
+    case MSG_SCENE_PREV:
+      scenes_prev(scenes);
+      break;
+
+    case MSG_SCENE_NEXT:
+      scenes_next(scenes);
+      break;
+  }
+}
+
 int main() {
   srand(time(NULL));
 
@@ -76,6 +90,8 @@ int main() {
   };
   scenes_register(scenes, &scene_test);
   scenes_register(scenes, &scene_test2);
+  gossip_subscribe(MSG_SCENE_PREV, &navigate_scene, (void *)scenes);
+  gossip_subscribe(MSG_SCENE_NEXT, &navigate_scene, (void *)scenes);
 
   scenes_goto(scenes, "test");
 

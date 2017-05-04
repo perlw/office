@@ -24,3 +24,5 @@ void scenes_draw(Scenes *scenes);
 
 void scenes_register(Scenes *scenes, Scene *scene);
 void scenes_goto(Scenes *scenes, const char *name);
+void scenes_prev(Scenes *scenes);
+void scenes_next(Scenes *scenes);

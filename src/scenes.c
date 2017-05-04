@@ -111,3 +111,35 @@ void scenes_goto(Scenes *scenes, const char *name) {
 
   printf("SCENES: Switched to scene \"%s\"\n", name);
 }
+
+void scenes_go(Scenes *scenes, int32_t move) {
+  assert(scenes);
+
+  if (!scenes->current_scene) {
+    return;
+  }
+
+  for (uintmax_t t = 0; t < rectify_array_size(scenes->scenes); t++) {
+    if (&scenes->scenes[t] == scenes->current_scene) {
+      if ((t > 0 && move < 0) || (t < rectify_array_size(scenes->scenes) - 1 && move > 0)) {
+        scenes->current_scene->destroy(scenes->current_scene_data);
+        scenes->current_scene = NULL;
+
+        scenes->current_scene = &scenes->scenes[t + move];
+        scenes->current_scene_data = scenes->current_scene->create(scenes->config);
+
+        printf("SCENES: Switched to scene \"%s\"\n", scenes->current_scene->name);
+      }
+
+      break;
+    }
+  }
+}
+
+void scenes_prev(Scenes *scenes) {
+  scenes_go(scenes, -1);
+}
+
+void scenes_next(Scenes *scenes) {
+  scenes_go(scenes, 1);
+}

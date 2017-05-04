@@ -53,6 +53,14 @@ void input_action(InputActionBinding *binding, void *userdata) {
     gossip_emit(MSG_GAME_KILL, NULL);
     return;
   }
+  if (strcmp(binding->action, "prev_scene") == 0) {
+    gossip_emit(MSG_SCENE_PREV, NULL);
+    return;
+  }
+  if (strcmp(binding->action, "next_scene") == 0) {
+    gossip_emit(MSG_SCENE_NEXT, NULL);
+    return;
+  }
 
   for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
     if (strcmp(action_refs[t].action, binding->action) == 0) {
