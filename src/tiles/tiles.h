@@ -1,5 +1,25 @@
 #pragma once
 
+// +Tiles
+typedef struct {
+  uint32_t num_tiles_x;
+  uint32_t num_tiles_y;
+  uint32_t num_tiles;
+  uint8_t *tilemap;
+  uint8_t *last_tilemap;
+
+  PicassoBufferGroup *quad;
+  PicassoProgram *program;
+  PicassoTexture *tileset_texture;
+  PicassoTexture *tilemap_texture;
+} Tiles;
+
+Tiles *tiles_create(uint32_t width, uint32_t height, uint32_t num_tiles_x, uint32_t num_tiles_y);
+void tiles_destroy(Tiles *tiles);
+
+void tiles_draw(Tiles *tiles);
+// -Tiles
+
 // +TilesAscii
 typedef struct {
   uint8_t r;

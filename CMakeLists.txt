@@ -18,9 +18,10 @@ set (
   "src/config.c"
   "src/input.c"
   "src/sound.c"
-  "src/screen.c"
   "src/scenes.c"
   "src/scene_test.c"
+  "src/scene_test2.c"
+  "src/tiles/t_main.c"
   "src/tiles/t_ascii.c"
 )
 add_executable (office ${SOURCES})

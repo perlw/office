@@ -7,7 +7,6 @@
 #include "scenes.h"
 
 struct Scenes {
-  Screen *screen;
   Scene *scenes;
   Config *config;
 
@@ -15,7 +14,7 @@ struct Scenes {
   void *current_scene_data;
 };
 
-void *scenes_dummy_create(Screen *screen, const Config *config) {
+void *scenes_dummy_create(const Config *config) {
 }
 
 void scenes_dummy_destroy(void *scene) {
@@ -35,10 +34,9 @@ Scene scene_dummy = {
   .draw = &scenes_dummy_draw,
 };
 
-Scenes *scenes_create(Screen *screen, Config *config) {
+Scenes *scenes_create(Config *config) {
   Scenes *scenes = calloc(1, sizeof(Scenes));
 
-  scenes->screen = screen;
   scenes->scenes = rectify_array_alloc(10, sizeof(Scene));
   scenes->config = config;
   scenes->current_scene = &scene_dummy;
@@ -109,7 +107,7 @@ void scenes_goto(Scenes *scenes, const char *name) {
     scenes->current_scene_data = NULL;
   }
 
-  scenes->current_scene_data = scenes->current_scene->create(scenes->screen, scenes->config);
+  scenes->current_scene_data = scenes->current_scene->create(scenes->config);
 
   printf("SCENES: Switched to scene \"%s\"\n", name);
 }

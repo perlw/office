@@ -15,7 +15,6 @@
 #include "input.h"
 #include "messages.h"
 #include "scenes.h"
-#include "screen.h"
 #include "sound.h"
 
 #include "scene_test.h"
@@ -60,9 +59,7 @@ int main() {
 
   SoundSys *soundsys = soundsys_create();
 
-  Screen *screen = screen_create(&config);
-
-  Scenes *scenes = scenes_create(screen, &config);
+  Scenes *scenes = scenes_create(&config);
   Scene scene_test = {
     .name = "test",
     .create = &scene_test_create,
@@ -70,7 +67,16 @@ int main() {
     .update = &scene_test_update,
     .draw = &scene_test_draw,
   };
+  Scene scene_test2 = {
+    .name = "test2",
+    .create = &scene_test2_create,
+    .destroy = &scene_test2_destroy,
+    .update = &scene_test2_update,
+    .draw = &scene_test2_draw,
+  };
   scenes_register(scenes, &scene_test);
+  scenes_register(scenes, &scene_test2);
+
   scenes_goto(scenes, "test");
 
   double last_tick = bedrock_time();
@@ -111,8 +117,6 @@ int main() {
   gossip_cleanup();
 
   scenes_destroy(scenes);
-
-  screen_destroy(screen);
 
   input_kill();
 
