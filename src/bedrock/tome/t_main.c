@@ -68,6 +68,10 @@ void *tome_fetch(int32_t type, const char *name, const char *path) {
       for (uintmax_t u = 0; u < rectify_array_size(handler->records); u++) {
         Record *record = &handler->records[u];
 
+        if (!record->name) {
+          continue;
+        }
+
         if (strcmp(record->name, name) == 0) {
           record->refs++;
           printf("FOUND, now %" PRIuMAX " refs\n", record->refs);
@@ -103,6 +107,10 @@ void tome_record(int32_t type, const char *name, const void *data) {
       for (uintmax_t u = 0; u < rectify_array_size(handler->records); u++) {
         Record *record = &handler->records[u];
 
+        if (!record->name) {
+          continue;
+        }
+
         if (strcmp(record->name, name) == 0) {
           printf("ALREADY RECORDED\n");
           return;
@@ -135,12 +143,17 @@ void tome_erase(int32_t type, const char *name) {
       for (uintmax_t u = 0; u < rectify_array_size(handler->records); u++) {
         Record *record = &handler->records[u];
 
+        if (!record->name) {
+          continue;
+        }
+
         if (strcmp(record->name, name) == 0) {
           record->refs--;
 
           if (record->refs == 0) {
             printf("KILLED\n");
             free(record->name);
+            record->name = NULL;
             handler->destroyer(record->data);
 
             // Workaround until list is pruned
