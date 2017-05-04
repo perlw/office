@@ -36,6 +36,7 @@ Memory introspector
 
 ### Rectify
 Data, memory, sorting
+* Must add ability to remove from arrays
 
 ### Tome
 Asset management

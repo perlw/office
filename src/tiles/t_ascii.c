@@ -175,6 +175,20 @@ void tiles_ascii_draw(TilesAscii *layer) {
 
   picasso_program_use(layer->program);
 
+  {
+    mat4_t projection = m4_ortho(0, 640, 0, 480, 1, 0);
+    mat4_t model = m4_identity();
+
+    int32_t pmatrix_uniform = picasso_program_uniform_location(layer->program, "pMatrix");
+    int32_t mvmatrix_uniform = picasso_program_uniform_location(layer->program, "mvMatrix");
+    picasso_program_uniform_mat4(layer->program, pmatrix_uniform, (float *)&projection);
+    picasso_program_uniform_mat4(layer->program, mvmatrix_uniform, (float *)&model);
+    int32_t ascii_width_uniform = picasso_program_uniform_location(layer->program, "ascii_res_width");
+    int32_t ascii_height_uniform = picasso_program_uniform_location(layer->program, "ascii_res_height");
+    picasso_program_uniform_int(layer->program, ascii_width_uniform, layer->ascii_width);
+    picasso_program_uniform_int(layer->program, ascii_height_uniform, layer->ascii_height);
+  }
+
   picasso_texture_bind_to(layer->font_texture, 0);
   picasso_texture_bind_to(layer->asciimap_texture, 1);
   picasso_texture_bind_to(layer->forecolors_texture, 2);

@@ -11,9 +11,11 @@ uniform float offset;
 
 out vec4 fragment;
 
+vec3 discard_color = vec3(1.0, 0.0, 1.0);
+
 void main() {
   // Which tile to render
-  float tile = texture(tilemap, texCoord).r;
+  float tile = texture(tilemap, texCoord + vec2(offset, offset)).r;
   int tileIndex = int(tile * 256);
 
   // Actual tile texture coords
@@ -25,7 +27,7 @@ void main() {
   vec2 tileOffset = vec2(xOffset, yOffset);
 
   vec4 sample = texture(tileset, origin + tileOffset);
-  if (sample.rgb != vec3(1.0, 0.0, 1.0)) {
+  if (sample.rgb != discard_color) {
     fragment = sample;
   } else {
     discard;

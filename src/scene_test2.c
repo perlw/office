@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -13,8 +14,6 @@ typedef struct {
   double offset;
   double timing;
   double since_update;
-  uint32_t frames;
-  double current_second;
 
   Tiles *tiles;
 } SceneTest;
@@ -22,12 +21,18 @@ typedef struct {
 SceneTest *scene_test2_create(const Config *config) {
   SceneTest *scene = calloc(1, sizeof(SceneTest));
 
-  scene->offset = 0.0;
+  scene->offset = M_PI;
   scene->timing = 1 / 30.0;
   scene->since_update = scene->timing;
-  scene->frames = 0;
 
   scene->tiles = tiles_create(config->res_width, config->res_height, 40, 30);
+  for (uintmax_t y = 0; y < 30; y++) {
+    for (uintmax_t x = 0; x < 40; x++) {
+      uintmax_t index = (y * 40) + x;
+      bool has_tile = (x + (y % 2)) % 2;
+      scene->tiles->tilemap[index] = (has_tile ? 1 : 0);
+    }
+  }
 
   return scene;
 }
@@ -47,17 +52,9 @@ void scene_test2_update(SceneTest *scene, double delta) {
   while (scene->since_update >= scene->timing) {
     scene->since_update -= scene->timing;
 
-    scene->offset += 0.001;
+    scene->offset += 0.025;
     int32_t offset_uniform = picasso_program_uniform_location(scene->tiles->program, "offset");
-    picasso_program_uniform_float(scene->tiles->program, offset_uniform, scene->offset);
-  }
-
-  scene->current_second += delta;
-  if (scene->current_second >= 1) {
-    printf("FPS: %d | MEM: %.2fkb\n", scene->frames, (double)occulus_current_allocated() / 1024.0);
-
-    scene->current_second = 0;
-    scene->frames = 0;
+    picasso_program_uniform_float(scene->tiles->program, offset_uniform, cos(scene->offset) / 2.0);
   }
 }
 
@@ -65,5 +62,4 @@ void scene_test2_draw(SceneTest *scene) {
   assert(scene);
 
   tiles_draw(scene->tiles);
-  scene->frames++;
 }

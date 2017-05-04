@@ -219,9 +219,6 @@ typedef struct {
   double offset;
   double timing;
   double since_update;
-  uint32_t frames;
-  char fps_buffer[32];
-  double current_second;
 
   TilesAscii *tiles_ascii;
 
@@ -240,17 +237,11 @@ SceneTest *scene_test_create(const Config *config) {
   scene->offset = 0.0;
   scene->timing = 1 / 30.0;
   scene->since_update = scene->timing;
-  scene->frames = 0;
-  snprintf(scene->fps_buffer, 32, "FPS: 0 | MEM: 0.00kb");
-  scene->current_second = 0.0;
 
   scene->tiles_ascii = tiles_ascii_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
   scene->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
   scene->surface2 = surface_create(0, 0, 32, 32);
   scene->surface3 = surface_create(24, 16, 32, 32);
-
-  scene->fps_surface = surface_create(0, 0, 32, 1);
-  surface_text(scene->fps_surface, 0, 0, 32, scene->fps_buffer);
 
   scene->input = textinput_create(1, config->ascii_height - 2, config->ascii_width - 2);
 
@@ -262,7 +253,6 @@ void scene_test_destroy(SceneTest *scene) {
 
   textinput_destroy(scene->input);
 
-  surface_destroy(scene->fps_surface);
   surface_destroy(scene->surface3);
   surface_destroy(scene->surface2);
   surface_destroy(scene->surface);
@@ -319,15 +309,6 @@ void scene_test_update(SceneTest *scene, double delta) {
 
     textinput_update(scene->input, scene->timing);
   }
-
-  scene->current_second += delta;
-  if (scene->current_second >= 1) {
-    snprintf(scene->fps_buffer, 32, "FPS: %d | MEM: %.2fkb", scene->frames, (double)occulus_current_allocated() / 1024.0);
-    surface_text(scene->fps_surface, 0, 0, 32, scene->fps_buffer);
-
-    scene->current_second = 0;
-    scene->frames = 0;
-  }
 }
 
 void scene_test_draw(SceneTest *scene) {
@@ -337,9 +318,7 @@ void scene_test_draw(SceneTest *scene) {
   surface_draw(scene->surface2, scene->tiles_ascii);
   surface_draw(scene->surface3, scene->tiles_ascii);
   surface_draw(scene->input->surface, scene->tiles_ascii);
-  surface_draw(scene->fps_surface, scene->tiles_ascii);
 
   tiles_ascii_draw(scene->tiles_ascii);
-  scene->frames++;
 }
 // -Scene
