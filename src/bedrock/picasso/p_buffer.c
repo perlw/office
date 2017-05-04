@@ -39,6 +39,8 @@ PicassoBufferGroup *picasso_buffergroup_create(void) {
 void picasso_buffergroup_destroy(PicassoBufferGroup *buffergroup) {
   assert(buffergroup);
 
+  buffergroup_bind(0);
+
   for (uintmax_t t = 0; t < rectify_array_size(buffergroup->buffers); t++) {
     buffer_destroy(buffergroup->buffers[t]);
   }
