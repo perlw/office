@@ -43,12 +43,9 @@ void tome_kill(void) {
     for (uintmax_t u = 0; u < rectify_array_size(handler->records); u++) {
       Record *record = &handler->records[u];
 
-      if (record->data) { // Workaround until list is pruned
-        printf("TOME: Asset \"%s\" still hanging around, killed\n", record->name);
-
-        free(record->name);
-        handler->destroyer(record->data);
-      }
+      printf("TOME: Asset \"%s\" still hanging around, killed\n", record->name);
+      free(record->name);
+      handler->destroyer(record->data);
     }
     rectify_array_free(handler->records);
   }
@@ -67,10 +64,6 @@ void *tome_fetch(int32_t type, const char *name, const char *path) {
     if (handler->type == type) {
       for (uintmax_t u = 0; u < rectify_array_size(handler->records); u++) {
         Record *record = &handler->records[u];
-
-        if (!record->name) {
-          continue;
-        }
 
         if (strcmp(record->name, name) == 0) {
           record->refs++;
@@ -107,10 +100,6 @@ void tome_record(int32_t type, const char *name, const void *data) {
       for (uintmax_t u = 0; u < rectify_array_size(handler->records); u++) {
         Record *record = &handler->records[u];
 
-        if (!record->name) {
-          continue;
-        }
-
         if (strcmp(record->name, name) == 0) {
           printf("ALREADY RECORDED\n");
           return;
@@ -143,21 +132,14 @@ void tome_erase(int32_t type, const char *name) {
       for (uintmax_t u = 0; u < rectify_array_size(handler->records); u++) {
         Record *record = &handler->records[u];
 
-        if (!record->name) {
-          continue;
-        }
-
         if (strcmp(record->name, name) == 0) {
           record->refs--;
 
           if (record->refs == 0) {
             printf("KILLED\n");
             free(record->name);
-            record->name = NULL;
             handler->destroyer(record->data);
-
-            // Workaround until list is pruned
-            record->data = NULL;
+            handler->records = rectify_array_delete(handler->records, u);
             return;
           }
 
