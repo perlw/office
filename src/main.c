@@ -73,6 +73,7 @@ void ascii_text(TilesAscii *tiles, uint32_t x, uint32_t y, uintmax_t length, con
 int main() {
   srand(time(NULL));
 
+  gossip_init();
   tome_init();
   setup_asset_loaders();
 
@@ -186,16 +187,13 @@ int main() {
   }
   tiles_ascii_destroy(fps_tiles);
 
-  gossip_cleanup();
-
   scenes_destroy(scenes);
-
   input_kill();
 
   soundsys_destroy(soundsys);
-
   tome_kill();
   muse_destroy(muse);
+  gossip_destroy();
   picasso_window_kill();
 
 #ifdef MEM_DEBUG

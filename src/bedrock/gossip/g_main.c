@@ -1,8 +1,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "gossip.h"
 #include "occulus/occulus.h"
+
+#include "gossip.h"
+#include "rectify/rectify.h"
 
 typedef struct {
   void *subscriberdata;
@@ -10,13 +12,23 @@ typedef struct {
 } Listener;
 
 typedef struct {
-  size_t max_listeners;
-  size_t num_listeners;
   Listener *listeners;
 } Gossiper;
-Gossiper gossipers[GOSSIP_ID_MAX] = { { 0, 0, NULL } };
+Gossiper gossipers[GOSSIP_ID_MAX];
 
-#define LISTENER_CHUNK 4
+void gossip_init(void) {
+  for (uintmax_t t = 0; t < GOSSIP_ID_MAX; t += 1) {
+    gossipers[t].listeners = NULL;
+  }
+}
+
+void gossip_destroy(void) {
+  for (uintmax_t t = 0; t < GOSSIP_ID_MAX; t += 1) {
+    if (gossipers[t].listeners) {
+      rectify_array_free(gossipers[t].listeners);
+    }
+  }
+}
 
 GossipResult gossip_subscribe(uint32_t id, GossipCallback callback, void *subscriberdata) {
   if (id < 1 || id > GOSSIP_ID_MAX) {
@@ -24,18 +36,13 @@ GossipResult gossip_subscribe(uint32_t id, GossipCallback callback, void *subscr
   }
 
   Gossiper *g = &gossipers[id];
-
   if (!g->listeners) {
-    g->max_listeners = LISTENER_CHUNK;
-    g->listeners = calloc(g->max_listeners, sizeof(Listener));
-  } else if (g->num_listeners == g->max_listeners) {
-    g->max_listeners += LISTENER_CHUNK;
-    g->listeners = realloc(g->listeners, sizeof(Listener) * g->max_listeners);
+    g->listeners = rectify_array_alloc(4, sizeof(Listener));
   }
-
-  g->listeners[g->num_listeners].subscriberdata = subscriberdata;
-  g->listeners[g->num_listeners].callback = callback;
-  g->num_listeners += 1;
+  g->listeners = rectify_array_push(g->listeners, &(Listener){
+                                                    .subscriberdata = subscriberdata,
+                                                    .callback = callback,
+                                                  });
 
   return GOSSIP_RESULT_OK;
 }
@@ -47,18 +54,10 @@ GossipResult gossip_emit(uint32_t id, void *userdata) {
 
   Gossiper *g = &gossipers[id];
 
-  for (size_t t = 0; t < g->num_listeners; t += 1) {
+  for (size_t t = 0; t < rectify_array_size(g->listeners); t += 1) {
     GossipCallback callback = g->listeners[t].callback;
     callback(id, g->listeners[t].subscriberdata, userdata);
   }
 
   return GOSSIP_RESULT_OK;
-}
-
-void gossip_cleanup() {
-  for (size_t t = 0; t < GOSSIP_ID_MAX; t += 1) {
-    if (gossipers[t].listeners) {
-      free(gossipers[t].listeners);
-    }
-  }
 }
