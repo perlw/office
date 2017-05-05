@@ -42,6 +42,7 @@ TilesAscii *tiles_ascii_create(uint32_t width, uint32_t height, uint32_t ascii_w
 
   layer->program = (PicassoProgram *)tome_fetch(ASSET_SHADER, "tiles_ascii", "shaders/asciilayer");
   if (!layer->program) {
+    printf("Something went wrong when fetching ascii shader :(\n");
     exit(-1);
   }
 
@@ -66,6 +67,7 @@ TilesAscii *tiles_ascii_create(uint32_t width, uint32_t height, uint32_t ascii_w
   {
     layer->font_texture = (PicassoTexture *)tome_fetch(ASSET_TEXTURE, "tiles_ascii_font", "fonts/cp437_8x8.png");
     if (!layer->font_texture) {
+      printf("Something went wrong when fetching ascii font :(\n");
       exit(-1);
     }
     picasso_texture_bind_to(layer->font_texture, 0);

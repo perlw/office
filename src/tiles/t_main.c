@@ -42,6 +42,7 @@ Tiles *tiles_create(uint32_t width, uint32_t height, uint32_t num_tiles_x, uint3
 
   tiles->program = (PicassoProgram *)tome_fetch(ASSET_SHADER, "tiles", "shaders/tiles");
   if (!tiles->program) {
+    printf("Something went wrong when fetching tiles shader :(\n");
     exit(-1);
   }
 
@@ -66,6 +67,7 @@ Tiles *tiles_create(uint32_t width, uint32_t height, uint32_t num_tiles_x, uint3
   {
     tiles->tileset_texture = (PicassoTexture *)tome_fetch(ASSET_TEXTURE, "tileset", "tilesets/office.png");
     if (!tiles->tileset_texture) {
+      printf("Something went wrong when fetching tileset :(\n");
       exit(-1);
     }
     picasso_texture_bind_to(tiles->tileset_texture, 0);
