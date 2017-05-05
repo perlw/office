@@ -109,6 +109,7 @@ typedef struct {
   uint32_t cursor_max_pos;
   char buffer[128];
   Surface *surface;
+  GossipHandle input_handle;
 } TextInput;
 
 void textinput_event(int32_t id, void *subscriberdata, void *userdata);
@@ -130,13 +131,15 @@ TextInput *textinput_create(uint32_t x, uint32_t y, uint32_t width) {
     input->surface->asciimap[t].fore = (GlyphColor){ 255, 255, 255 };
   }
 
-  gossip_subscribe(MSG_INPUT_KEYBOARD, &textinput_event, input);
+  input->input_handle = gossip_subscribe(MSG_INPUT_KEYBOARD, &textinput_event, input);
 
   return input;
 }
 
 void textinput_destroy(TextInput *input) {
   assert(input);
+
+  gossip_unsubscribe(MSG_INPUT_KEYBOARD, input->input_handle);
 
   surface_destroy(input->surface);
 
