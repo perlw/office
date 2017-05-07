@@ -55,7 +55,7 @@ Tiles *tiles_create(uint32_t width, uint32_t height, uint32_t num_tiles_x, uint3
 
     //mat4_t projection = m4_perspective(45, (float)width / (float)height, 1, 1000);
     //mat4_t model = m4_translation((vec3_t){ -320, -240, -640});
-    mat4_t projection = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
+    mat4_t projection = m4_ortho(0, (float)width, 0, (float)height, 0, 1);
     mat4_t model = m4_identity();
 
     int32_t pmatrix_uniform = picasso_program_uniform_location(tiles->program, "pMatrix");

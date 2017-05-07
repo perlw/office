@@ -165,8 +165,8 @@ int main() {
     next_frame += delta;
     if (next_frame >= frame_timing) {
       next_frame = 0.0;
-
       picasso_window_clear();
+
       tiles_ascii_draw(fps_tiles);
       scenes_draw(scenes);
 
