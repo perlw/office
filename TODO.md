@@ -2,11 +2,7 @@ TODO
 ===
 ## Game
 The actual game
-* Move slightly away from pure ascii but not quite full tile-game
-  * Rename asciilayer to tilelayer? Keep it but create similar for graphical tiles?
-  * Multiple tile-layers
-    * Status effects etc
-    * Move moveables to own layer? Smooth movement? Too much?
+* Move projection etc out of layers?
 * Bedrock modules should not be interdependant
   * Potentially pull occulus out of bedrock?
 
@@ -36,11 +32,9 @@ Memory introspector
 
 ### Rectify
 Data, memory, sorting
-* Must add ability to remove from arrays
 
 ### Tome
 Asset management
-* Prune list when erasing manually
 
 ## Planned modules
 
