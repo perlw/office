@@ -8,6 +8,6 @@ void tome_kill(void);
 
 void *tome_fetch(int32_t type, const char *name, const char *path);
 void tome_record(int32_t type, const char *name, const void *data);
-void tome_erase(int32_t type, const char *name);
+void tome_release(int32_t type, const char *name);
 
 void tome_handler(int32_t type, TomeLoader loader, TomeDestroyer destroyer);

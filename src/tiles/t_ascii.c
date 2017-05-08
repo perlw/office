@@ -142,8 +142,8 @@ void tiles_ascii_destroy(TilesAscii *layer) {
   picasso_texture_destroy(layer->forecolors_texture);
   picasso_texture_destroy(layer->asciimap_texture);
 
-  tome_erase(ASSET_TEXTURE, "tiles_ascii_font");
-  tome_erase(ASSET_SHADER, "tiles_ascii");
+  tome_release(ASSET_TEXTURE, "tiles_ascii_font");
+  tome_release(ASSET_SHADER, "tiles_ascii");
 
   picasso_buffergroup_destroy(layer->quad);
 

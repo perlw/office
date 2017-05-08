@@ -114,8 +114,8 @@ void tiles_destroy(Tiles *tiles) {
 
   picasso_texture_destroy(tiles->tilemap_texture);
 
-  tome_erase(ASSET_TEXTURE, "tileset");
-  tome_erase(ASSET_SHADER, "tiles");
+  tome_release(ASSET_TEXTURE, "tileset");
+  tome_release(ASSET_SHADER, "tiles");
 
   picasso_buffergroup_destroy(tiles->quad);
 

@@ -122,9 +122,8 @@ void tome_record(int32_t type, const char *name, const void *data) {
   printf("NO SUCH HANDLER\n");
 }
 
-// TODO: Remains in list, need to remove
-void tome_erase(int32_t type, const char *name) {
-  printf("TOME: Destroying #%d asset \"%s\"...", type, name);
+void tome_release(int32_t type, const char *name) {
+  printf("TOME: Releasing #%d asset \"%s\"...", type, name);
   for (uintmax_t t = 0; t < rectify_array_size(tome->handlers); t++) {
     Handler *handler = &tome->handlers[t];
 
@@ -136,7 +135,7 @@ void tome_erase(int32_t type, const char *name) {
           record->refs--;
 
           if (record->refs == 0) {
-            printf("KILLED\n");
+            printf("ERASED\n");
             free(record->name);
             handler->destroyer(record->data);
             handler->records = rectify_array_delete(handler->records, u);
