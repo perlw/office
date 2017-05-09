@@ -3,3 +3,4 @@
 *.swo
 build/
 obj/
+tags
