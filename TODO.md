@@ -5,6 +5,7 @@ The actual game
 * Move projection etc out of layers?
 * Bedrock modules should not be interdependant
   * Potentially pull occulus out of bedrock?
+* Move projection mapping outside of tiles n stuff
 
 ## Bedrock
 Tests?
