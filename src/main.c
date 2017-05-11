@@ -4,6 +4,9 @@
 #include <time.h>
 
 #include "glad/glad.h"
+#define MATH_3D_IMPLEMENTATION
+#include "arkanis/math_3d.h"
+#undef MATH_3D_IMPLEMENTATION
 
 #include "bedrock/bedrock.h"
 
@@ -16,9 +19,6 @@
 #include "tiles/tiles.h"
 
 #include "scene_test.h"
-
-#define MATH_3D_IMPLEMENTATION
-#include "arkanis/math_3d.h"
 
 bool quit_game = false;
 void game_kill_event(int32_t id, void *subscriberdata, void *userdata) {
