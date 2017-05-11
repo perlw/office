@@ -174,8 +174,11 @@ void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
       input->cursor_pos = 0;
       input->cursor_visible = true;
       printf("TEXTINPUT: YOU WROTE \"%s\"\n", input->buffer);
-      memset(input->buffer, 0, 128);
+      if (strcmp(input->buffer, "quit") == 0) {
+        gossip_emit(MSG_GAME_KILL, NULL);
+      }
 
+      memset(input->buffer, 0, 128);
       input->surface->asciimap[0].rune = 219;
       input->surface->asciimap[0].fore = (GlyphColor){ 255, 255, 255 };
       for (uint32_t t = 1; t < input->cursor_max_pos + 1; t++) {

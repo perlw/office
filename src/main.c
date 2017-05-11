@@ -153,12 +153,6 @@ int main() {
     double delta = tick - last_tick;
     last_tick = tick;
 
-    MuseArgument arg = {
-      .type = MUSE_TYPE_NUMBER,
-      .argument = &delta,
-    };
-    muse_call_name(muse, "update", 1, &arg, 0, NULL);
-
     soundsys_update(soundsys, delta);
     scenes_update(scenes, delta);
 
