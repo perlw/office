@@ -1,5 +1,7 @@
 #pragma once
 
+#include "arkanis/math_3d.h"
+
 // +Tiles
 typedef struct {
   uint32_t num_tiles_x;
@@ -12,6 +14,13 @@ typedef struct {
   PicassoProgram *program;
   PicassoTexture *tileset_texture;
   PicassoTexture *tilemap_texture;
+
+  struct {
+    int32_t pmatrix_uniform;
+    mat4_t projection_matrix;
+    int32_t num_tiles_x_uniform;
+    int32_t num_tiles_y_uniform;
+  } shader;
 } Tiles;
 
 Tiles *tiles_create(uint32_t width, uint32_t height, uint32_t num_tiles_x, uint32_t num_tiles_y);
@@ -47,6 +56,13 @@ typedef struct {
   PicassoTexture *asciimap_texture;
   PicassoTexture *forecolors_texture;
   PicassoTexture *backcolors_texture;
+
+  struct {
+    int32_t pmatrix_uniform;
+    mat4_t projection_matrix;
+    int32_t ascii_width_uniform;
+    int32_t ascii_height_uniform;
+  } shader;
 } TilesAscii;
 
 TilesAscii *tiles_ascii_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height);

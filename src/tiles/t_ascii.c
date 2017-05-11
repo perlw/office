@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "arkanis/math_3d.h"
 #include "glad/glad.h"
 
 #include "bedrock/bedrock.h"
@@ -55,12 +54,13 @@ TilesAscii *tiles_ascii_create(uint32_t width, uint32_t height, uint32_t ascii_w
 
     //mat4_t projection = m4_perspective(45, (float)width / (float)height, 1, 1000);
     //mat4_t model = m4_translation((vec3_t){ -320, -240, -640});
-    mat4_t projection = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
+    //layer->shader.projection_matrix = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
+    layer->shader.projection_matrix = m4_ortho(0, (float)640, 0, (float)480, 1, 0);
     mat4_t model = m4_identity();
 
-    int32_t pmatrix_uniform = picasso_program_uniform_location(layer->program, "pMatrix");
+    layer->shader.pmatrix_uniform = picasso_program_uniform_location(layer->program, "pMatrix");
     int32_t mvmatrix_uniform = picasso_program_uniform_location(layer->program, "mvMatrix");
-    picasso_program_uniform_mat4(layer->program, pmatrix_uniform, (float *)&projection);
+    picasso_program_uniform_mat4(layer->program, layer->shader.pmatrix_uniform, (float *)&layer->shader.projection_matrix);
     picasso_program_uniform_mat4(layer->program, mvmatrix_uniform, (float *)&model);
   }
 
@@ -123,10 +123,10 @@ TilesAscii *tiles_ascii_create(uint32_t width, uint32_t height, uint32_t ascii_w
       picasso_program_uniform_int(layer->program, texture_uniform, 3);
     }
 
-    int32_t ascii_width_uniform = picasso_program_uniform_location(layer->program, "ascii_res_width");
-    int32_t ascii_height_uniform = picasso_program_uniform_location(layer->program, "ascii_res_height");
-    picasso_program_uniform_int(layer->program, ascii_width_uniform, layer->ascii_width);
-    picasso_program_uniform_int(layer->program, ascii_height_uniform, layer->ascii_height);
+    layer->shader.ascii_width_uniform = picasso_program_uniform_location(layer->program, "ascii_res_width");
+    layer->shader.ascii_height_uniform = picasso_program_uniform_location(layer->program, "ascii_res_height");
+    picasso_program_uniform_int(layer->program, layer->shader.ascii_width_uniform, layer->ascii_width);
+    picasso_program_uniform_int(layer->program, layer->shader.ascii_height_uniform, layer->ascii_height);
   }
 
   return layer;
@@ -178,17 +178,9 @@ void tiles_ascii_draw(TilesAscii *layer) {
   picasso_program_use(layer->program);
 
   {
-    mat4_t projection = m4_ortho(0, 640, 0, 480, 1, 0);
-    mat4_t model = m4_identity();
-
-    int32_t pmatrix_uniform = picasso_program_uniform_location(layer->program, "pMatrix");
-    int32_t mvmatrix_uniform = picasso_program_uniform_location(layer->program, "mvMatrix");
-    picasso_program_uniform_mat4(layer->program, pmatrix_uniform, (float *)&projection);
-    picasso_program_uniform_mat4(layer->program, mvmatrix_uniform, (float *)&model);
-    int32_t ascii_width_uniform = picasso_program_uniform_location(layer->program, "ascii_res_width");
-    int32_t ascii_height_uniform = picasso_program_uniform_location(layer->program, "ascii_res_height");
-    picasso_program_uniform_int(layer->program, ascii_width_uniform, layer->ascii_width);
-    picasso_program_uniform_int(layer->program, ascii_height_uniform, layer->ascii_height);
+    picasso_program_uniform_mat4(layer->program, layer->shader.pmatrix_uniform, (float *)&layer->shader.projection_matrix);
+    picasso_program_uniform_int(layer->program, layer->shader.ascii_width_uniform, layer->ascii_width);
+    picasso_program_uniform_int(layer->program, layer->shader.ascii_height_uniform, layer->ascii_height);
   }
 
   picasso_texture_bind_to(layer->font_texture, 0);

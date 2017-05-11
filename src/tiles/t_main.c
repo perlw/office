@@ -55,12 +55,12 @@ Tiles *tiles_create(uint32_t width, uint32_t height, uint32_t num_tiles_x, uint3
 
     //mat4_t projection = m4_perspective(45, (float)width / (float)height, 1, 1000);
     //mat4_t model = m4_translation((vec3_t){ -320, -240, -640});
-    mat4_t projection = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
+    tiles->shader.projection_matrix = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
     mat4_t model = m4_identity();
 
-    int32_t pmatrix_uniform = picasso_program_uniform_location(tiles->program, "pMatrix");
+    tiles->shader.pmatrix_uniform = picasso_program_uniform_location(tiles->program, "pMatrix");
     int32_t mvmatrix_uniform = picasso_program_uniform_location(tiles->program, "mvMatrix");
-    picasso_program_uniform_mat4(tiles->program, pmatrix_uniform, (float *)&projection);
+    picasso_program_uniform_mat4(tiles->program, tiles->shader.pmatrix_uniform, (float *)&tiles->shader.projection_matrix);
     picasso_program_uniform_mat4(tiles->program, mvmatrix_uniform, (float *)&model);
   }
 
@@ -97,10 +97,10 @@ Tiles *tiles_create(uint32_t width, uint32_t height, uint32_t num_tiles_x, uint3
       picasso_program_uniform_int(tiles->program, texture_uniform, 1);
     }
 
-    int32_t num_tiles_x_uniform = picasso_program_uniform_location(tiles->program, "num_tiles_x");
-    int32_t num_tiles_y_uniform = picasso_program_uniform_location(tiles->program, "num_tiles_y");
-    picasso_program_uniform_int(tiles->program, num_tiles_x_uniform, tiles->num_tiles_x);
-    picasso_program_uniform_int(tiles->program, num_tiles_y_uniform, tiles->num_tiles_y);
+    tiles->shader.num_tiles_x_uniform = picasso_program_uniform_location(tiles->program, "num_tiles_x");
+    tiles->shader.num_tiles_y_uniform = picasso_program_uniform_location(tiles->program, "num_tiles_y");
+    picasso_program_uniform_int(tiles->program, tiles->shader.num_tiles_x_uniform, tiles->num_tiles_x);
+    picasso_program_uniform_int(tiles->program, tiles->shader.num_tiles_y_uniform, tiles->num_tiles_y);
   }
 
   return tiles;
@@ -137,17 +137,9 @@ void tiles_draw(Tiles *tiles) {
   picasso_program_use(tiles->program);
 
   {
-    mat4_t projection = m4_ortho(0, 640, 0, 480, 1, 0);
-    mat4_t model = m4_identity();
-
-    int32_t pmatrix_uniform = picasso_program_uniform_location(tiles->program, "pMatrix");
-    int32_t mvmatrix_uniform = picasso_program_uniform_location(tiles->program, "mvMatrix");
-    picasso_program_uniform_mat4(tiles->program, pmatrix_uniform, (float *)&projection);
-    picasso_program_uniform_mat4(tiles->program, mvmatrix_uniform, (float *)&model);
-    int32_t num_tiles_x_uniform = picasso_program_uniform_location(tiles->program, "num_tiles_x");
-    int32_t num_tiles_y_uniform = picasso_program_uniform_location(tiles->program, "num_tiles_y");
-    picasso_program_uniform_int(tiles->program, num_tiles_x_uniform, tiles->num_tiles_x);
-    picasso_program_uniform_int(tiles->program, num_tiles_y_uniform, tiles->num_tiles_y);
+    picasso_program_uniform_mat4(tiles->program, tiles->shader.pmatrix_uniform, (float *)&tiles->shader.projection_matrix);
+    picasso_program_uniform_int(tiles->program, tiles->shader.num_tiles_x_uniform, tiles->num_tiles_x);
+    picasso_program_uniform_int(tiles->program, tiles->shader.num_tiles_y_uniform, tiles->num_tiles_y);
   }
 
   picasso_texture_bind_to(tiles->tileset_texture, 0);
