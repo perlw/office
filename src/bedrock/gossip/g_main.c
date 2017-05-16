@@ -74,6 +74,9 @@ void gossip_emit(uint32_t id, void *userdata) {
   }
 
   Gossiper *g = &gossipers[id];
+  if (!g->listeners) {
+    return;
+  }
 
   for (uintmax_t t = 0; t < rectify_array_size(g->listeners); t += 1) {
     GossipCallback callback = g->listeners[t].callback;

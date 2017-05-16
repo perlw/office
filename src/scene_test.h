@@ -34,3 +34,19 @@ Scene scene_test2 = {
   .draw = &scene_test2_draw,
 };
 // -SceneTest2
+
+// +SceneTest3
+Scene scene_test3_setup(void);
+SceneTest *scene_test3_create(const Config *config);
+void scene_test3_destroy(SceneTest *scene);
+void scene_test3_update(SceneTest *scene, double delta);
+void scene_test3_draw(SceneTest *scene);
+
+Scene scene_test3 = {
+  .name = "playable_map",
+  .create = &scene_test3_create,
+  .destroy = &scene_test3_destroy,
+  .update = &scene_test3_update,
+  .draw = &scene_test3_draw,
+};
+// -SceneTest3

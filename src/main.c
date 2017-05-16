@@ -83,8 +83,23 @@ void navigate_scene(int32_t id, void *subscriberdata, void *userdata) {
   }
 }
 
-int main() {
+int main(int argc, char **argv) {
   srand(time(NULL));
+
+  char *init_scene = "test";
+  // +Flags
+  // Module idea. Stackbased, popping off values etc?
+  for (int t = 0; t < argc; t++) {
+    if (argv[t][0] == '-' && argv[t][1] == '-') {
+      if (strncmp("scene", &argv[t][2], 32) == 0) {
+        t++;
+        if (t < argc) {
+          init_scene = argv[t];
+        }
+      }
+    }
+  }
+  // -Flags
 
   gossip_init();
   tome_init();
@@ -122,10 +137,11 @@ int main() {
   Scenes *scenes = scenes_create(&config);
   scenes_register(scenes, &scene_test);
   scenes_register(scenes, &scene_test2);
+  scenes_register(scenes, &scene_test3);
   gossip_subscribe(MSG_SCENE_PREV, &navigate_scene, (void *)scenes);
   gossip_subscribe(MSG_SCENE_NEXT, &navigate_scene, (void *)scenes);
 
-  scenes_goto(scenes, "test");
+  scenes_goto(scenes, init_scene);
 
   double last_tick = bedrock_time();
 
@@ -150,7 +166,7 @@ int main() {
   ascii_text(debug_overlay, 0, 59, 32, fps_buffer);
 
   char scene_buffer[32];
-  snprintf(scene_buffer, 32, "SCENE: %s", "test");
+  snprintf(scene_buffer, 32, "SCENE: %s", init_scene);
   ascii_text(debug_overlay, 80 - strnlen(scene_buffer, 32), 59, 32, scene_buffer);
   while (!picasso_window_should_close() && !quit_game) {
     double tick = bedrock_time();
