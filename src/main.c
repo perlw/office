@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 #include "glad/glad.h"
@@ -20,23 +21,11 @@
 
 #include "scene_test.h"
 
+TilesAscii *debug_overlay;
+
 bool quit_game = false;
 void game_kill_event(int32_t id, void *subscriberdata, void *userdata) {
   quit_game = true;
-}
-
-void navigate_scene(int32_t id, void *subscriberdata, void *userdata) {
-  Scenes *scenes = (Scenes *)subscriberdata;
-
-  switch (id) {
-    case MSG_SCENE_PREV:
-      scenes_prev(scenes);
-      break;
-
-    case MSG_SCENE_NEXT:
-      scenes_next(scenes);
-      break;
-  }
 }
 
 void ascii_text(TilesAscii *tiles, uint32_t x, uint32_t y, uintmax_t length, const char *string) {
@@ -66,6 +55,30 @@ void ascii_text(TilesAscii *tiles, uint32_t x, uint32_t y, uintmax_t length, con
       tiles->asciimap[t].rune = 0;
       tiles->asciimap[t].fore = (GlyphColor){ 0, 0, 0 };
       tiles->asciimap[t].back = (GlyphColor){ 255, 0, 255 };
+    }
+  }
+}
+
+void navigate_scene(int32_t id, void *subscriberdata, void *userdata) {
+  Scenes *scenes = (Scenes *)subscriberdata;
+
+  switch (id) {
+    case MSG_SCENE_PREV: {
+      Scene *scene = scenes_prev(scenes);
+
+      char scene_buffer[32];
+      snprintf(scene_buffer, 32, "SCENE: %s", scene->name);
+      ascii_text(debug_overlay, 80 - strnlen(scene_buffer, 32), 59, 32, scene_buffer);
+      break;
+    }
+
+    case MSG_SCENE_NEXT: {
+      Scene *scene = scenes_next(scenes);
+
+      char scene_buffer[32];
+      snprintf(scene_buffer, 32, "SCENE: %s", scene->name);
+      ascii_text(debug_overlay, 80 - strnlen(scene_buffer, 32), 59, 32, scene_buffer);
+      break;
     }
   }
 }
@@ -107,20 +120,6 @@ int main() {
   SoundSys *soundsys = soundsys_create();
 
   Scenes *scenes = scenes_create(&config);
-  Scene scene_test = {
-    .name = "test",
-    .create = &scene_test_create,
-    .destroy = &scene_test_destroy,
-    .update = &scene_test_update,
-    .draw = &scene_test_draw,
-  };
-  Scene scene_test2 = {
-    .name = "test2",
-    .create = &scene_test2_create,
-    .destroy = &scene_test2_destroy,
-    .update = &scene_test2_update,
-    .draw = &scene_test2_draw,
-  };
   scenes_register(scenes, &scene_test);
   scenes_register(scenes, &scene_test2);
   gossip_subscribe(MSG_SCENE_PREV, &navigate_scene, (void *)scenes);
@@ -137,17 +136,22 @@ int main() {
 
   gossip_emit(MSG_GAME_INIT, NULL);
 
-  TilesAscii *fps_tiles = tiles_ascii_create(640, 8, 80, 1);
-  for (uint8_t t = 0; t < 80; t++) {
-    fps_tiles->asciimap[t].rune = 0;
-    fps_tiles->asciimap[t].fore = (GlyphColor){ 0, 0, 0 };
-    fps_tiles->asciimap[t].back = (GlyphColor){ 255, 0, 255 };
+  debug_overlay = tiles_ascii_create(config.res_width, config.res_height, config.res_width / 8, config.res_height / 8);
+  for (uint32_t t = 0; t < debug_overlay->ascii_size; t++) {
+    debug_overlay->asciimap[t].rune = 0;
+    debug_overlay->asciimap[t].fore = (GlyphColor){ 0, 0, 0 };
+    debug_overlay->asciimap[t].back = (GlyphColor){ 255, 0, 255 };
   }
+
   uint32_t frames = 0;
   char fps_buffer[32];
   double current_second = 0.0;
   snprintf(fps_buffer, 32, "FPS: 0 | MEM: 0.00kb");
-  ascii_text(fps_tiles, 0, 0, 32, fps_buffer);
+  ascii_text(debug_overlay, 0, 59, 32, fps_buffer);
+
+  char scene_buffer[32];
+  snprintf(scene_buffer, 32, "SCENE: %s", "test");
+  ascii_text(debug_overlay, 80 - strnlen(scene_buffer, 32), 59, 32, scene_buffer);
   while (!picasso_window_should_close() && !quit_game) {
     double tick = bedrock_time();
     double delta = tick - last_tick;
@@ -161,7 +165,7 @@ int main() {
       next_frame = 0.0;
       picasso_window_clear();
 
-      tiles_ascii_draw(fps_tiles);
+      tiles_ascii_draw(debug_overlay);
       scenes_draw(scenes);
 
       picasso_window_swap();
@@ -173,13 +177,13 @@ int main() {
     current_second += delta;
     if (current_second >= 1) {
       snprintf(fps_buffer, 32, "FPS: %d | MEM: %.2fkb", frames, (double)occulus_current_allocated() / 1024.0);
-      ascii_text(fps_tiles, 0, 0, 32, fps_buffer);
+      ascii_text(debug_overlay, 0, 59, 32, fps_buffer);
 
       current_second = 0;
       frames = 0;
     }
   }
-  tiles_ascii_destroy(fps_tiles);
+  tiles_ascii_destroy(debug_overlay);
 
   scenes_destroy(scenes);
   input_kill();

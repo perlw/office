@@ -88,7 +88,7 @@ void scenes_register(Scenes *scenes, Scene *scene) {
   scenes->scenes = rectify_array_push(scenes->scenes, &scene_cpy);
 }
 
-void scenes_goto(Scenes *scenes, const char *name) {
+Scene *scenes_goto(Scenes *scenes, const char *name) {
   assert(scenes);
 
   if (scenes->current_scene) {
@@ -110,6 +110,8 @@ void scenes_goto(Scenes *scenes, const char *name) {
   scenes->current_scene_data = scenes->current_scene->create(scenes->config);
 
   printf("SCENES: Switched to scene \"%s\"\n", name);
+
+  return scenes->current_scene;
 }
 
 void scenes_go(Scenes *scenes, int32_t move) {
@@ -136,10 +138,12 @@ void scenes_go(Scenes *scenes, int32_t move) {
   }
 }
 
-void scenes_prev(Scenes *scenes) {
+Scene *scenes_prev(Scenes *scenes) {
   scenes_go(scenes, -1);
+  return scenes->current_scene;
 }
 
-void scenes_next(Scenes *scenes) {
+Scene *scenes_next(Scenes *scenes) {
   scenes_go(scenes, 1);
+  return scenes->current_scene;
 }

@@ -23,6 +23,6 @@ void scenes_update(Scenes *scenes, double delta);
 void scenes_draw(Scenes *scenes);
 
 void scenes_register(Scenes *scenes, Scene *scene);
-void scenes_goto(Scenes *scenes, const char *name);
-void scenes_prev(Scenes *scenes);
-void scenes_next(Scenes *scenes);
+Scene *scenes_goto(Scenes *scenes, const char *name);
+Scene *scenes_prev(Scenes *scenes);
+Scene *scenes_next(Scenes *scenes);
