@@ -161,25 +161,37 @@ void scene_test3_recalc(SceneTest *scene) {
         }
       }
 
+      /*if (scene->layers[1]->tilemap[index] == 0) {
+        printf("\n\nFOUND\n");
+        printf("%d %d %d\n", neighbors[0], neighbors[1], neighbors[2]);
+        printf("%d %d %d\n", neighbors[3], neighbors[4], neighbors[5]);
+        printf("%d %d %d\n", neighbors[6], neighbors[7], neighbors[8]);
+        printf("FOUND\n\n");
+      }*/
+
       // Find offset
-      uint8_t offset = 0;
-      for (uintmax_t t = 0; t < num_auto_tiles; t++) {
-        bool skip = false;
-        for (uintmax_t n = 0; n < 9; n++) {
-          if (auto_tiles[t].neighbors[n] != neighbors[n]) {
-            skip = true;
+      bool found = false;
+      uint8_t offset = 17;
+      if (neighbors[4]) {
+        for (uintmax_t t = 0; t < num_auto_tiles; t++) {
+          bool skip = false;
+          for (uintmax_t n = 0; n < 9; n++) {
+            if (auto_tiles[t].neighbors[n] != neighbors[n]) {
+              skip = true;
+              break;
+            }
+          }
+          if (!skip) {
+            found = true;
+            offset = auto_tiles[t].offset;
             break;
           }
         }
-        if (!skip) {
-          offset = auto_tiles[t].offset;
-          break;
+        if (!found) {
+          printf("%d %d %d\n", neighbors[0], neighbors[1], neighbors[2]);
+          printf("%d %d %d\n", neighbors[3], neighbors[4], neighbors[5]);
+          printf("%d %d %d\n\n", neighbors[6], neighbors[7], neighbors[8]);
         }
-      }
-      if (offset == 0) {
-        printf("%d %d %d\n", neighbors[0], neighbors[1], neighbors[2]);
-        printf("%d %d %d\n", neighbors[3], neighbors[4], neighbors[5]);
-        printf("%d %d %d\n\n", neighbors[6], neighbors[7], neighbors[8]);
       }
 
       scene->layers[1]->tilemap[index] = tile + offset;

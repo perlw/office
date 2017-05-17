@@ -108,10 +108,14 @@ SceneTest *scene_test2_create(const Config *config) {
           if (count < 2) {
             neighbors[n_index] = 0;
           }
+          if (count < 1) {
+            printf("less than 1 neighbor\n");
+          }
         }
       }
 
       // Find offset
+      bool found = false;
       uint8_t offset = 0;
       for (uintmax_t t = 0; t < num_auto_tiles; t++) {
         bool skip = false;
@@ -122,14 +126,19 @@ SceneTest *scene_test2_create(const Config *config) {
           }
         }
         if (!skip) {
+          found = true;
           offset = auto_tiles[t].offset;
           break;
         }
       }
-      if (offset == 0) {
+      if (!found) {
         printf("%d %d %d\n", neighbors[0], neighbors[1], neighbors[2]);
         printf("%d %d %d\n", neighbors[3], neighbors[4], neighbors[5]);
         printf("%d %d %d\n\n", neighbors[6], neighbors[7], neighbors[8]);
+      }
+      printf("%d\n", scene->layers[1]->tilemap[index]);
+      if (scene->layers[1]->tilemap[index] == 0) {
+        printf("\nFOUND\n");
       }
 
       scene->layers[1]->tilemap[index] = map[index] + offset;
