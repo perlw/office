@@ -182,7 +182,7 @@ void scene_test3_recalc(SceneTest *scene) {
         printf("%d %d %d\n\n", neighbors[6], neighbors[7], neighbors[8]);
       }
 
-      scene->layers[1]->tilemap[index] = scene->map[index] + offset;
+      scene->layers[1]->tilemap[index] = tile + offset;
     }
   }
 
