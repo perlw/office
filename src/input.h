@@ -18,7 +18,7 @@ typedef struct {
 void input_init();
 void input_kill();
 void input_keyboard_callback(const PicassoWindowKeyboardEvent *event);
-void input_mouse_button_callback(const PicassoWindowMouseEvent *event);
+void input_mouse_callback(const PicassoWindowMouseEvent *event);
 
 void input_action(InputActionBinding *binding, void *userdata);
 void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata);

@@ -118,7 +118,8 @@ int main(int argc, char **argv) {
     return -1;
   }
   picasso_window_keyboard_callback(&input_keyboard_callback);
-  picasso_window_mouse_button_callback(&input_mouse_button_callback);
+  picasso_window_mouse_move_callback(&input_mouse_callback);
+  picasso_window_mouse_button_callback(&input_mouse_callback);
 
   MuseFunctionDef action_def = {
     .name = "action",

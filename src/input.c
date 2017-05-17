@@ -46,7 +46,7 @@ void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
   }
 }
 
-void input_mouse_button_callback(const PicassoWindowMouseEvent *event) {
+void input_mouse_callback(const PicassoWindowMouseEvent *event) {
   gossip_emit(MSG_INPUT_MOUSE, (void *)event);
 }
 

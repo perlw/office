@@ -20,19 +20,21 @@ typedef struct {
   uint8_t *map;
   bool map_dirty;
 
+  uint32_t m_x, m_y;
+
   uint8_t num_layers;
-  Tiles *layers[2];
+  Tiles *layers[3];
 } SceneTest;
 
 void scene_test3_mouse_event(int32_t id, void *subscriberdata, void *userdata) {
   SceneTest *scene = (SceneTest *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
 
+  uint32_t grid_x = (uint32_t)(event->x / 16.0) + 0.5;
+  uint32_t grid_y = (uint32_t)(event->y / 16.0) + 0.5;
   if (event->pressed) {
     gossip_emit(MSG_SOUND_PLAY_TAP, NULL);
 
-    uint32_t grid_x = (uint32_t)(event->x / 16.0) + 0.5;
-    uint32_t grid_y = (uint32_t)(event->y / 16.0) + 0.5;
     printf("#%d | %.2f/%.2f | grid %dx%d\n", event->button, event->x, event->y, grid_x, grid_y);
 
     uintmax_t index = (grid_y * 40) + grid_x;
@@ -51,6 +53,10 @@ void scene_test3_mouse_event(int32_t id, void *subscriberdata, void *userdata) {
         break;
     }
   }
+
+  scene->map_dirty = (scene->map_dirty || ((scene->m_x != event->x) || (scene->m_y != event->y)));
+  scene->m_x = grid_x;
+  scene->m_y = grid_y;
 }
 
 void scene_test3_key_event(int32_t id, void *subscriberdata, void *userdata) {
@@ -179,6 +185,18 @@ void scene_test3_recalc(SceneTest *scene) {
       scene->layers[1]->tilemap[index] = scene->map[index] + offset;
     }
   }
+
+  // Mouse
+  {
+    for (uintmax_t y = 0; y < 30; y++) {
+      for (uintmax_t x = 0; x < 40; x++) {
+        uintmax_t index = (y * 40) + x;
+        scene->layers[2]->tilemap[index] = 0;
+      }
+    }
+    uintmax_t index = (scene->m_y * 40) + scene->m_x;
+    scene->layers[2]->tilemap[index] = 4;
+  }
 }
 
 SceneTest *scene_test3_create(const Config *config) {
@@ -190,10 +208,13 @@ SceneTest *scene_test3_create(const Config *config) {
   scene->mouse_handle = gossip_subscribe(MSG_INPUT_MOUSE, &scene_test3_mouse_event, scene);
   scene->map = rectify_memory_alloc_copy(map, (40 * 30) * sizeof(uint8_t));
   scene->map_dirty = false;
+  scene->m_x = 0;
+  scene->m_y = 0;
 
-  scene->num_layers = 2;
-  scene->layers[0] = tiles_create(config->res_width, config->res_height, 40, 30);
-  scene->layers[1] = tiles_create(config->res_width, config->res_height, 40, 30);
+  scene->num_layers = 3;
+  for (uint32_t t = 0; t < scene->num_layers; t++) {
+    scene->layers[t] = tiles_create(config->res_width, config->res_height, 40, 30);
+  }
 
   scene_test3_recalc(scene);
 
@@ -203,8 +224,9 @@ SceneTest *scene_test3_create(const Config *config) {
 void scene_test3_destroy(SceneTest *scene) {
   assert(scene);
 
-  tiles_destroy(scene->layers[1]);
-  tiles_destroy(scene->layers[0]);
+  for (uint32_t t = 0; t < scene->num_layers; t++) {
+    tiles_destroy(scene->layers[t]);
+  }
 
   gossip_unsubscribe(MSG_INPUT_MOUSE, scene->mouse_handle);
   gossip_unsubscribe(MSG_INPUT_KEYBOARD, scene->keyboard_handle);
