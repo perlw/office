@@ -27,7 +27,7 @@ void scene_test2_update(SceneTest *scene, double delta);
 void scene_test2_draw(SceneTest *scene);
 
 Scene scene_test2 = {
-  .name = "test2",
+  .name = "scrolling_map",
   .create = &scene_test2_create,
   .destroy = &scene_test2_destroy,
   .update = &scene_test2_update,
@@ -43,7 +43,7 @@ void scene_test3_update(SceneTest *scene, double delta);
 void scene_test3_draw(SceneTest *scene);
 
 Scene scene_test3 = {
-  .name = "playable_map",
+  .name = "moddable_map",
   .create = &scene_test3_create,
   .destroy = &scene_test3_destroy,
   .update = &scene_test3_update,
