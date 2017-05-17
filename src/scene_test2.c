@@ -13,6 +13,7 @@
 #include "tiles/tiles.h"
 
 typedef struct {
+  double offset;
   double timing;
   double since_update;
 
@@ -23,6 +24,7 @@ typedef struct {
 SceneTest *scene_test2_create(const Config *config) {
   SceneTest *scene = calloc(1, sizeof(SceneTest));
 
+  scene->offset = M_PI;
   scene->timing = 1 / 30.0;
   scene->since_update = scene->timing;
 
@@ -152,6 +154,16 @@ void scene_test2_update(SceneTest *scene, double delta) {
   scene->since_update += delta;
   while (scene->since_update >= scene->timing) {
     scene->since_update -= scene->timing;
+
+    scene->offset += 0.025;
+    {
+      int32_t offset_uniform = picasso_program_uniform_location(scene->layers[0]->program, "offset");
+      picasso_program_uniform_float(scene->layers[0]->program, offset_uniform, cos(scene->offset) / 2.0);
+    }
+    {
+      int32_t offset_uniform = picasso_program_uniform_location(scene->layers[1]->program, "offset");
+      picasso_program_uniform_float(scene->layers[1]->program, offset_uniform, cos(scene->offset) / 2.0);
+    }
   }
 }
 
