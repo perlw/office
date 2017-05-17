@@ -165,7 +165,7 @@ void textinput_update(TextInput *input, double delta) {
 
 void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
   TextInput *input = (TextInput *)subscriberdata;
-  PicassoWindowInputEvent *event = (PicassoWindowInputEvent *)userdata;
+  PicassoWindowKeyboardEvent *event = (PicassoWindowKeyboardEvent *)userdata;
 
   if (event->pressed) {
     gossip_emit(MSG_SOUND_PLAY_TAP, NULL);

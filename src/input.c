@@ -32,7 +32,7 @@ void input_kill() {
   free(input_bindings);
 }
 
-void input_keyboard_callback(const PicassoWindowInputEvent *event) {
+void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
   gossip_emit(MSG_INPUT_KEYBOARD, (void *)event);
 
   if (event->released) {
@@ -44,6 +44,10 @@ void input_keyboard_callback(const PicassoWindowInputEvent *event) {
       main_callback(&input_bindings[t], main_callback_userdata);
     }
   }
+}
+
+void input_mouse_button_callback(const PicassoWindowMouseEvent *event) {
+  gossip_emit(MSG_INPUT_MOUSE, (void *)event);
 }
 
 void input_action(InputActionBinding *binding, void *userdata) {

@@ -132,6 +132,14 @@ typedef enum {
 } PicassoKey;
 
 typedef enum {
+  PICASSO_MOUSE_BUTTON_LEFT = 0,
+  PICASSO_MOUSE_BUTTON_RIGHT,
+  PICASSO_MOUSE_BUTTON_MIDDLE,
+  PICASSO_MOUSE_BUTTON_FORWARD,
+  PICASSO_MOUSE_BUTTON_BACK,
+} PicassoMouseButton;
+
+typedef enum {
   PICASSO_WINDOW_OK = 1,
   PICASSO_WINDOW_INIT_FAIL,
   PICASSO_WINDOW_CREATION_FAIL,
@@ -144,8 +152,16 @@ typedef struct {
   bool pressed;
   bool released;
   bool shift;
-} PicassoWindowInputEvent;
-typedef void (*PicassoWindowKeyboardCallback)(const PicassoWindowInputEvent *);
+} PicassoWindowKeyboardEvent;
+typedef struct {
+  int32_t button;
+  double x;
+  double y;
+  bool pressed;
+  bool released;
+} PicassoWindowMouseEvent;
+typedef void (*PicassoWindowKeyboardCallback)(const PicassoWindowKeyboardEvent *);
+typedef void (*PicassoWindowMouseCallback)(const PicassoWindowMouseEvent *);
 
 PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug);
 void picasso_window_kill(void);
@@ -154,6 +170,8 @@ void picasso_window_swap(void);
 void picasso_window_update(void);
 bool picasso_window_should_close(void);
 void picasso_window_keyboard_callback(PicassoWindowKeyboardCallback callback);
+void picasso_window_mouse_move_callback(PicassoWindowMouseCallback callback);
+void picasso_window_mouse_button_callback(PicassoWindowMouseCallback callback);
 // -Window
 
 // +Shaders

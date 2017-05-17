@@ -10,4 +10,5 @@ typedef enum {
   MSG_SOUND_PLAY_TAP,
 
   MSG_INPUT_KEYBOARD,
+  MSG_INPUT_MOUSE,
 } Messages;
