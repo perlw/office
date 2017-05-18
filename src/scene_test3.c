@@ -28,6 +28,141 @@ typedef struct {
   Tiles *layers[3];
 } SceneTest;
 
+typedef struct {
+  uint8_t base_tile;
+  bool corners[4];
+} Tile;
+void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base_tile) {
+  Tile tiles[9];
+
+  printf("Adding tile...\n");
+
+  printf("\tNeighbors and corners...\n");
+  uint32_t n = 0;
+  uint32_t min_y = (y > 0 ? y - 1 : 0);
+  uint32_t max_y = (y < scene->layers[1]->num_tiles_y - 1 ? y + 1 : scene->layers[1]->num_tiles_y - 2);
+  uint32_t min_x = (x > 0 ? x - 1 : 0);
+  uint32_t max_x = (x < scene->layers[1]->num_tiles_x - 1 ? x + 1 : scene->layers[1]->num_tiles_x - 2);
+  for (uint32_t yy = min_y; yy <= max_y; yy++) {
+    printf("\t");
+    for (uint32_t xx = min_x; xx <= max_x; xx++) {
+      if (xx != x || yy != y) {
+        tiles[n].base_tile = scene->map[(yy * 40) + xx];
+
+        // Find corners
+        if (xx == 0) {
+          tiles[n].corners[0] = 1;
+          tiles[n].corners[2] = 1;
+        }
+        if (yy == 0) {
+          tiles[n].corners[0] = 1;
+          tiles[n].corners[1] = 1;
+        }
+        if (xx == 39) {
+          tiles[n].corners[1] = 1;
+          tiles[n].corners[3] = 1;
+        }
+        if (yy == 29) {
+          tiles[n].corners[2] = 1;
+          tiles[n].corners[3] = 1;
+        }
+
+        if (!tiles[n].corners[0]) {
+          bool i0 = (scene->map[((yy - 1) * 40) + (xx - 1)] > 0);
+          bool i1 = (scene->map[((yy - 1) * 40) + xx] > 0);
+          bool i2 = (scene->map[(yy * 40) + (xx - 1)] > 0);
+          tiles[n].corners[0] = (i0 && i1 && i2);
+        }
+        if (!tiles[n].corners[1]) {
+          bool i0 = (scene->map[((yy - 1) * 40) + (xx + 1)] > 0);
+          bool i1 = (scene->map[((yy - 1) * 40) + xx] > 0);
+          bool i2 = (scene->map[(yy * 40) + (xx + 1)] > 0);
+          tiles[n].corners[1] = (i0 && i1 && i2);
+        }
+        if (!tiles[n].corners[2]) {
+          bool i0 = (scene->map[((yy + 1) * 40) + (xx - 1)] > 0);
+          bool i1 = (scene->map[((yy + 1) * 40) + xx] > 0);
+          bool i2 = (scene->map[(yy * 40) + (xx - 1)] > 0);
+          tiles[n].corners[2] = (i0 && i1 && i2);
+        }
+        if (!tiles[n].corners[3]) {
+          bool i0 = (scene->map[((yy + 1) * 40) + (xx + 1)] > 0);
+          bool i1 = (scene->map[((yy + 1) * 40) + xx] > 0);
+          bool i2 = (scene->map[(yy * 40) + (xx + 1)] > 0);
+          tiles[n].corners[3] = (i0 && i1 && i2);
+        }
+      } else {
+        tiles[n] = (Tile){
+          .base_tile = base_tile,
+          .corners = { 1, 1, 1, 1 },
+        };
+      }
+
+      printf("[ %d %d | %d %d ] ", tiles[n].corners[0], tiles[n].corners[1], tiles[n].corners[2], tiles[n].corners[3]);
+
+      n++;
+    }
+    printf("\n");
+  }
+
+  // Update corners
+  tiles[0].corners[3] = 1;
+  tiles[1].corners[2] = 1;
+  tiles[1].corners[3] = 1;
+  tiles[2].corners[2] = 1;
+  tiles[3].corners[1] = 1;
+  tiles[3].corners[3] = 1;
+  tiles[5].corners[0] = 1;
+  tiles[5].corners[2] = 1;
+  tiles[6].corners[1] = 1;
+  tiles[7].corners[0] = 1;
+  tiles[7].corners[1] = 1;
+  tiles[8].corners[0] = 1;
+  printf("\tTweak corners...\n");
+  for (uint32_t yy = 0; yy < 3; yy++) {
+    printf("\t");
+    for (uint32_t xx = 0; xx < 3; xx++) {
+      uint32_t n = (yy * 3) + xx;
+      printf("[ %d %d | %d %d ] ", tiles[n].corners[0], tiles[n].corners[1], tiles[n].corners[2], tiles[n].corners[3]);
+    }
+    printf("\n");
+  }
+
+  printf("\tPainting...\n");
+  uint32_t tile_index = 0;
+  for (uint32_t yy = min_y; yy <= max_y; yy++) {
+    printf("\t");
+    for (uint32_t xx = min_x; xx <= max_x; xx++) {
+      uint32_t index = (yy * 40) + xx;
+
+      uint8_t tile = (scene->map[index] > 0 ? scene->map[index] : base_tile);
+      // Find tile from corners
+      uint8_t offset = 17;
+      for (uintmax_t t = 0; t < num_auto_tiles; t++) {
+        bool skip = false;
+        for (uintmax_t n = 0; n < 4; n++) {
+          if (auto_tiles[t].corners[n] != tiles[tile_index].corners[n]) {
+            skip = true;
+            break;
+          }
+        }
+        if (!skip) {
+          offset = auto_tiles[t].offset;
+          break;
+        }
+      }
+      printf("%d, ", offset);
+      scene->map[index] = tile;
+      scene->layers[1]->tilemap[index] = tile + offset;
+
+      tile_index++;
+    }
+    printf("\n");
+  }
+
+  scene->map_dirty = true;
+}
+
 void scene_test3_mouse_event(int32_t id, void *subscriberdata, void *userdata) {
   SceneTest *scene = (SceneTest *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
@@ -47,19 +182,15 @@ void scene_test3_mouse_event(int32_t id, void *subscriberdata, void *userdata) {
   if (scene->painting) {
     printf("#%d | %.2f/%.2f | grid %dx%d\n", event->button, event->x, event->y, grid_x, grid_y);
 
-    uintmax_t index = (grid_y * 40) + grid_x;
     switch (scene->paint_type) {
       case 0:
-        scene->map[index] = 128;
-        scene->map_dirty = true;
+        scene_test3_add_tile(scene, grid_x, grid_y, 128);
         break;
       case 1:
-        scene->map[index] = 0;
-        scene->map_dirty = true;
+        scene_test3_add_tile(scene, grid_x, grid_y, 0);
         break;
       case 2:
-        scene->map[index] = 176;
-        scene->map_dirty = true;
+        scene_test3_add_tile(scene, grid_x, grid_y, 176);
         break;
     }
   }
@@ -91,14 +222,6 @@ void scene_test3_key_event(int32_t id, void *subscriberdata, void *userdata) {
 }
 
 void scene_test3_recalc(SceneTest *scene) {
-  // Floor
-  for (uintmax_t y = 0; y < 30; y++) {
-    for (uintmax_t x = 0; x < 40; x++) {
-      uintmax_t index = (y * 40) + x;
-      scene->layers[0]->tilemap[index] = 3;
-    }
-  }
-
   // Walls
   for (uintmax_t y = 0; y < 30; y++) {
     for (uintmax_t x = 0; x < 40; x++) {
@@ -179,18 +302,6 @@ void scene_test3_recalc(SceneTest *scene) {
       scene->layers[1]->tilemap[index] = tile + offset;
     }
   }
-
-  // Mouse
-  {
-    for (uintmax_t y = 0; y < 30; y++) {
-      for (uintmax_t x = 0; x < 40; x++) {
-        uintmax_t index = (y * 40) + x;
-        scene->layers[2]->tilemap[index] = 0;
-      }
-    }
-    uintmax_t index = (scene->m_y * 40) + scene->m_x;
-    scene->layers[2]->tilemap[index] = 4;
-  }
 }
 
 SceneTest *scene_test3_create(const Config *config) {
@@ -201,7 +312,7 @@ SceneTest *scene_test3_create(const Config *config) {
   scene->keyboard_handle = gossip_subscribe(MSG_INPUT_KEYBOARD, &scene_test3_key_event, scene);
   scene->mouse_handle = gossip_subscribe(MSG_INPUT_MOUSE, &scene_test3_mouse_event, scene);
   scene->map = rectify_memory_alloc_copy(map, (40 * 30) * sizeof(uint8_t));
-  scene->map_dirty = false;
+  scene->map_dirty = true;
   scene->painting = false;
   scene->paint_type = 0;
   scene->m_x = 0;
@@ -240,7 +351,26 @@ void scene_test3_update(SceneTest *scene, double delta) {
 
     if (scene->map_dirty) {
       scene->map_dirty = false;
-      scene_test3_recalc(scene);
+
+      // Floor
+      for (uintmax_t y = 0; y < 30; y++) {
+        for (uintmax_t x = 0; x < 40; x++) {
+          uintmax_t index = (y * 40) + x;
+          scene->layers[0]->tilemap[index] = 3;
+        }
+      }
+
+      // Mouse
+      {
+        for (uintmax_t y = 0; y < 30; y++) {
+          for (uintmax_t x = 0; x < 40; x++) {
+            uintmax_t index = (y * 40) + x;
+            scene->layers[2]->tilemap[index] = 0;
+          }
+        }
+        uintmax_t index = (scene->m_y * 40) + scene->m_x;
+        scene->layers[2]->tilemap[index] = 4;
+      }
     }
   }
 }
