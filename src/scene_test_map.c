@@ -33,103 +33,99 @@ uint8_t map[40 * 30] = {
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
 };
 
+// 0 1
+// 2 3
 AutoTile auto_tiles[] = {
   {
-    .offset = 64,
-    .neighbors = {
-      0, 0, 0, 0, 0, 0, 0, 0, 0,
-    },
-  },
-  {
     .offset = 0,
-    .neighbors = {
-      0, 0, 0, 0, 1, 1, 0, 1, 1,
+    .corners = {
+      0, 0, 0, 1,
     },
   },
   {
     .offset = 1,
-    .neighbors = {
-      0, 0, 0, 1, 1, 1, 1, 1, 1,
+    .corners = {
+      0, 0, 1, 1,
     },
   },
   {
     .offset = 2,
-    .neighbors = {
-      0, 0, 0, 1, 1, 0, 1, 1, 0,
+    .corners = {
+      0, 0, 1, 0,
     },
   },
   {
     .offset = 3,
-    .neighbors = {
-      1, 1, 1, 1, 1, 1, 1, 1, 0,
+    .corners = {
+      1, 1, 1, 0,
     },
   },
   {
     .offset = 16,
-    .neighbors = {
-      0, 1, 1, 0, 1, 1, 0, 1, 1,
+    .corners = {
+      0, 1, 0, 1,
     },
   },
   {
     .offset = 17,
-    .neighbors = {
-      1, 1, 1, 1, 1, 1, 1, 1, 1,
+    .corners = {
+      1, 1, 1, 1,
     },
   },
   {
     .offset = 18,
-    .neighbors = {
-      1, 1, 0, 1, 1, 0, 1, 1, 0,
+    .corners = {
+      1, 0, 1, 0,
     },
   },
   {
     .offset = 32,
-    .neighbors = {
-      0, 1, 1, 0, 1, 1, 0, 0, 0,
+    .corners = {
+      0, 1, 0, 0,
     },
   },
   {
     .offset = 33,
-    .neighbors = {
-      1, 1, 1, 1, 1, 1, 0, 0, 0,
+    .corners = {
+      1, 1, 0, 0,
     },
   },
   {
     .offset = 34,
-    .neighbors = {
-      1, 1, 0, 1, 1, 0, 0, 0, 0,
+    .corners = {
+      1, 0, 0, 0,
     },
   },
   {
     .offset = 4,
-    .neighbors = {
-      1, 1, 1, 1, 1, 1, 0, 1, 1,
+    .corners = {
+      1, 1, 0, 1,
     },
   },
   {
     .offset = 19,
-    .neighbors = {
-      1, 1, 0, 1, 1, 1, 1, 1, 1,
+    .corners = {
+      1, 0, 1, 1,
     },
   },
   {
     .offset = 20,
-    .neighbors = {
-      0, 1, 1, 1, 1, 1, 1, 1, 1,
+    .corners = {
+      0, 1, 1, 1,
     },
   },
   {
     .offset = 35,
-    .neighbors = {
-      0, 1, 1, 1, 1, 1, 1, 1, 0,
+    .corners = {
+      0, 1, 1, 0,
     },
   },
   {
     .offset = 36,
-    .neighbors = {
-      1, 1, 0, 1, 1, 1, 0, 1, 1,
+    .corners = {
+      1, 0, 0, 1,
     },
   },
 };
 
-const uintmax_t num_auto_tiles = 16;
+const uintmax_t num_auto_tiles = 15;

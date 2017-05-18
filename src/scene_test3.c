@@ -19,6 +19,8 @@ typedef struct {
   GossipHandle mouse_handle;
   uint8_t *map;
   bool map_dirty;
+  bool painting;
+  int32_t paint_type;
 
   uint32_t m_x, m_y;
 
@@ -34,11 +36,19 @@ void scene_test3_mouse_event(int32_t id, void *subscriberdata, void *userdata) {
   uint32_t grid_y = (uint32_t)(event->y / 16.0) + 0.5;
   if (event->pressed) {
     gossip_emit(MSG_SOUND_PLAY_TAP, NULL);
+    scene->painting = true;
+    scene->paint_type = event->button;
+  }
+  if (event->released) {
+    gossip_emit(MSG_SOUND_PLAY_TAP, NULL);
+    scene->painting = false;
+  }
 
+  if (scene->painting) {
     printf("#%d | %.2f/%.2f | grid %dx%d\n", event->button, event->x, event->y, grid_x, grid_y);
 
     uintmax_t index = (grid_y * 40) + grid_x;
-    switch (event->button) {
+    switch (scene->paint_type) {
       case 0:
         scene->map[index] = 128;
         scene->map_dirty = true;
@@ -54,7 +64,7 @@ void scene_test3_mouse_event(int32_t id, void *subscriberdata, void *userdata) {
     }
   }
 
-  scene->map_dirty = (scene->map_dirty || ((scene->m_x != event->x) || (scene->m_y != event->y)));
+  scene->map_dirty = (scene->map_dirty || ((scene->m_x != grid_x) || (scene->m_y != grid_y)));
   scene->m_x = grid_x;
   scene->m_y = grid_y;
 }
@@ -100,98 +110,70 @@ void scene_test3_recalc(SceneTest *scene) {
 
       uint8_t tile = scene->map[index];
 
-      // Find neighbors
-      bool neighbors[9] = { 0 };
+      // Find corners
+      bool corners[4] = { 0 };
       if (x == 0) {
-        neighbors[0] = 1;
-        neighbors[3] = 1;
-        neighbors[6] = 1;
+        corners[0] = 1;
+        corners[2] = 1;
       }
       if (y == 0) {
-        neighbors[0] = 1;
-        neighbors[1] = 1;
-        neighbors[2] = 1;
+        corners[0] = 1;
+        corners[1] = 1;
       }
       if (x == 39) {
-        neighbors[2] = 1;
-        neighbors[5] = 1;
-        neighbors[8] = 1;
+        corners[1] = 1;
+        corners[3] = 1;
       }
       if (y == 29) {
-        neighbors[6] = 1;
-        neighbors[7] = 1;
-        neighbors[8] = 1;
-      }
-      for (intmax_t yy = (y == 0 ? 0 : -1); yy <= (y == 29 ? 0 : 1); yy++) {
-        for (intmax_t xx = (x == 0 ? 0 : -1); xx <= (x == 39 ? 0 : 1); xx++) {
-          uintmax_t t_index = ((y + yy) * 40) + (x + xx);
-          uintmax_t n_index = ((yy + 1) * 3) + (xx + 1);
-          neighbors[n_index] = (scene->map[t_index] == tile);
-        }
-      }
-      for (intmax_t yy = 0; yy < 3; yy++) {
-        for (intmax_t xx = 0; xx < 3; xx++) {
-          intmax_t n_index = (yy * 3) + xx;
-          if (!neighbors[n_index]) {
-            continue;
-          }
-
-          intmax_t u = ((yy - 1) * 3) + xx;
-          intmax_t d = ((yy + 1) * 3) + xx;
-          intmax_t l = (yy * 3) + (xx - 1);
-          intmax_t r = (yy * 3) + (xx + 1);
-
-          uint8_t count = 0;
-          if (yy > 0 && u >= 0 && neighbors[u]) {
-            count++;
-          }
-          if (yy < 2 && d < 9 && neighbors[d]) {
-            count++;
-          }
-          if (xx > 0 && l >= 0 && neighbors[l]) {
-            count++;
-          }
-          if (xx < 2 && r < 9 && neighbors[r]) {
-            count++;
-          }
-
-          if (count < 2) {
-            neighbors[n_index] = 0;
-          }
-        }
+        corners[2] = 1;
+        corners[3] = 1;
       }
 
-      /*if (scene->layers[1]->tilemap[index] == 0) {
-        printf("\n\nFOUND\n");
-        printf("%d %d %d\n", neighbors[0], neighbors[1], neighbors[2]);
-        printf("%d %d %d\n", neighbors[3], neighbors[4], neighbors[5]);
-        printf("%d %d %d\n", neighbors[6], neighbors[7], neighbors[8]);
-        printf("FOUND\n\n");
-      }*/
+      if (!corners[0]) {
+        bool i0 = (scene->map[((y - 1) * 40) + (x - 1)] > 0);
+        bool i1 = (scene->map[((y - 1) * 40) + x] > 0);
+        bool i2 = (scene->map[(y * 40) + (x - 1)] > 0);
+        corners[0] = (i0 && i1 && i2);
+      }
+      if (!corners[1]) {
+        uintmax_t i0 = (scene->map[((y - 1) * 40) + (x + 1)] > 0);
+        uintmax_t i1 = (scene->map[((y - 1) * 40) + x] > 0);
+        uintmax_t i2 = (scene->map[(y * 40) + (x + 1)] > 0);
+        corners[1] = (i0 && i1 && i2);
+      }
+      if (!corners[2]) {
+        uintmax_t i0 = (scene->map[((y + 1) * 40) + (x - 1)] > 0);
+        uintmax_t i1 = (scene->map[((y + 1) * 40) + x] > 0);
+        uintmax_t i2 = (scene->map[(y * 40) + (x - 1)] > 0);
+        corners[2] = (i0 && i1 && i2);
+      }
+      if (!corners[3]) {
+        uintmax_t i0 = (scene->map[((y + 1) * 40) + (x + 1)] > 0);
+        uintmax_t i1 = (scene->map[((y + 1) * 40) + x] > 0);
+        uintmax_t i2 = (scene->map[(y * 40) + (x + 1)] > 0);
+        corners[3] = (i0 && i1 && i2);
+      }
 
       // Find offset
       bool found = false;
       uint8_t offset = 17;
-      if (neighbors[4]) {
-        for (uintmax_t t = 0; t < num_auto_tiles; t++) {
-          bool skip = false;
-          for (uintmax_t n = 0; n < 9; n++) {
-            if (auto_tiles[t].neighbors[n] != neighbors[n]) {
-              skip = true;
-              break;
-            }
-          }
-          if (!skip) {
-            found = true;
-            offset = auto_tiles[t].offset;
+      for (uintmax_t t = 0; t < num_auto_tiles; t++) {
+        bool skip = false;
+        for (uintmax_t n = 0; n < 4; n++) {
+          if (auto_tiles[t].corners[n] != corners[n]) {
+            skip = true;
             break;
           }
         }
-        if (!found) {
-          printf("%d %d %d\n", neighbors[0], neighbors[1], neighbors[2]);
-          printf("%d %d %d\n", neighbors[3], neighbors[4], neighbors[5]);
-          printf("%d %d %d\n\n", neighbors[6], neighbors[7], neighbors[8]);
+        if (!skip) {
+          found = true;
+          offset = auto_tiles[t].offset;
+          break;
         }
+      }
+      if (!found) {
+        printf("%d %d\n", corners[0], corners[1]);
+        printf("%d %d\n", corners[2], corners[3]);
       }
 
       scene->layers[1]->tilemap[index] = tile + offset;
@@ -220,6 +202,8 @@ SceneTest *scene_test3_create(const Config *config) {
   scene->mouse_handle = gossip_subscribe(MSG_INPUT_MOUSE, &scene_test3_mouse_event, scene);
   scene->map = rectify_memory_alloc_copy(map, (40 * 30) * sizeof(uint8_t));
   scene->map_dirty = false;
+  scene->painting = false;
+  scene->paint_type = 0;
   scene->m_x = 0;
   scene->m_y = 0;
 
