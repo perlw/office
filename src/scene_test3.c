@@ -33,9 +33,10 @@ typedef struct {
   bool corners[4];
 } Tile;
 void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base_tile) {
-  Tile tiles[9];
+  Tile tiles[9] = { 0 };
 
   printf("Adding tile...\n");
+  bool has_corners = (base_tile >= 128);
 
   printf("\tNeighbors and corners...\n");
   uint32_t n = 0;
@@ -68,7 +69,7 @@ void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base
         }
 
         if (!tiles[n].corners[0]) {
-          bool i0 = (scene->map[((yy - 1) * 40) + (xx - 1)] > 0);
+         bool i0 = (scene->map[((yy - 1) * 40) + (xx - 1)] > 0);
           bool i1 = (scene->map[((yy - 1) * 40) + xx] > 0);
           bool i2 = (scene->map[(yy * 40) + (xx - 1)] > 0);
           tiles[n].corners[0] = (i0 && i1 && i2);
@@ -94,7 +95,7 @@ void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base
       } else {
         tiles[n] = (Tile){
           .base_tile = base_tile,
-          .corners = { 1, 1, 1, 1 },
+          .corners = { has_corners, has_corners, has_corners, has_corners },
         };
       }
 
@@ -106,24 +107,31 @@ void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base
   }
 
   // Update corners
-  tiles[0].corners[3] = 1;
-  tiles[1].corners[2] = 1;
-  tiles[1].corners[3] = 1;
-  tiles[2].corners[2] = 1;
-  tiles[3].corners[1] = 1;
-  tiles[3].corners[3] = 1;
-  tiles[5].corners[0] = 1;
-  tiles[5].corners[2] = 1;
-  tiles[6].corners[1] = 1;
-  tiles[7].corners[0] = 1;
-  tiles[7].corners[1] = 1;
-  tiles[8].corners[0] = 1;
+  //bool have_corners
+  tiles[0].corners[3] = has_corners;
+  tiles[1].corners[2] = has_corners;
+  tiles[1].corners[3] = has_corners;
+  tiles[2].corners[2] = has_corners;
+  tiles[3].corners[1] = has_corners;
+  tiles[3].corners[3] = has_corners;
+  tiles[5].corners[0] = has_corners;
+  tiles[5].corners[2] = has_corners;
+  tiles[6].corners[1] = has_corners;
+  tiles[7].corners[0] = has_corners;
+  tiles[7].corners[1] = has_corners;
+  tiles[8].corners[0] = has_corners;
   printf("\tTweak corners...\n");
   for (uint32_t yy = 0; yy < 3; yy++) {
     printf("\t");
     for (uint32_t xx = 0; xx < 3; xx++) {
       uint32_t n = (yy * 3) + xx;
-      printf("[ %d %d | %d %d ] ", tiles[n].corners[0], tiles[n].corners[1], tiles[n].corners[2], tiles[n].corners[3]);
+
+      if (tiles[n].corners[0] || tiles[n].corners[1] || tiles[n].corners[2] || tiles[n].corners[3]) {
+        tiles[n].base_tile = (base_tile > 0 ? base_tile : tiles[n].base_tile);
+      } else  {
+        tiles[n].base_tile = 0;
+      }
+      printf("#%d [ %d %d | %d %d ] ", tiles[n].base_tile, tiles[n].corners[0], tiles[n].corners[1], tiles[n].corners[2], tiles[n].corners[3]);
     }
     printf("\n");
   }
@@ -134,8 +142,15 @@ void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base
     printf("\t");
     for (uint32_t xx = min_x; xx <= max_x; xx++) {
       uint32_t index = (yy * 40) + xx;
+      /*if (tiles[tile_index].base_tile < 128) {
+        printf("foo%d, ", tiles[tile_index].base_tile);
+        scene->map[index] = tiles[tile_index].base_tile;
+        scene->layers[1]->tilemap[index] = tiles[tile_index].base_tile;
+        tile_index++;
+        continue;
+      }*/
 
-      uint8_t tile = (scene->map[index] > 0 ? scene->map[index] : base_tile);
+      uint8_t tile = tiles[tile_index].base_tile;
       // Find tile from corners
       uint8_t offset = 17;
       for (uintmax_t t = 0; t < num_auto_tiles; t++) {
