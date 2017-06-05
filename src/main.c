@@ -45,16 +45,53 @@ void ascii_text(TilesAscii *tiles, uint32_t x, uint32_t y, uintmax_t length, con
 
     if (!skip) {
       tiles->asciimap[t].rune = string[u];
-      tiles->asciimap[t].fore.r = 255;
-      tiles->asciimap[t].fore.g = 255;
-      tiles->asciimap[t].fore.b = 255;
-      tiles->asciimap[t].back.r = 128;
-      tiles->asciimap[t].back.g = 0;
-      tiles->asciimap[t].back.b = 0;
+      tiles->asciimap[t].fore = (GlyphColor){ 255, 255, 255 };
+      tiles->asciimap[t].back = (GlyphColor){ 128, 0, 0 };
     } else {
       tiles->asciimap[t].rune = 0;
       tiles->asciimap[t].fore = (GlyphColor){ 0, 0, 0 };
       tiles->asciimap[t].back = (GlyphColor){ 255, 0, 255 };
+    }
+  }
+}
+
+float lerp(float a, float b, float t) {
+  return ((1.0f - t) * a) + (t * b);
+}
+
+void ascii_graph(TilesAscii *tiles, uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint32_t num_values, const float *values) {
+  assert(tiles);
+  assert(values);
+
+  if (x >= tiles->ascii_width || y >= tiles->ascii_height || x + width > tiles->ascii_width || y + height > tiles->ascii_height) {
+    return;
+  }
+
+  uint32_t width_per_step = width / num_values;
+  for (uint32_t t = 0; t < num_values; t++) {
+    uint32_t val_height = (uint32_t)((float)(height - 1) * (1.0 - values[t]));
+    uint32_t next_val_height = (t < num_values - 1 ? (uint32_t)((float)(height - 1) * (1.0 - values[t + 1])) : val_height);
+
+    for (uint32_t yy = 0; yy < height; yy++) {
+      for (uint32_t xx = 0; xx < width_per_step; xx++) {
+        uint32_t fudged_height = (uint32_t)(lerp((float)val_height, (float)next_val_height, (float)xx / (float)width_per_step) + 0.5f);
+
+        uint32_t index = ((y + yy) * tiles->ascii_width) + (x + (t * width_per_step) + xx);
+        if (yy >= fudged_height) {
+          if (yy == fudged_height) {
+            tiles->asciimap[index].rune = '+';
+            tiles->asciimap[index].fore = (GlyphColor){ 255, 255, 255 };
+          } else if (yy > fudged_height) {
+            tiles->asciimap[index].rune = '.';
+            tiles->asciimap[index].fore = (GlyphColor){ 128, 128, 128 };
+          }
+          tiles->asciimap[index].back = (GlyphColor){ 66, 66, 66 };
+        } else {
+          tiles->asciimap[index].rune = 0;
+          tiles->asciimap[index].fore = (GlyphColor){ 0, 0, 0 };
+          tiles->asciimap[index].back = (GlyphColor){ 255, 0, 255 };
+        }
+      }
     }
   }
 }
@@ -167,6 +204,10 @@ int main(int argc, char **argv) {
   snprintf(fps_buffer, 32, "FPS: 0 | MEM: 0.00kb");
   ascii_text(debug_overlay, 0, 59, 32, fps_buffer);
 
+  uintmax_t raw_mem[10] = { 0 };
+  float mem_values[10] = { 0.0f };
+  ascii_graph(debug_overlay, 60, 0, 20, 6, 10, mem_values);
+
   char scene_buffer[32];
   snprintf(scene_buffer, 32, "SCENE: %s", init_scene);
   ascii_text(debug_overlay, 80 - strnlen(scene_buffer, 32), 59, 32, scene_buffer);
@@ -196,6 +237,23 @@ int main(int argc, char **argv) {
     if (current_second >= 1) {
       snprintf(fps_buffer, 32, "FPS: %d | MEM: %.2fkb", frames, (double)occulus_current_allocated() / 1024.0);
       ascii_text(debug_overlay, 0, 59, 32, fps_buffer);
+
+      {
+        uintmax_t raw_new_mem = occulus_current_allocated();
+        uintmax_t raw_mem_max = raw_new_mem;
+        for (uint32_t t = 0; t < 9; t++) {
+          raw_mem[t] = raw_mem[t + 1];
+          if (raw_mem[t] > raw_mem_max) {
+            raw_mem_max = raw_mem[t];
+          }
+        }
+        raw_mem[9] = raw_new_mem;
+        for (uint32_t t = 0; t < 10; t++) {
+          mem_values[t] = (float)raw_mem[t] / (float)raw_mem_max;
+        }
+
+        ascii_graph(debug_overlay, 60, 0, 20, 6, 10, mem_values);
+      }
 
       current_second = 0;
       frames = 0;
