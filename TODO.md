@@ -6,6 +6,7 @@ The actual game
   * Potentially pull occulus out of bedrock?
 * Move projection mapping outside of tiles n stuff?
 * Tilemapping with actual tileinformation
+* Debug overlay broken out
 
 ## Bedrock
 Tests?

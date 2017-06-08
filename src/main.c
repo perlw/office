@@ -13,6 +13,7 @@
 
 #include "assets.h"
 #include "config.h"
+#include "debug/debug.h"
 #include "input.h"
 #include "messages.h"
 #include "scenes.h"
@@ -122,6 +123,8 @@ void navigate_scene(int32_t id, void *subscriberdata, void *userdata) {
 
 int main(int argc, char **argv) {
   srand(time(NULL));
+
+  dummy(10);
 
   char *init_scene = "test";
   // +Flags

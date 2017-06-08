@@ -1,0 +1,7 @@
+set (
+  SOURCES
+  ${SOURCES}
+  "${CMAKE_CURRENT_LIST_DIR}/t_main.c"
+  "${CMAKE_CURRENT_LIST_DIR}/t_ascii.c"
+  PARENT_SCOPE
+)

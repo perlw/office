@@ -23,9 +23,9 @@ set (
   "src/scene_test.c"
   "src/scene_test2.c"
   "src/scene_test3.c"
-  "src/tiles/t_main.c"
-  "src/tiles/t_ascii.c"
 )
+add_subdirectory (src/debug)
+add_subdirectory (src/tiles)
 add_executable (office ${SOURCES})
 
 if (UNIX)
