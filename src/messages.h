@@ -6,6 +6,7 @@ typedef enum {
 
   MSG_SCENE_PREV,
   MSG_SCENE_NEXT,
+  MSG_SCENE_CHANGED,
 
   MSG_SOUND_PLAY_TAP,
 
