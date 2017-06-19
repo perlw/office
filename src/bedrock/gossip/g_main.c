@@ -31,13 +31,13 @@ void gossip_destroy(void) {
   }
 }
 
-GossipHandle gossip_subscribe(uint32_t id, GossipCallback callback, void *subscriberdata) {
+GossipHandle gossip_subscribe(uint32_t id, GossipCallback callback, void *const subscriberdata) {
   if (id > GOSSIP_ID_MAX) {
     printf("GOSSIP: Warning, ignored subscribing to %d id, too large.\n", id);
     return 0;
   }
 
-  Gossiper *g = &gossipers[id];
+  Gossiper *const g = &gossipers[id];
   if (!g->listeners) {
     g->listeners = rectify_array_alloc(4, sizeof(Listener));
   }
@@ -67,7 +67,7 @@ void gossip_unsubscribe(uint32_t id, GossipHandle handle) {
   }
 }
 
-void gossip_emit(uint32_t id, void *userdata) {
+void gossip_emit(uint32_t id, void *const userdata) {
   if (id > GOSSIP_ID_MAX) {
     printf("GOSSIP: Warning, ignored emitting %d id, too large.\n", id);
     return;

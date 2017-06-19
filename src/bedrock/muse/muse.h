@@ -26,7 +26,7 @@ typedef struct {
   MuseType type;
 } MuseArgument;
 
-typedef void (*MuseFunc)(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata);
+typedef void (*MuseFunc)(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata);
 
 typedef struct {
   char *name;
@@ -40,13 +40,13 @@ typedef uint32_t MuseFunctionRef;
 
 Muse *muse_create(void);
 Muse *muse_create_lite(void);
-void muse_destroy(Muse *muse);
-MuseResult muse_call_simple(Muse *muse, const char *name);
-MuseResult muse_call_name(Muse *muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments, uintmax_t num_results, MuseArgument *results);
-MuseResult muse_call_funcref(Muse *muse, MuseFunctionRef ref, uintmax_t num_arguments, const MuseArgument *arguments, uintmax_t num_results, MuseArgument *results);
-MuseResult muse_load_file(Muse *muse, const char *filename);
-MuseResult muse_add_module(Muse *muse, uintmax_t num_funcs, const MuseFunctionDef *funcs);
-MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func);
-void muse_push_number(Muse *muse, double number);
-double muse_pop_number(Muse *muse);
-MuseResult muse_set_global_number(Muse *muse, const char *name, double number);
+void muse_destroy(Muse *const muse);
+MuseResult muse_call_simple(Muse *const muse, const char *name);
+MuseResult muse_call_name(Muse *const muse, const char *name, uintmax_t num_arguments, const MuseArgument *const arguments, uintmax_t num_results, MuseArgument *const results);
+MuseResult muse_call_funcref(Muse *const muse, MuseFunctionRef ref, uintmax_t num_arguments, const MuseArgument *const arguments, uintmax_t num_results, MuseArgument *const results);
+MuseResult muse_load_file(Muse *const muse, const char *filename);
+MuseResult muse_add_module(Muse *const muse, uintmax_t num_funcs, const MuseFunctionDef *const funcs);
+MuseResult muse_add_func(Muse *const muse, const MuseFunctionDef *const func);
+void muse_push_number(Muse *const muse, double number);
+double muse_pop_number(Muse *const muse);
+MuseResult muse_set_global_number(Muse *const muse, const char *name, double number);

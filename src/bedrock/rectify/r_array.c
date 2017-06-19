@@ -48,7 +48,7 @@ void *rectify_array_alloc(uintmax_t chunk_size, uintmax_t element_size) {
   return (void *)((uintptr_t)ptr + metadata_size);
 }
 
-void rectify_array_free(void *ptr) {
+void rectify_array_free(void *const ptr) {
   assert(ptr);
 
   free(unfence_ptr(ptr));
@@ -86,7 +86,7 @@ void *rectify_array_delete(void *ptr, uintmax_t index) {
   return resize_ptr(ptr);
 }
 
-uintmax_t rectify_array_cap(void *ptr) {
+uintmax_t rectify_array_cap(const void *const ptr) {
   assert(ptr);
 
   void *unfenced_ptr = (void *)((uintptr_t)ptr - sizeof(ArrayMetadata));
@@ -94,7 +94,7 @@ uintmax_t rectify_array_cap(void *ptr) {
   return meta->capacity;
 }
 
-uintmax_t rectify_array_size(void *ptr) {
+uintmax_t rectify_array_size(const void *const ptr) {
   assert(ptr);
 
   void *unfenced_ptr = (void *)((uintptr_t)ptr - sizeof(ArrayMetadata));

@@ -1,6 +1,6 @@
 #include "b_internal.h"
 
-BoomboxCassette *boombox_cassette_create(Boombox *boombox) {
+BoomboxCassette *boombox_cassette_create(Boombox *const boombox) {
   BoomboxCassette *cassette = calloc(1, sizeof(BoomboxCassette));
 
   cassette->parent = boombox;
@@ -8,7 +8,7 @@ BoomboxCassette *boombox_cassette_create(Boombox *boombox) {
   return cassette;
 }
 
-void boombox_cassette_destroy(BoomboxCassette *cassette) {
+void boombox_cassette_destroy(BoomboxCassette *const cassette) {
   assert(cassette);
 
   if (cassette->loaded) {
@@ -18,7 +18,7 @@ void boombox_cassette_destroy(BoomboxCassette *cassette) {
   free(cassette);
 }
 
-BoomboxResult boombox_cassette_load_sound(BoomboxCassette *cassette, const char *filepath) {
+BoomboxResult boombox_cassette_load_sound(BoomboxCassette *const cassette, const char *filepath) {
   assert(cassette);
 
   FMOD_RESULT result = FMOD_System_CreateSound(cassette->parent->fmod.system, filepath, FMOD_DEFAULT, 0, &cassette->fmod.sound);
@@ -31,7 +31,7 @@ BoomboxResult boombox_cassette_load_sound(BoomboxCassette *cassette, const char 
   return BOOMBOX_OK;
 }
 
-BoomboxResult boombox_cassette_play(BoomboxCassette *cassette) {
+BoomboxResult boombox_cassette_play(BoomboxCassette *const cassette) {
   assert(cassette);
   if (!cassette->loaded) {
     return BOOMBOX_NO_SOUND_LOADED;
@@ -46,7 +46,7 @@ BoomboxResult boombox_cassette_play(BoomboxCassette *cassette) {
   return BOOMBOX_OK;
 }
 
-BoomboxResult boombox_cassette_set_pitch(BoomboxCassette *cassette, float pitch) {
+BoomboxResult boombox_cassette_set_pitch(BoomboxCassette *const cassette, float pitch) {
   assert(cassette);
   if (!cassette->loaded) {
     return BOOMBOX_NO_SOUND_LOADED;

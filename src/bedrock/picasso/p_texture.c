@@ -59,14 +59,14 @@ PicassoTexture *picasso_texture_load(PicassoTextureTarget target, PicassoTexture
   return texture;
 }
 
-void picasso_texture_destroy(PicassoTexture *texture) {
+void picasso_texture_destroy(PicassoTexture *const texture) {
   assert(texture);
 
   glDeleteTextures(1, &texture->id);
   free(texture);
 }
 
-PicassoTextureResult picasso_texture_set_data(PicassoTexture *texture, uintmax_t offset_x, uintmax_t offset_y, uintmax_t width, uintmax_t height, const void *data) {
+PicassoTextureResult picasso_texture_set_data(PicassoTexture *const texture, uintmax_t offset_x, uintmax_t offset_y, uintmax_t width, uintmax_t height, const void *data) {
   assert(texture);
   if (offset_x + width > texture->width || offset_y + height > texture->height) {
     return PICASSO_TEXTURE_OUT_OF_BOUNDS;
@@ -77,7 +77,7 @@ PicassoTextureResult picasso_texture_set_data(PicassoTexture *texture, uintmax_t
   return PICASSO_TEXTURE_OK;
 }
 
-void picasso_texture_bind_to(PicassoTexture *texture, uint32_t index) {
+void picasso_texture_bind_to(PicassoTexture *const texture, uint32_t index) {
   assert(texture);
 
   glBindTextureUnit(index, texture->id);

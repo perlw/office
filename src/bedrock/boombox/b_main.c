@@ -4,7 +4,7 @@ Boombox *boombox_create(void) {
   return calloc(1, sizeof(Boombox));
 }
 
-BoomboxResult boombox_init(Boombox *boombox) {
+BoomboxResult boombox_init(Boombox *const boombox) {
   FMOD_RESULT result;
 
   result = FMOD_System_Create(&boombox->fmod.system);
@@ -23,7 +23,7 @@ BoomboxResult boombox_init(Boombox *boombox) {
   return BOOMBOX_OK;
 }
 
-void boombox_destroy(Boombox *boombox) {
+void boombox_destroy(Boombox *const boombox) {
   assert(boombox);
 
   if (boombox->init) {
@@ -34,7 +34,7 @@ void boombox_destroy(Boombox *boombox) {
   free(boombox);
 }
 
-void boombox_update(Boombox *boombox) {
+void boombox_update(Boombox *const boombox) {
   assert(boombox);
   assert(boombox->init);
 

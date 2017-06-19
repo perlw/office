@@ -47,7 +47,7 @@ Muse *muse_create(void) {
   return muse;
 }
 
-void muse_destroy(Muse *muse) {
+void muse_destroy(Muse *const muse) {
   assert(muse);
 
   for (int t = 0; t < 256; t++) {
@@ -72,7 +72,7 @@ void muse_destroy(Muse *muse) {
   free(muse);
 }
 
-MuseResult muse_call_simple(Muse *muse, const char *name) {
+MuseResult muse_call_simple(Muse *const muse, const char *name) {
   assert(muse);
 
   lua_getglobal(muse->state, name);
@@ -87,7 +87,7 @@ MuseResult muse_call_simple(Muse *muse, const char *name) {
   return MUSE_RESULT_OK;
 }
 
-MuseResult internal_call(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, uintmax_t num_results, MuseArgument *results) {
+MuseResult internal_call(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, uintmax_t num_results, MuseArgument *const results) {
   for (uintmax_t t = 0; t < num_arguments; t++) {
     switch (arguments[t].type) {
       case MUSE_TYPE_NUMBER:
@@ -161,21 +161,21 @@ MuseResult internal_call(Muse *muse, uintmax_t num_arguments, const MuseArgument
   return MUSE_RESULT_OK;
 }
 
-MuseResult muse_call_name(Muse *muse, const char *name, uintmax_t num_arguments, const MuseArgument *arguments, uintmax_t num_results, MuseArgument *results) {
+MuseResult muse_call_name(Muse *const muse, const char *name, uintmax_t num_arguments, const MuseArgument *const arguments, uintmax_t num_results, MuseArgument *const results) {
   assert(muse);
 
   lua_getglobal(muse->state, name);
   return internal_call(muse, num_arguments, arguments, num_results, results);
 }
 
-MuseResult muse_call_funcref(Muse *muse, MuseFunctionRef ref, uintmax_t num_arguments, const MuseArgument *arguments, uintmax_t num_results, MuseArgument *results) {
+MuseResult muse_call_funcref(Muse *const muse, MuseFunctionRef ref, uintmax_t num_arguments, const MuseArgument *const arguments, uintmax_t num_results, MuseArgument *const results) {
   assert(muse);
 
   lua_rawgeti(muse->state, LUA_REGISTRYINDEX, ref);
   return internal_call(muse, num_arguments, arguments, num_results, results);
 }
 
-MuseResult muse_load_file(Muse *muse, const char *filename) {
+MuseResult muse_load_file(Muse *const muse, const char *filename) {
   assert(muse);
 
   luaL_loadfile(muse->state, filename);
@@ -291,7 +291,7 @@ static int lua_callback(lua_State *state) {
   return 0;
 }
 
-MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
+MuseResult muse_add_func(Muse *const muse, const MuseFunctionDef *const func_def) {
   assert(muse);
   assert(func_def);
 
@@ -324,12 +324,12 @@ MuseResult muse_add_func(Muse *muse, const MuseFunctionDef *func_def) {
   return MUSE_RESULT_OUT_OF_IDS;
 }
 
-void muse_push_number(Muse *muse, double number) {
+void muse_push_number(Muse *const muse, double number) {
   assert(muse);
   lua_pushnumber(muse->state, number);
 }
 
-double muse_pop_number(Muse *muse) {
+double muse_pop_number(Muse *const muse) {
   assert(muse);
 
   if (!lua_isnumber(muse->state, 1)) {
@@ -339,7 +339,7 @@ double muse_pop_number(Muse *muse) {
   return lua_tonumber(muse->state, 1);
 }
 
-MuseResult muse_set_global_number(Muse *muse, const char *name, double number) {
+MuseResult muse_set_global_number(Muse *const muse, const char *name, double number) {
   assert(muse);
 
   lua_pushnumber(muse->state, number);

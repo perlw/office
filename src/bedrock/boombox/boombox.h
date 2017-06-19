@@ -10,17 +10,17 @@ typedef enum {
 typedef struct Boombox Boombox;
 
 Boombox *boombox_create(void);
-BoomboxResult boombox_init(Boombox *boombox);
-void boombox_destroy(Boombox *boombox);
-void boombox_update(Boombox *boombox);
+BoomboxResult boombox_init(Boombox *const boombox);
+void boombox_destroy(Boombox *const boombox);
+void boombox_update(Boombox *const boombox);
 // -Boombox
 
 // +Cassette
 typedef struct BoomboxCassette BoomboxCassette;
 
-BoomboxCassette *boombox_cassette_create(Boombox *boombox);
-void boombox_cassette_destroy(BoomboxCassette *cassette);
-BoomboxResult boombox_cassette_load_sound(BoomboxCassette *cassette, const char *filepath);
-BoomboxResult boombox_cassette_play(BoomboxCassette *cassette);
-BoomboxResult boombox_cassette_set_pitch(BoomboxCassette *cassette, float pitch);
+BoomboxCassette *boombox_cassette_create(Boombox *const boombox);
+void boombox_cassette_destroy(BoomboxCassette *const cassette);
+BoomboxResult boombox_cassette_load_sound(BoomboxCassette *const cassette, const char *filepath);
+BoomboxResult boombox_cassette_play(BoomboxCassette *const cassette);
+BoomboxResult boombox_cassette_set_pitch(BoomboxCassette *const cassette, float pitch);
 // -Cassette

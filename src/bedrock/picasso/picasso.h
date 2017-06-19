@@ -160,8 +160,8 @@ typedef struct {
   bool pressed;
   bool released;
 } PicassoWindowMouseEvent;
-typedef void (*PicassoWindowKeyboardCallback)(const PicassoWindowKeyboardEvent *);
-typedef void (*PicassoWindowMouseCallback)(const PicassoWindowMouseEvent *);
+typedef void (*PicassoWindowKeyboardCallback)(const PicassoWindowKeyboardEvent *const);
+typedef void (*PicassoWindowMouseCallback)(const PicassoWindowMouseEvent *const);
 
 PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug);
 void picasso_window_kill(void);
@@ -189,18 +189,18 @@ typedef struct PicassoShader PicassoShader;
 typedef struct PicassoProgram PicassoProgram;
 
 PicassoShader *picasso_shader_create(PicassoShaderType type);
-void picasso_shader_destroy(PicassoShader *shader);
-PicassoResult picasso_shader_compile(PicassoShader *shader, uintmax_t length, const uint8_t *source);
+void picasso_shader_destroy(PicassoShader *const shader);
+PicassoResult picasso_shader_compile(PicassoShader *const shader, uintmax_t length, const uint8_t *const source);
 
 PicassoProgram *picasso_program_create(void);
-void picasso_program_destroy(PicassoProgram *program);
-PicassoResult picasso_program_link_shaders(PicassoProgram *program, uintmax_t num_shaders, const PicassoShader **shaders);
-void picasso_program_use(PicassoProgram *program);
-int32_t picasso_program_attrib_location(PicassoProgram *program, const char *name);
-int32_t picasso_program_uniform_location(PicassoProgram *program, const char *name);
-void picasso_program_uniform_int(PicassoProgram *program, int32_t uniform, int32_t val);
-void picasso_program_uniform_float(PicassoProgram *program, int32_t uniform, float val);
-void picasso_program_uniform_mat4(PicassoProgram *program, int32_t uniform, float *mat);
+void picasso_program_destroy(PicassoProgram *const program);
+PicassoResult picasso_program_link_shaders(PicassoProgram *const program, uintmax_t num_shaders, const PicassoShader **shaders);
+void picasso_program_use(PicassoProgram *const program);
+int32_t picasso_program_attrib_location(PicassoProgram *const program, const char *name);
+int32_t picasso_program_uniform_location(PicassoProgram *const program, const char *name);
+void picasso_program_uniform_int(PicassoProgram *const program, int32_t uniform, int32_t val);
+void picasso_program_uniform_float(PicassoProgram *const program, int32_t uniform, float val);
+void picasso_program_uniform_mat4(PicassoProgram *const program, int32_t uniform, const float *mat);
 // -Shaders
 
 // +Buffers
@@ -229,12 +229,12 @@ typedef struct PicassoBufferGroup PicassoBufferGroup;
 typedef struct PicassoBuffer PicassoBuffer;
 
 PicassoBufferGroup *picasso_buffergroup_create(void);
-void picasso_buffergroup_destroy(PicassoBufferGroup *buffergroup);
-void picasso_buffergroup_draw(PicassoBufferGroup *buffergroup, PicassoBufferMode mode, uintmax_t num_vertices);
+void picasso_buffergroup_destroy(PicassoBufferGroup *const buffergroup);
+void picasso_buffergroup_draw(PicassoBufferGroup *const buffergroup, PicassoBufferMode mode, uintmax_t num_vertices);
 
-PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *buffergroup, PicassoBufferType type, PicassoBufferUsage usage);
-void picasso_buffer_set_data(PicassoBuffer *buffer, uintmax_t num_fields, PicassoDataType type, uintmax_t size, void *data);
-void picasso_buffer_shader_attrib(PicassoBuffer *buffer, int32_t attr_pos);
+PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *const buffergroup, PicassoBufferType type, PicassoBufferUsage usage);
+void picasso_buffer_set_data(PicassoBuffer *const buffer, uintmax_t num_fields, PicassoDataType type, uintmax_t size, const void *data);
+void picasso_buffer_shader_attrib(PicassoBuffer *const buffer, int32_t attr_pos);
 // -Buffers
 
 // +Textures
@@ -260,8 +260,8 @@ typedef struct PicassoTexture PicassoTexture;
 
 PicassoTexture *picasso_texture_create(PicassoTextureTarget target, uintmax_t width, uintmax_t height, PicassoTextureChannels channels);
 PicassoTexture *picasso_texture_load(PicassoTextureTarget target, PicassoTextureChannels channels, uintmax_t size, const uint8_t *data);
-void picasso_texture_destroy(PicassoTexture *texture);
+void picasso_texture_destroy(PicassoTexture *const texture);
 
-PicassoTextureResult picasso_texture_set_data(PicassoTexture *texture, uintmax_t offset_x, uintmax_t offset_y, uintmax_t width, uintmax_t height, const void *data);
-void picasso_texture_bind_to(PicassoTexture *texture, uint32_t index);
+PicassoTextureResult picasso_texture_set_data(PicassoTexture *const texture, uintmax_t offset_x, uintmax_t offset_y, uintmax_t width, uintmax_t height, const void *data);
+void picasso_texture_bind_to(PicassoTexture *const texture, uint32_t index);
 // -Textures

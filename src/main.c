@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
   tome_init();
   setup_asset_loaders();
 
-  Muse *muse = muse_create();
+  Muse *const muse = muse_create();
 
   input_action_callback(&input_action, muse);
 
@@ -96,11 +96,11 @@ int main(int argc, char **argv) {
   muse_add_func(muse, &action_def);
   muse_load_file(muse, "main.lua");
 
-  SoundSys *soundsys = soundsys_create();
+  SoundSys *const soundsys = soundsys_create();
 
-  DebugOverlay *debug_overlay = debugoverlay_create(&config);
+  DebugOverlay *const debug_overlay = debugoverlay_create(&config);
 
-  Scenes *scenes = scenes_create(&config);
+  Scenes *const scenes = scenes_create(&config);
   scenes_register(scenes, &scene_test);
   scenes_register(scenes, &scene_test2);
   scenes_register(scenes, &scene_test3);
@@ -108,21 +108,21 @@ int main(int argc, char **argv) {
   gossip_subscribe(MSG_SCENE_NEXT, &navigate_scene, (void *)scenes);
 
   {
-    Scene *scene = scenes_goto(scenes, init_scene);
+    Scene *const scene = scenes_goto(scenes, init_scene);
     gossip_emit(MSG_SCENE_CHANGED, scene);
   }
 
-  double last_tick = bedrock_time();
-
-  double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
+  const double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
   double next_frame = frame_timing;
 
   gossip_subscribe(MSG_GAME_KILL, &game_kill_event, NULL);
 
   gossip_emit(MSG_GAME_INIT, NULL);
+
+  double last_tick = bedrock_time();
   while (!picasso_window_should_close() && !quit_game) {
-    double tick = bedrock_time();
-    double delta = tick - last_tick;
+    const double tick = bedrock_time();
+    const double delta = tick - last_tick;
     last_tick = tick;
 
     soundsys_update(soundsys, delta);

@@ -73,7 +73,7 @@ void input_action(InputActionBinding *binding, void *userdata) {
   }
 }
 
-void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata) {
+void lua_action(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
   char *action = (char *)arguments[0].argument;
   MuseFunctionRef ref = *(MuseFunctionRef *)arguments[1].argument;
 

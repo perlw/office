@@ -89,7 +89,7 @@ void *tome_fetch(int32_t type, const char *name, const char *path) {
   return NULL;
 }
 
-void tome_record(int32_t type, const char *name, const void *data) {
+void tome_record(int32_t type, const char *name, const void *const data) {
   assert(tome);
 
   printf("TOME: Recording #%d asset \"%s\"...", type, name);
@@ -168,10 +168,7 @@ void tome_handler(int32_t type, TomeLoader loader, TomeDestroyer destroyer) {
   }
 
   tome->handlers = rectify_array_push(tome->handlers, &(Handler){
-                                                        .type = type,
-                                                        .loader = loader,
-                                                        .destroyer = destroyer,
-                                                        .records = rectify_array_alloc(10, sizeof(Record)),
+                                                        .type = type, .loader = loader, .destroyer = destroyer, .records = rectify_array_alloc(10, sizeof(Record)),
                                                       });
   printf("DONE\n");
 }

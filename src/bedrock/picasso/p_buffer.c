@@ -36,7 +36,7 @@ PicassoBufferGroup *picasso_buffergroup_create(void) {
   return buffergroup;
 }
 
-void picasso_buffergroup_destroy(PicassoBufferGroup *buffergroup) {
+void picasso_buffergroup_destroy(PicassoBufferGroup *const buffergroup) {
   assert(buffergroup);
 
   buffergroup_bind(0);
@@ -50,14 +50,14 @@ void picasso_buffergroup_destroy(PicassoBufferGroup *buffergroup) {
   free(buffergroup);
 }
 
-void picasso_buffergroup_draw(PicassoBufferGroup *buffergroup, PicassoBufferMode mode, uintmax_t num_vertices) {
+void picasso_buffergroup_draw(PicassoBufferGroup *const buffergroup, PicassoBufferMode mode, uintmax_t num_vertices) {
   assert(buffergroup);
 
   buffergroup_bind(buffergroup);
   glDrawArrays(BufferModeToGL[mode], 0, (GLsizei)num_vertices);
 }
 
-void buffergroup_bind(PicassoBufferGroup *buffergroup) {
+void buffergroup_bind(PicassoBufferGroup *const buffergroup) {
   uint32_t id = (buffergroup ? buffergroup->id : 0);
   if (get_state(PICASSO_STATE_VAO) != id) {
     glBindVertexArray(id);
@@ -65,7 +65,7 @@ void buffergroup_bind(PicassoBufferGroup *buffergroup) {
   }
 }
 
-PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *buffergroup, PicassoBufferType type, PicassoBufferUsage usage) {
+PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *const buffergroup, PicassoBufferType type, PicassoBufferUsage usage) {
   assert(buffergroup);
 
   PicassoBuffer *buffer = calloc(1, sizeof(PicassoBuffer));
@@ -82,14 +82,14 @@ PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *buffergroup, PicassoBuf
   return buffer;
 }
 
-void buffer_destroy(PicassoBuffer *buffer) {
+void buffer_destroy(PicassoBuffer *const buffer) {
   assert(buffer);
 
   glDeleteBuffers(1, &buffer->id);
   free(buffer);
 }
 
-void picasso_buffer_set_data(PicassoBuffer *buffer, uintmax_t num_fields, PicassoDataType type, uintmax_t size, void *data) {
+void picasso_buffer_set_data(PicassoBuffer *const buffer, uintmax_t num_fields, PicassoDataType type, uintmax_t size, const void *data) {
   assert(buffer);
 
   glNamedBufferData(buffer->id, size, data, buffer->gl.usage);
@@ -110,7 +110,7 @@ void picasso_buffer_shader_attrib(PicassoBuffer *buffer, int32_t attr_pos) {
   buffergroup_bind(NULL);
 }
 
-void buffer_bind(PicassoBuffer *buffer) {
+void buffer_bind(PicassoBuffer *const buffer) {
   uint32_t id = (buffer ? buffer->id : 0);
 
   if (get_state(PICASSO_STATE_BUFFER) != id) {

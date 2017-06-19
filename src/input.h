@@ -21,6 +21,6 @@ void input_keyboard_callback(const PicassoWindowKeyboardEvent *event);
 void input_mouse_callback(const PicassoWindowMouseEvent *event);
 
 void input_action(InputActionBinding *binding, void *userdata);
-void lua_action(Muse *muse, uintmax_t num_arguments, const MuseArgument *arguments, void *userdata);
+void lua_action(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata);
 void input_action_callback(InputActionCallback callback, void *userdata);
 void input_action_add_binding(InputActionBinding *binding);

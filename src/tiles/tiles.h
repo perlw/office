@@ -2,6 +2,12 @@
 
 #include "arkanis/math_3d.h"
 
+// +Tile
+/*typedef struct {
+  int dummy;
+} Tile;*/
+// -Tile
+
 // +Tiles
 typedef struct {
   uint32_t num_tiles_x;
