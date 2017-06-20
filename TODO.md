@@ -9,6 +9,15 @@ The actual game
 
 ## Bedrock
 Tests?
+* Rename modules?
+  - archivist -> tbd
+  - boombox -> tbd, bard?
+  - gossip -> tbd, hermes?
+  - picasso -> tbd
+  - rectify -> tbd
+  - occulus -> is fine
+  - muse -> is fine
+  - tome -> is fine
 
 ### Picasso
 Graphics, pipeline
