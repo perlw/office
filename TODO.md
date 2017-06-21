@@ -18,6 +18,8 @@ Tests?
   - occulus -> is fine
   - muse -> is fine
   - tome -> is fine
+* Logging
+  - Log to file aswell as log to console
 
 ### Picasso
 Graphics, pipeline

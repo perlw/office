@@ -65,23 +65,15 @@ Tiles *tiles_create(uint32_t width, uint32_t height, uint32_t num_tiles_x, uint3
   }
 
   {
-    tiles->tileset_texture = (PicassoTexture *)tome_fetch(ASSET_TEXTURE, "tileset", "tilesets/office.png");
-    if (!tiles->tileset_texture) {
+    tiles->tileset = (TileSet *)tome_fetch(ASSET_TILESET, "office", "tilesets/office.lua");
+    if (!tiles->tileset) {
       printf("Something went wrong when fetching tileset :(\n");
       exit(-1);
     }
-    picasso_texture_bind_to(tiles->tileset_texture, 0);
+    picasso_texture_bind_to(tiles->tileset->texture, 0);
 
     int32_t texture_uniform = picasso_program_uniform_location(tiles->program, "tileset");
     picasso_program_uniform_int(tiles->program, texture_uniform, 0);
-  }
-
-  {
-    TileSet *tileset = (TileSet *)tome_fetch(ASSET_TILESET, "office", "tilesets/office.lua");
-    if (!tileset) {
-      printf("Something went wrong when fetching tileset :(\n");
-      exit(-1);
-    }
   }
 
   {
@@ -122,7 +114,7 @@ void tiles_destroy(Tiles *tiles) {
 
   picasso_texture_destroy(tiles->tilemap_texture);
 
-  tome_release(ASSET_TEXTURE, "tileset");
+  tome_release(ASSET_TILESET, "office");
   tome_release(ASSET_SHADER, "tiles");
 
   picasso_buffergroup_destroy(tiles->quad);
@@ -150,7 +142,7 @@ void tiles_draw(Tiles *tiles) {
     picasso_program_uniform_int(tiles->program, tiles->shader.num_tiles_y_uniform, tiles->num_tiles_y);
   }
 
-  picasso_texture_bind_to(tiles->tileset_texture, 0);
+  picasso_texture_bind_to(tiles->tileset->texture, 0);
   picasso_texture_bind_to(tiles->tilemap_texture, 1);
 
   picasso_buffergroup_draw(tiles->quad, PICASSO_BUFFER_MODE_TRIANGLES, 6);

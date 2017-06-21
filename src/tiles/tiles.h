@@ -30,9 +30,10 @@ typedef struct {
   uint8_t *tilemap;
   uint8_t *last_tilemap;
 
+  TileSet *tileset;
+
   PicassoBufferGroup *quad;
   PicassoProgram *program;
-  PicassoTexture *tileset_texture;
   PicassoTexture *tilemap_texture;
 
   struct {

@@ -36,7 +36,7 @@ void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base
   TileCorners tiles[9] = { 0 };
 
   printf("Adding tile...\n");
-  bool has_corners = (base_tile >= 128);
+  bool has_corners = scene->layers[1]->tileset->tile_defs[base_tile].auto_tile;
 
   printf("\tNeighbors and corners...\n");
   uint32_t n = 0;
