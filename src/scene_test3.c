@@ -31,9 +31,9 @@ typedef struct {
 typedef struct {
   uint8_t base_tile;
   bool corners[4];
-} Tile;
+} TileCorners;
 void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base_tile) {
-  Tile tiles[9] = { 0 };
+  TileCorners tiles[9] = { 0 };
 
   printf("Adding tile...\n");
   bool has_corners = (base_tile >= 128);
@@ -69,7 +69,7 @@ void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base
         }
 
         if (!tiles[n].corners[0]) {
-         bool i0 = (scene->map[((yy - 1) * 40) + (xx - 1)] > 0);
+          bool i0 = (scene->map[((yy - 1) * 40) + (xx - 1)] > 0);
           bool i1 = (scene->map[((yy - 1) * 40) + xx] > 0);
           bool i2 = (scene->map[(yy * 40) + (xx - 1)] > 0);
           tiles[n].corners[0] = (i0 && i1 && i2);
@@ -93,7 +93,7 @@ void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base
           tiles[n].corners[3] = (i0 && i1 && i2);
         }
       } else {
-        tiles[n] = (Tile){
+        tiles[n] = (TileCorners){
           .base_tile = base_tile,
           .corners = { has_corners, has_corners, has_corners, has_corners },
         };
@@ -128,7 +128,7 @@ void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base
 
       if (tiles[n].corners[0] || tiles[n].corners[1] || tiles[n].corners[2] || tiles[n].corners[3]) {
         tiles[n].base_tile = (base_tile > 0 ? base_tile : tiles[n].base_tile);
-      } else  {
+      } else {
         tiles[n].base_tile = 0;
       }
       printf("#%d [ %d %d | %d %d ] ", tiles[n].base_tile, tiles[n].corners[0], tiles[n].corners[1], tiles[n].corners[2], tiles[n].corners[3]);
@@ -142,13 +142,6 @@ void scene_test3_add_tile(SceneTest *scene, uint32_t x, uint32_t y, uint8_t base
     printf("\t");
     for (uint32_t xx = min_x; xx <= max_x; xx++) {
       uint32_t index = (yy * 40) + xx;
-      /*if (tiles[tile_index].base_tile < 128) {
-        printf("foo%d, ", tiles[tile_index].base_tile);
-        scene->map[index] = tiles[tile_index].base_tile;
-        scene->layers[1]->tilemap[index] = tiles[tile_index].base_tile;
-        tile_index++;
-        continue;
-      }*/
 
       uint8_t tile = tiles[tile_index].base_tile;
       // Find tile from corners

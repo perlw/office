@@ -77,6 +77,14 @@ Tiles *tiles_create(uint32_t width, uint32_t height, uint32_t num_tiles_x, uint3
   }
 
   {
+    TileSet *tileset = (TileSet *)tome_fetch(ASSET_TILESET, "office", "tilesets/office.lua");
+    if (!tileset) {
+      printf("Something went wrong when fetching tileset :(\n");
+      exit(-1);
+    }
+  }
+
+  {
     tiles->num_tiles_x = num_tiles_x;
     tiles->num_tiles_y = num_tiles_y;
     tiles->num_tiles = tiles->num_tiles_x * tiles->num_tiles_y;

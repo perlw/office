@@ -23,11 +23,11 @@
 #include "scene_test.h"
 
 bool quit_game = false;
-void game_kill_event(int32_t id, void *subscriberdata, void *userdata) {
+void game_kill_event(int32_t id, void *const subscriberdata, void *const userdata) {
   quit_game = true;
 }
 
-void navigate_scene(int32_t id, void *subscriberdata, void *userdata) {
+void navigate_scene(int32_t id, void *const subscriberdata, void *const userdata) {
   Scenes *scenes = (Scenes *)subscriberdata;
 
   switch (id) {

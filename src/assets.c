@@ -5,6 +5,7 @@
 #include "bedrock/bedrock.h"
 
 #include "assets.h"
+#include "tiles/tiles.h"
 
 void *shader_loader(const char *name, const char *path) {
   uintmax_t vert_length = 0, frag_length = 0;
@@ -76,7 +77,20 @@ void texture_destroyer(void *data) {
   picasso_texture_destroy((PicassoTexture *)data);
 }
 
+void *tileset_loader(const char *name, const char *path) {
+  TileSet *tileset = tileset_create();
+
+  tileset_load_defs(tileset, path);
+
+  return tileset;
+}
+
+void tileset_destroyer(void *data) {
+  tileset_destroy((TileSet *)data);
+}
+
 void setup_asset_loaders(void) {
   tome_handler(ASSET_SHADER, &shader_loader, &shader_destroyer);
   tome_handler(ASSET_TEXTURE, &texture_loader, &texture_destroyer);
+  tome_handler(ASSET_TILESET, &tileset_loader, &tileset_destroyer);
 }

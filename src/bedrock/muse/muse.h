@@ -13,10 +13,12 @@ typedef enum {
 } MuseResult;
 
 typedef enum {
-  MUSE_TYPE_NUMBER = 1,
+  MUSE_TYPE_UNK = 0,
+  MUSE_TYPE_NUMBER,
   MUSE_TYPE_STRING,
   MUSE_TYPE_BOOLEAN,
   MUSE_TYPE_FUNCTION,
+  MUSE_TYPE_TABLE,
 } MuseType;
 
 typedef struct Muse Muse;
@@ -25,6 +27,12 @@ typedef struct {
   void *argument;
   MuseType type;
 } MuseArgument;
+
+typedef struct {
+  char *key;
+  void *val;
+  MuseType type;
+} MuseTableEntry;
 
 typedef void (*MuseFunc)(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata);
 

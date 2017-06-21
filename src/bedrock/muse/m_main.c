@@ -272,8 +272,67 @@ static int lua_callback(lua_State *state) {
           *(MuseFunctionRef *)arguments[t].argument = (MuseFunctionRef)luaL_ref(muse->state, LUA_REGISTRYINDEX);
           break;
 
+        case MUSE_TYPE_TABLE:
+          if (!lua_istable(muse->state, t + 1)) {
+            printf("MUSE (%s:%d): incorrect arg type, expected table!\n", __FILE__, __LINE__);
+          }
+
+          uint32_t num_entries = 0;
+          MuseTableEntry *table_entries = calloc(32, sizeof(MuseTableEntry));
+
+          lua_pushnil(muse->state);
+          while (lua_next(muse->state, t + 1) != 0) {
+            if (!lua_isstring(muse->state, -2)) {
+              lua_pop(muse->state, 1);
+              continue;
+            }
+
+            if (num_entries < 30) {
+              uintmax_t key_length = 0;
+              const char *key = lua_tolstring(muse->state, -2, &key_length);
+
+              switch (lua_type(muse->state, -1)) {
+                case LUA_TBOOLEAN:
+                  table_entries[num_entries] = (MuseTableEntry){
+                    .key = calloc(key_length + 1, sizeof(char)),
+                    .val = calloc(1, sizeof(bool)),
+                    .type = MUSE_TYPE_BOOLEAN,
+                  };
+                  memcpy(table_entries[num_entries].key, key, key_length * sizeof(char));
+                  *(bool *)table_entries[num_entries].val = (bool)lua_toboolean(muse->state, -1);
+                  printf("%s -> %d\n", key, *(bool *)table_entries[num_entries].val);
+                  num_entries++;
+                  break;
+
+                default:
+                  printf("MUSE (%s:%d): unknown/unimplemented table type\n", __FILE__, __LINE__);
+                  break;
+              }
+            }
+
+            lua_pop(muse->state, 1);
+          }
+
+          table_entries[num_entries] = (MuseTableEntry){
+            .key = NULL,
+            .val = NULL,
+            .type = MUSE_TYPE_UNK,
+          };
+          num_entries++;
+
+          table_entries = realloc(table_entries, num_entries * sizeof(MuseTableEntry));
+          arguments[t] = (MuseArgument){
+            .argument = table_entries,
+            .type = func_def->arguments[t],
+          };
+          break;
+
         default:
           printf("MUSE (%s:%d): unknown/unimplemented type %d\n", __FILE__, __LINE__, func_def->arguments[t]);
+          arguments[t] = (MuseArgument){
+            .argument = NULL,
+            .type = MUSE_TYPE_UNK,
+          };
           break;
       }
     }
@@ -283,7 +342,19 @@ static int lua_callback(lua_State *state) {
 
   if (num_arguments > 0) {
     for (uintmax_t t = 0; t < num_arguments; t++) {
-      free(arguments[t].argument);
+      if (arguments[t].type != MUSE_TYPE_UNK) {
+        if (arguments[t].type == MUSE_TYPE_TABLE) {
+          MuseTableEntry *table = (MuseTableEntry *)arguments[t].argument;
+          uint32_t curr = 0;
+          while (table[curr].type != MUSE_TYPE_UNK && curr < 32) {
+            free(table[curr].key);
+            free(table[curr].val);
+            curr++;
+          }
+        }
+
+        free(arguments[t].argument);
+      }
     }
     free(arguments);
   }

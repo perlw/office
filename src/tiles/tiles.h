@@ -1,12 +1,26 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include "arkanis/math_3d.h"
 
-// +Tile
-/*typedef struct {
-  int dummy;
-} Tile;*/
-// -Tile
+#include "bedrock/bedrock.h"
+
+// +TileSet
+typedef struct {
+  bool auto_tile;
+} TileDef;
+
+typedef struct {
+  TileDef *tile_defs[256];
+  PicassoTexture *texture;
+} TileSet;
+
+TileSet *tileset_create(void);
+void tileset_destroy(TileSet *const tileset);
+
+void tileset_load_defs(TileSet *const tileset, const char *filepath);
+// -TileSet
 
 // +Tiles
 typedef struct {
