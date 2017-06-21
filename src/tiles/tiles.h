@@ -12,7 +12,7 @@ typedef struct {
 } TileDef;
 
 typedef struct {
-  TileDef *tile_defs[256];
+  TileDef tile_defs[256];
   PicassoTexture *texture;
 } TileSet;
 

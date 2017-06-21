@@ -35,10 +35,16 @@ void tileset_lua_func(Muse *const muse, uintmax_t num_arguments, const MuseArgum
 void tileprops_lua_func(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
   TileSet *tileset = (TileSet *)userdata;
 
+  uint8_t tile_id = (uint8_t) * (double *)arguments[0].argument;
   MuseTableEntry *table = (MuseTableEntry *)arguments[1].argument;
   uint32_t curr = 0;
   while (table[curr].type != MUSE_TYPE_UNK) {
-    printf("table %s => %d\n", table[curr].key, *(bool *)table[curr].val);
+    if (strncmp(table[curr].key, "auto_tile", 10) == 0) {
+      tileset->tile_defs[tile_id].auto_tile = *(bool *)table[curr].val;
+    }
+
+    printf("tile %d: auto_tile = %d\n", tile_id, tileset->tile_defs[tile_id].auto_tile);
+
     curr++;
   }
 }

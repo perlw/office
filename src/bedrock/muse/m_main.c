@@ -300,7 +300,6 @@ static int lua_callback(lua_State *state) {
                   };
                   memcpy(table_entries[num_entries].key, key, key_length * sizeof(char));
                   *(bool *)table_entries[num_entries].val = (bool)lua_toboolean(muse->state, -1);
-                  printf("%s -> %d\n", key, *(bool *)table_entries[num_entries].val);
                   num_entries++;
                   break;
 
