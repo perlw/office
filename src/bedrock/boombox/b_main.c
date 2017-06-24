@@ -19,6 +19,12 @@ BoomboxResult boombox_init(Boombox *const boombox) {
     return BOOMBOX_FAIL;
   }
 
+  result = FMOD_System_CreateDSPByType(boombox->fmod.system, FMOD_DSP_TYPE_FFT, &boombox->fmod.dsp);
+  if (result != FMOD_OK) {
+    printf("FMOD: (%d) %s\n", result, FMOD_ErrorString(result));
+    return BOOMBOX_FAIL;
+  }
+
   boombox->init = true;
   return BOOMBOX_OK;
 }
@@ -27,6 +33,7 @@ void boombox_destroy(Boombox *const boombox) {
   assert(boombox);
 
   if (boombox->init) {
+    FMOD_DSP_Release(boombox->fmod.dsp);
     FMOD_System_Close(boombox->fmod.system);
     FMOD_System_Release(boombox->fmod.system);
   }

@@ -13,11 +13,13 @@ struct Boombox {
   bool init;
   struct {
     FMOD_SYSTEM *system;
+    FMOD_DSP *dsp;
   } fmod;
 };
 
 struct BoomboxCassette {
   bool loaded;
+  bool playing;
   Boombox *parent;
   struct {
     FMOD_SOUND *sound;
