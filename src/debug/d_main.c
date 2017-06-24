@@ -19,7 +19,7 @@ typedef struct {
   float mem_values[10];
 } DebugOverlay;
 
-void ascii_text(TilesAscii *tiles, uint32_t x, uint32_t y, uintmax_t length, const char *string) {
+void ascii_text(TilesAscii *tiles, uint32_t x, uint32_t y, uint32_t length, const char *string) {
   assert(tiles);
 
   if (x >= tiles->ascii_width || y >= tiles->ascii_height) {
@@ -93,7 +93,7 @@ void scene_changed(int32_t id, void *subscriberdata, void *userdata) {
 
   snprintf(overlay->scene_buffer, 32, "SCENE: %s", scene->name);
   printf("%s\n", overlay->scene_buffer);
-  ascii_text(overlay->ascii, 80 - strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer);
+  ascii_text(overlay->ascii, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer);
 }
 
 DebugOverlay *debugoverlay_create(const Config *config) {
@@ -117,7 +117,7 @@ DebugOverlay *debugoverlay_create(const Config *config) {
 
   memset(overlay->scene_buffer, 0, 32 * sizeof(char));
   snprintf(overlay->scene_buffer, 32, "SCENE: na");
-  ascii_text(overlay->ascii, 80 - strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer);
+  ascii_text(overlay->ascii, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer);
 
   gossip_subscribe(MSG_SCENE_CHANGED, &scene_changed, overlay);
 

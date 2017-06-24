@@ -21,6 +21,8 @@
 #include "tiles/tiles.h"
 
 #include "scene_test.h"
+#include "scene_game.h"
+#include "scene_sound-test.h"
 
 bool quit_game = false;
 void game_kill_event(int32_t id, void *const subscriberdata, void *const userdata) {
@@ -104,6 +106,8 @@ int main(int argc, char **argv) {
   scenes_register(scenes, &scene_test);
   scenes_register(scenes, &scene_test2);
   scenes_register(scenes, &scene_test3);
+  scenes_register(scenes, &scene_game);
+  scenes_register(scenes, &scene_sound_test);
   gossip_subscribe(MSG_SCENE_PREV, &navigate_scene, (void *)scenes);
   gossip_subscribe(MSG_SCENE_NEXT, &navigate_scene, (void *)scenes);
 

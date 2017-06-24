@@ -15,6 +15,7 @@ struct Scenes {
 };
 
 void *scenes_dummy_create(const Config *config) {
+  return NULL;
 }
 
 void scenes_dummy_destroy(void *scene) {

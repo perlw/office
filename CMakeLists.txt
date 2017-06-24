@@ -23,6 +23,8 @@ set (
   "src/scene_test.c"
   "src/scene_test2.c"
   "src/scene_test3.c"
+  "src/scene_game.c"
+  "src/scene_sound-test.c"
 )
 add_subdirectory (src/debug)
 add_subdirectory (src/tiles)

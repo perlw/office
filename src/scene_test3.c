@@ -175,8 +175,8 @@ void scene_test3_mouse_event(int32_t id, void *subscriberdata, void *userdata) {
   SceneTest *scene = (SceneTest *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
 
-  uint32_t grid_x = (uint32_t)(event->x / 16.0) + 0.5;
-  uint32_t grid_y = (uint32_t)(event->y / 16.0) + 0.5;
+  uint32_t grid_x = (uint32_t)((event->x / 16.0) + 0.5);
+  uint32_t grid_y = (uint32_t)((event->y / 16.0) + 0.5);
   if (event->pressed) {
     gossip_emit(MSG_SOUND_PLAY_TAP, NULL);
     scene->painting = true;
