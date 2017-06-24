@@ -27,12 +27,12 @@ SceneSoundTest *scene_sound_test_create(const Config *config) {
 
   // +UI
   scene->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
-  uint8_t tiles[9] = {
-    1, 1, 1,
-    1, 1, 1,
-    1, 1, 1,
+  SurfaceRectTiles rect_tiles = {
+    '+', '-', '+',
+    '|', 0, '|',
+    '+', '-', '+',
   };
-  surface_rect(scene->surface, 0, 0, 10, 10, tiles, false, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 255, 0, 0 });
+  surface_rect(scene->surface, 0, 0, 10, 10, rect_tiles, true, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 255, 0, 0 });
   // -UI
 
   return scene;

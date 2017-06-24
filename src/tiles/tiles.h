@@ -102,11 +102,17 @@ typedef struct {
   Glyph *asciimap;
 } Surface;
 
+typedef struct {
+  uint8_t tl, t, tr;
+  uint8_t l, c, r;
+  uint8_t bl, b, br;
+} SurfaceRectTiles;
+
 Surface *surface_create(uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t height);
 void surface_destroy(Surface *surface);
 
 void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string);
-void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t *tiles, bool filled, GlyphColor fore_color, GlyphColor back_color);
+void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, SurfaceRectTiles rect_tiles, bool filled, GlyphColor fore_color, GlyphColor back_color);
 
 void surface_draw(Surface *surface, TilesAscii *tiles);
 // -Surface

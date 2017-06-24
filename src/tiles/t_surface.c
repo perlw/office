@@ -28,7 +28,7 @@ void surface_destroy(Surface *surface) {
 void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string) {
   assert(surface);
 
-  if (x >= surface->width || y >= surface->height) {
+  if (x >= surface->width - 1 || y >= surface->height - 1) {
     return;
   }
 
@@ -49,15 +49,51 @@ void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, con
   }
 }
 
-void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t *tiles, bool filled, GlyphColor fore_color, GlyphColor back_color) {
+void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, SurfaceRectTiles rect_tiles, bool filled, GlyphColor fore_color, GlyphColor back_color) {
   assert(surface);
 
-  if (x >= surface->width || y >= surface->height) {
+  if (x >= surface->width - 1 || y >= surface->height - 1) {
     return;
   }
 
-  for (uint32_t y = 0; y < surface->height; y++) {
-    for (uint32_t x = 0; x < surface->width; x++) {
+  uint32_t end_y = (height < surface->height ? height : surface->height - 1);
+  uint32_t end_x = (width < surface->width ? width : surface->width - 1);
+  for (uint32_t yy = y; yy < end_y; yy++) {
+    for (uint32_t xx = x; xx < end_x; xx++) {
+      uint32_t index = (yy * surface->width) + xx;
+
+      if (yy == y) {
+        if (xx == x) {
+          surface->asciimap[index].rune = rect_tiles.tl;
+        } else if (xx == end_x - 1) {
+          surface->asciimap[index].rune = rect_tiles.tr;
+        } else {
+          surface->asciimap[index].rune = rect_tiles.t;
+        }
+      } else if (yy == end_y - 1) {
+        if (xx == x) {
+          surface->asciimap[index].rune = rect_tiles.bl;
+        } else if (xx == end_x - 1) {
+          surface->asciimap[index].rune = rect_tiles.br;
+        } else {
+          surface->asciimap[index].rune = rect_tiles.b;
+        }
+      } else {
+        if (xx == x) {
+          surface->asciimap[index].rune = rect_tiles.l;
+        } else if (xx == end_x - 1) {
+          surface->asciimap[index].rune = rect_tiles.r;
+        } else {
+          if (!filled) {
+            continue;
+          }
+
+          surface->asciimap[index].rune = rect_tiles.c;
+        }
+      }
+
+      surface->asciimap[index].fore = fore_color;
+      surface->asciimap[index].back = back_color;
     }
   }
 }
