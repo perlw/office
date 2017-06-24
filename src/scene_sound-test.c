@@ -79,7 +79,7 @@ void scene_sound_test_update(SceneSoundTest *scene, double delta) {
   while (scene->since_update >= scene->timing) {
     scene->since_update -= scene->timing;
 
-    for (uint32_t t = 0; t < 78; t++) {
+    for (uint32_t t = 0; t < 77; t++) {
       uint32_t height_l = (uint32_t)(scene->spectrum_left[t] * 14.0f);
       uint32_t height_r = (uint32_t)(scene->spectrum_right[t] * 14.0f);
 
