@@ -160,6 +160,28 @@ SceneTest *scene_test_create(const Config *config) {
   scene->surface2 = surface_create(0, 0, 32, 32);
   scene->surface3 = surface_create(24, 16, 32, 32);
 
+  for (uint32_t y = 0; y < scene->surface2->height; y++) {
+    for (uint32_t x = 0; x < scene->surface2->width; x++) {
+      uint32_t index = (y * scene->surface2->width) + x;
+      uint8_t shade = (uint8_t)((x ^ y) + 32);
+      scene->surface2->asciimap[index].rune = 219;
+      scene->surface2->asciimap[index].fore.r = shade;
+      scene->surface2->asciimap[index].fore.g = shade;
+      scene->surface2->asciimap[index].fore.b = 128;
+    }
+  }
+
+  for (uint32_t y = 0; y < scene->surface3->height; y++) {
+    for (uint32_t x = 0; x < scene->surface3->width; x++) {
+      uint32_t index = (y * scene->surface3->width) + x;
+      uint8_t shade = (uint8_t)((x ^ y) + 32);
+      scene->surface3->asciimap[index].rune = 219;
+      scene->surface3->asciimap[index].fore.r = 128;
+      scene->surface3->asciimap[index].fore.g = shade;
+      scene->surface3->asciimap[index].fore.b = shade;
+    }
+  }
+
   scene->input = textinput_create(1, config->ascii_height - 2, config->ascii_width - 2);
 
   return scene;

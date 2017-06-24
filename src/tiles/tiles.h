@@ -105,7 +105,9 @@ typedef struct {
 Surface *surface_create(uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t height);
 void surface_destroy(Surface *surface);
 
-void surface_text(Surface *surface, uint32_t x, uint32_t y, uintmax_t length, const char *string);
+void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string);
+void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t *tiles, bool filled, GlyphColor fore_color, GlyphColor back_color);
+
 void surface_draw(Surface *surface, TilesAscii *tiles);
 // -Surface
 

@@ -14,17 +14,6 @@ Surface *surface_create(uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t
   surface->size = surface->width * surface->height;
   surface->asciimap = calloc(surface->size, sizeof(Glyph));
 
-  for (uintmax_t y = 0; y < surface->height; y++) {
-    for (uintmax_t x = 0; x < surface->width; x++) {
-      uintmax_t index = (y * surface->width) + x;
-      uint8_t shade = (uint8_t)((x ^ y) + 32);
-      surface->asciimap[index].rune = 219;
-      surface->asciimap[index].fore.r = shade;
-      surface->asciimap[index].fore.g = shade;
-      surface->asciimap[index].fore.b = shade;
-    }
-  }
-
   return surface;
 }
 
@@ -36,7 +25,7 @@ void surface_destroy(Surface *surface) {
   free(surface);
 }
 
-void surface_text(Surface *surface, uint32_t x, uint32_t y, uintmax_t length, const char *string) {
+void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string) {
   assert(surface);
 
   if (x >= surface->width || y >= surface->height) {
@@ -60,11 +49,24 @@ void surface_text(Surface *surface, uint32_t x, uint32_t y, uintmax_t length, co
   }
 }
 
+void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t *tiles, bool filled, GlyphColor fore_color, GlyphColor back_color) {
+  assert(surface);
+
+  if (x >= surface->width || y >= surface->height) {
+    return;
+  }
+
+  for (uint32_t y = 0; y < surface->height; y++) {
+    for (uint32_t x = 0; x < surface->width; x++) {
+    }
+  }
+}
+
 void surface_draw(Surface *surface, TilesAscii *tiles) {
-  for (uintmax_t y = 0; y < surface->height; y++) {
-    for (uintmax_t x = 0; x < surface->width; x++) {
-      uintmax_t s_index = (y * surface->width) + x;
-      uintmax_t index = ((y + surface->y) * tiles->ascii_width) + (x + surface->x);
+  for (uint32_t y = 0; y < surface->height; y++) {
+    for (uint32_t x = 0; x < surface->width; x++) {
+      uint32_t s_index = (y * surface->width) + x;
+      uint32_t index = ((y + surface->y) * tiles->ascii_width) + (x + surface->x);
       if (index >= tiles->ascii_size) {
         continue;
       }
