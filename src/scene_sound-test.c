@@ -105,8 +105,15 @@ void scene_sound_test_update(SceneSoundTest *scene, double delta) {
         uint32_t index_r = ((15 + y) * scene->spectrum->width) + (t + 1);
 
         if (y < height_l) {
+          float gradient = (float)y / (float)height_l;
+          GlyphColor flame = {
+            .r = (uint8_t)(200.0f * gradient),
+            .g = (uint8_t)(128.0f - (128.0f * gradient)),
+            .b = 0,
+          };
+
           scene->spectrum->asciimap[index_l].rune = 1;
-          scene->spectrum->asciimap[index_l].fore = (GlyphColor){ 0, 128, 0 };
+          scene->spectrum->asciimap[index_l].fore = flame;
           scene->spectrum->asciimap[index_l].back = (GlyphColor){ 0, 0, 0 };
         } else {
           scene->spectrum->asciimap[index_l].rune = 1;
@@ -114,8 +121,15 @@ void scene_sound_test_update(SceneSoundTest *scene, double delta) {
           scene->spectrum->asciimap[index_l].back = (GlyphColor){ 0, 0, 0 };
         }
         if (y < height_r) {
+          float gradient = (float)y / (float)height_r;
+          GlyphColor flame = {
+            .r = (uint8_t)(200.0f * gradient),
+            .g = (uint8_t)(128.0f - (128.0f * gradient)),
+            .b = 0,
+          };
+
           scene->spectrum->asciimap[index_r].rune = 1;
-          scene->spectrum->asciimap[index_r].fore = (GlyphColor){ 0, 128, 0 };
+          scene->spectrum->asciimap[index_r].fore = flame;
           scene->spectrum->asciimap[index_r].back = (GlyphColor){ 0, 0, 0 };
         } else {
           scene->spectrum->asciimap[index_r].rune = 1;
