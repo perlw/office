@@ -68,6 +68,15 @@ BoomboxResult boombox_cassette_stop(BoomboxCassette *const cassette) {
   return BOOMBOX_OK;
 }
 
+bool boombox_cassette_playing(BoomboxCassette *const cassette) {
+  assert(cassette);
+  if (!cassette->loaded) {
+    return BOOMBOX_NO_SOUND_LOADED;
+  }
+
+  return cassette->playing;
+}
+
 BoomboxResult boombox_cassette_set_pitch(BoomboxCassette *const cassette, float pitch) {
   assert(cassette);
   if (!cassette->loaded) {

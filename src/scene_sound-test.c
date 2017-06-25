@@ -13,9 +13,12 @@ typedef struct {
   double timing;
   double since_update;
 
+  uint32_t song;
   float spectrum_left[78];
   float spectrum_right[78];
+
   GossipHandle spectrum_handle;
+  GossipHandle input_handle;
 
   TilesAscii *screen;
   Surface *spectrum;
@@ -40,6 +43,27 @@ void scene_sound_test_spectrum(int32_t id, void *subscriberdata, void *userdata)
   }
 }
 
+void scene_sound_test_keyboard(int32_t id, void *subscriberdata, void *userdata) {
+  SceneSoundTest *scene = (SceneSoundTest *)subscriberdata;
+  PicassoWindowKeyboardEvent *event = (PicassoWindowKeyboardEvent *)userdata;
+
+  if (event->pressed) {
+    if (event->key == PICASSO_KEY_P) {
+      gossip_emit(MSG_SOUND_PLAY_SONG, &scene->song);
+    } else if (event->key == PICASSO_KEY_S) {
+      gossip_emit(MSG_SOUND_STOP_SONG, NULL);
+      for (uint32_t t = 0; t < 78; t++) {
+        scene->spectrum_left[t] = 0.0f;
+        scene->spectrum_right[t] = 0.0f;
+      }
+    } else if (event->key == PICASSO_KEY_N) {
+      scene->song = (scene->song == 0 ? 1 : 0);
+      gossip_emit(MSG_SOUND_STOP_SONG, NULL);
+      gossip_emit(MSG_SOUND_PLAY_SONG, &scene->song);
+    }
+  }
+}
+
 SceneSoundTest *scene_sound_test_create(const Config *config) {
   SceneSoundTest *scene = calloc(1, sizeof(SceneSoundTest));
 
@@ -55,17 +79,16 @@ SceneSoundTest *scene_sound_test_create(const Config *config) {
     '|', 0, '|',
     '+', '-', '+',
   };
-  surface_rect(scene->spectrum, 0, 0, config->ascii_width, 30, rect_tiles, true, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 0, 0, 0 });
-  surface_text(scene->spectrum, 2, 0, 15, " settlers.mod ", (GlyphColor){ 255, 255, 255, }, (GlyphColor){ 0, 0, 0 });
+  surface_rect(scene->spectrum, 0, 0, config->ascii_width, 30, rect_tiles, true, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
+  surface_text(scene->spectrum, 2, 29, 21, " Play | Stop | Next ", (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
+  uint32_t base = (29 * config->ascii_width) + 3;
+  scene->spectrum->asciimap[base].fore = (GlyphColor){ 255, 255, 255 };
+  scene->spectrum->asciimap[base + 7].fore = (GlyphColor){ 255, 255, 255 };
+  scene->spectrum->asciimap[base + 14].fore = (GlyphColor){ 255, 255, 255 };
   // -Spectrum UI
 
-  GlyphColor c = { 200, 96, 0 };
-  GlyphColor r = glyphcolor_muls(c, -0.9);
-  printf("%d %d %d\n", c.r, c.g, c.b);
-  printf("%d %d %d\n", r.r, r.g, r.b);
-
   scene->spectrum_handle = gossip_subscribe(MSG_SOUND_SPECTRUM, &scene_sound_test_spectrum, scene);
-  gossip_emit(MSG_SOUND_PLAY_SONG, NULL);
+  scene->input_handle = gossip_subscribe(MSG_INPUT_KEYBOARD, &scene_sound_test_keyboard, scene);
 
   return scene;
 }
@@ -74,6 +97,7 @@ void scene_sound_test_destroy(SceneSoundTest *scene) {
   assert(scene);
 
   gossip_unsubscribe(MSG_SOUND_SPECTRUM, scene->spectrum_handle);
+  gossip_unsubscribe(MSG_INPUT_KEYBOARD, scene->input_handle);
   gossip_emit(MSG_SOUND_STOP_SONG, NULL);
 
   surface_destroy(scene->spectrum);
@@ -107,36 +131,38 @@ void scene_sound_test_update(SceneSoundTest *scene, double delta) {
         if (y < height_l) {
           float gradient = (float)y / (float)height_l;
           GlyphColor flame = {
-            .r = (uint8_t)(200.0f * gradient),
-            .g = (uint8_t)(128.0f - (128.0f * gradient)),
+            .r = (uint8_t)(196.0f * gradient),
+            .g = (uint8_t)(164.0f - (128.0f * gradient)),
             .b = 0,
           };
 
-          scene->spectrum->asciimap[index_l].rune = 1;
+          scene->spectrum->asciimap[index_l].rune = (y == height_l - 1 ? 178 : 177);
           scene->spectrum->asciimap[index_l].fore = flame;
-          scene->spectrum->asciimap[index_l].back = (GlyphColor){ 0, 0, 0 };
         } else {
-          scene->spectrum->asciimap[index_l].rune = 1;
-          scene->spectrum->asciimap[index_l].fore = glyphcolor_muls(scene->spectrum->asciimap[index_l].fore, 0.9);
-          scene->spectrum->asciimap[index_l].back = (GlyphColor){ 0, 0, 0 };
+          scene->spectrum->asciimap[index_l].fore = glyphcolor_muls(scene->spectrum->asciimap[index_l].fore, 0.9f);
         }
         if (y < height_r) {
           float gradient = (float)y / (float)height_r;
           GlyphColor flame = {
-            .r = (uint8_t)(200.0f * gradient),
-            .g = (uint8_t)(128.0f - (128.0f * gradient)),
+            .r = (uint8_t)(196.0f * gradient),
+            .g = (uint8_t)(164.0f - (128.0f * gradient)),
             .b = 0,
           };
 
-          scene->spectrum->asciimap[index_r].rune = 1;
+          scene->spectrum->asciimap[index_r].rune = (y == height_r - 1 ? 178 : 177);
           scene->spectrum->asciimap[index_r].fore = flame;
-          scene->spectrum->asciimap[index_r].back = (GlyphColor){ 0, 0, 0 };
         } else {
-          scene->spectrum->asciimap[index_r].rune = 1;
-          scene->spectrum->asciimap[index_r].fore = glyphcolor_muls(scene->spectrum->asciimap[index_r].fore, 0.9);
-          scene->spectrum->asciimap[index_r].back = (GlyphColor){ 0, 0, 0 };
+          scene->spectrum->asciimap[index_r].fore = glyphcolor_muls(scene->spectrum->asciimap[index_r].fore, 0.9f);
         }
       }
+    }
+
+    if (scene->song == 0) {
+      surface_text(scene->spectrum, 2, 0, 15, " settlers.mod ", (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 0, 0, 0 });
+      surface_text(scene->spectrum, 16, 0, 16, "| comicbak.mod ", (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
+    } else {
+      surface_text(scene->spectrum, 2, 0, 16, " settlers.mod |", (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
+      surface_text(scene->spectrum, 17, 0, 15, " comicbak.mod ", (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 0, 0, 0 });
     }
   }
 }

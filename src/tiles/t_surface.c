@@ -28,7 +28,7 @@ void surface_destroy(Surface *surface) {
 void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string, GlyphColor fore_color, GlyphColor back_color) {
   assert(surface);
 
-  if (x >= surface->width - 1 || y >= surface->height - 1) {
+  if (x >= surface->width || y >= surface->height) {
     return;
   }
 

@@ -12,6 +12,7 @@ struct SoundSys {
   BoomboxCassette *tap_sound;
 
   BoomboxCassette *song;
+  BoomboxCassette *song2;
 };
 
 void soundsys_event(int32_t id, void *subscriberdata, void *userdata);
@@ -28,6 +29,7 @@ SoundSys *soundsys_create(void) {
   soundsys->init_sound = boombox_cassette_create(soundsys->boombox);
   soundsys->tap_sound = boombox_cassette_create(soundsys->boombox);
   soundsys->song = boombox_cassette_create(soundsys->boombox);
+  soundsys->song2 = boombox_cassette_create(soundsys->boombox);
 
   if (boombox_cassette_load_sound(soundsys->init_sound, "swish.wav") != BOOMBOX_OK) {
     printf("Boombox: failed to load init sound\n");
@@ -44,6 +46,11 @@ SoundSys *soundsys_create(void) {
     boombox_destroy(soundsys->boombox);
     return NULL;
   }
+  if (boombox_cassette_load_sound(soundsys->song2, "music/comicbak.mod") != BOOMBOX_OK) {
+    printf("Boombox: failed to load song\n");
+    boombox_destroy(soundsys->boombox);
+    return NULL;
+  }
 
   gossip_subscribe(MSG_GAME_INIT, &soundsys_event, soundsys);
   gossip_subscribe(MSG_SOUND_PLAY_TAP, &soundsys_event, soundsys);
@@ -56,6 +63,7 @@ SoundSys *soundsys_create(void) {
 void soundsys_destroy(SoundSys *soundsys) {
   assert(soundsys);
 
+  boombox_cassette_destroy(soundsys->song2);
   boombox_cassette_destroy(soundsys->song);
   boombox_cassette_destroy(soundsys->tap_sound);
   boombox_cassette_destroy(soundsys->init_sound);
@@ -70,9 +78,15 @@ void soundsys_update(SoundSys *soundsys, double delta) {
   boombox_update(soundsys->boombox);
 
   // Temp
-  Spectrum spectrum;
-  boombox_cassette_get_spectrum(soundsys->song, spectrum.left, spectrum.right);
-  gossip_emit(MSG_SOUND_SPECTRUM, &spectrum);
+  if (boombox_cassette_playing(soundsys->song) || boombox_cassette_playing(soundsys->song2)) {
+    Spectrum spectrum;
+    if (boombox_cassette_playing(soundsys->song)) {
+      boombox_cassette_get_spectrum(soundsys->song, spectrum.left, spectrum.right);
+    } else if (boombox_cassette_playing(soundsys->song2)) {
+      boombox_cassette_get_spectrum(soundsys->song2, spectrum.left, spectrum.right);
+    }
+    gossip_emit(MSG_SOUND_SPECTRUM, &spectrum);
+  }
 }
 
 void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
@@ -89,11 +103,17 @@ void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
       break;
 
     case MSG_SOUND_PLAY_SONG:
-      boombox_cassette_play(soundsys->song);
+      uint32_t song = *(uint32_t*)userdata;
+      if (song == 0) {
+        boombox_cassette_play(soundsys->song);
+      } else {
+        boombox_cassette_play(soundsys->song2);
+      }
       break;
 
     case MSG_SOUND_STOP_SONG:
       boombox_cassette_stop(soundsys->song);
+      boombox_cassette_stop(soundsys->song2);
       break;
 
     default:
