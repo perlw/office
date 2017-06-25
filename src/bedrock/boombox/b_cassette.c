@@ -43,9 +43,27 @@ BoomboxResult boombox_cassette_play(BoomboxCassette *const cassette) {
     return BOOMBOX_FAIL;
   }
 
-  FMOD_Channel_AddDSP(cassette->fmod.channel, 0, cassette->parent->fmod.dsp);
-
   cassette->playing = true;
+
+  return BOOMBOX_OK;
+}
+
+BoomboxResult boombox_cassette_stop(BoomboxCassette *const cassette) {
+  assert(cassette);
+  if (!cassette->loaded) {
+    return BOOMBOX_NO_SOUND_LOADED;
+  }
+  if (!cassette->playing) {
+    return BOOMBOX_NOT_PLAYING;
+  }
+
+  FMOD_RESULT result = FMOD_Channel_Stop(cassette->fmod.channel);
+  if (result != FMOD_OK) {
+    printf("FMOD: (%d) %s\n", result, FMOD_ErrorString(result));
+    return BOOMBOX_FAIL;
+  }
+
+  cassette->playing = false;
 
   return BOOMBOX_OK;
 }
@@ -76,6 +94,7 @@ BoomboxResult boombox_cassette_get_spectrum(BoomboxCassette *const cassette, flo
 
   FMOD_DSP_PARAMETER_FFT *fft;
   uint32_t len = 0;
+  FMOD_Channel_AddDSP(cassette->fmod.channel, 0, cassette->parent->fmod.dsp);
   FMOD_DSP_GetParameterData(cassette->parent->fmod.dsp, FMOD_DSP_FFT_SPECTRUMDATA, &fft, &len, NULL, 0);
 
   if (left && fft->numchannels == 1) {

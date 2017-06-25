@@ -63,6 +63,13 @@ typedef struct {
   GlyphColor back;
 } Glyph;
 
+GlyphColor glyphcolor_add(GlyphColor a, GlyphColor b);
+GlyphColor glyphcolor_sub(GlyphColor a, GlyphColor b);
+GlyphColor glyphcolor_adds(GlyphColor c, float s);
+GlyphColor glyphcolor_subs(GlyphColor c, float s);
+GlyphColor glyphcolor_muls(GlyphColor c, float s);
+GlyphColor glyphcolor_divs(GlyphColor c, float s);
+
 typedef struct {
   PicassoBufferGroup *quad;
   PicassoProgram *program;
@@ -111,7 +118,7 @@ typedef struct {
 Surface *surface_create(uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t height);
 void surface_destroy(Surface *surface);
 
-void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string);
+void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string, GlyphColor fore_color, GlyphColor back_color);
 void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, SurfaceRectTiles rect_tiles, bool filled, GlyphColor fore_color, GlyphColor back_color);
 
 void surface_draw(Surface *surface, TilesAscii *tiles);

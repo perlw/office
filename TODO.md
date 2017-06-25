@@ -9,6 +9,7 @@ The actual game
 
 ## Bedrock
 Tests?
+* Global config/settings/parameters module?
 * Rename modules?
   - archivist -> tbd
   - boombox -> tbd, bard?
@@ -37,7 +38,7 @@ Lua wrapper
 
 ### Sound/Music
 Boombox/Cassette
-* Deeper look at cassette usage etc, channels and so
+* Deeper look at cassette usage etc, channels and so *HIGH PRIO*
 
 ### Occulus
 Memory introspector

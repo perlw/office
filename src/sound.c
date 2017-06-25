@@ -48,6 +48,7 @@ SoundSys *soundsys_create(void) {
   gossip_subscribe(MSG_GAME_INIT, &soundsys_event, soundsys);
   gossip_subscribe(MSG_SOUND_PLAY_TAP, &soundsys_event, soundsys);
   gossip_subscribe(MSG_SOUND_PLAY_SONG, &soundsys_event, soundsys);
+  gossip_subscribe(MSG_SOUND_STOP_SONG, &soundsys_event, soundsys);
 
   return soundsys;
 }
@@ -79,7 +80,7 @@ void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
 
   switch (id) {
     case MSG_GAME_INIT:
-      //boombox_cassette_play(soundsys->init_sound);
+      boombox_cassette_play(soundsys->init_sound);
       break;
 
     case MSG_SOUND_PLAY_TAP:
@@ -89,6 +90,10 @@ void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
 
     case MSG_SOUND_PLAY_SONG:
       boombox_cassette_play(soundsys->song);
+      break;
+
+    case MSG_SOUND_STOP_SONG:
+      boombox_cassette_stop(soundsys->song);
       break;
 
     default:

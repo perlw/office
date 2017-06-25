@@ -25,7 +25,7 @@ void surface_destroy(Surface *surface) {
   free(surface);
 }
 
-void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string) {
+void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string, GlyphColor fore_color, GlyphColor back_color) {
   assert(surface);
 
   if (x >= surface->width - 1 || y >= surface->height - 1) {
@@ -40,24 +40,20 @@ void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, con
     }
 
     surface->asciimap[t].rune = string[u];
-    surface->asciimap[t].fore.r = 255;
-    surface->asciimap[t].fore.g = 255;
-    surface->asciimap[t].fore.b = 255;
-    surface->asciimap[t].back.r = 128;
-    surface->asciimap[t].back.g = 0;
-    surface->asciimap[t].back.b = 0;
+    surface->asciimap[t].fore = fore_color;
+    surface->asciimap[t].back = back_color;
   }
 }
 
 void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, SurfaceRectTiles rect_tiles, bool filled, GlyphColor fore_color, GlyphColor back_color) {
   assert(surface);
 
-  if (x >= surface->width - 1 || y >= surface->height - 1) {
+  if (x + width > surface->width || y + height > surface->height) {
     return;
   }
 
-  uint32_t end_y = (height < surface->height ? height : surface->height - 1);
-  uint32_t end_x = (width < surface->width ? width : surface->width - 1);
+  uint32_t end_y = min(height, surface->height);
+  uint32_t end_x = min(width, surface->width);
   for (uint32_t yy = y; yy < end_y; yy++) {
     for (uint32_t xx = x; xx < end_x; xx++) {
       uint32_t index = (yy * surface->width) + xx;

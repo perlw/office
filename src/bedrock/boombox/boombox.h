@@ -23,6 +23,7 @@ BoomboxCassette *boombox_cassette_create(Boombox *const boombox);
 void boombox_cassette_destroy(BoomboxCassette *const cassette);
 BoomboxResult boombox_cassette_load_sound(BoomboxCassette *const cassette, const char *filepath);
 BoomboxResult boombox_cassette_play(BoomboxCassette *const cassette);
+BoomboxResult boombox_cassette_stop(BoomboxCassette *const cassette);
 BoomboxResult boombox_cassette_set_pitch(BoomboxCassette *const cassette, float pitch);
 BoomboxResult boombox_cassette_get_spectrum(BoomboxCassette *const cassette, float *left, float *right);
 // -Cassette
