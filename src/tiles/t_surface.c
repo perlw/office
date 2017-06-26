@@ -52,8 +52,8 @@ void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint
     return;
   }
 
-  uint32_t end_y = min(height, surface->height);
-  uint32_t end_x = min(width, surface->width);
+  uint32_t end_y = fmin(height, surface->height);
+  uint32_t end_x = fmin(width, surface->width);
   for (uint32_t yy = y; yy < end_y; yy++) {
     for (uint32_t xx = x; xx < end_x; xx++) {
       uint32_t index = (yy * surface->width) + xx;

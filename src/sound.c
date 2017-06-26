@@ -102,14 +102,15 @@ void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
       boombox_cassette_set_pitch(soundsys->tap_sound, 0.9f + ((float)(rand() % 20) / 100.0f));
       break;
 
-    case MSG_SOUND_PLAY_SONG:
-      uint32_t song = *(uint32_t*)userdata;
+    case MSG_SOUND_PLAY_SONG: {
+      uint32_t song = *(uint32_t *)userdata;
       if (song == 0) {
         boombox_cassette_play(soundsys->song);
       } else {
         boombox_cassette_play(soundsys->song2);
       }
       break;
+    }
 
     case MSG_SOUND_STOP_SONG:
       boombox_cassette_stop(soundsys->song);
