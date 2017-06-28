@@ -142,8 +142,6 @@ typedef struct {
   TilesAscii *tiles_ascii;
 
   Surface *surface;
-  Surface *surface2;
-  Surface *surface3;
 
   TextInput *input;
 } SceneTest;
@@ -157,30 +155,6 @@ SceneTest *scene_test_create(const Config *config) {
 
   scene->tiles_ascii = tiles_ascii_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
   scene->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
-  scene->surface2 = surface_create(0, 0, 32, 32);
-  scene->surface3 = surface_create(24, 16, 32, 32);
-
-  for (uint32_t y = 0; y < scene->surface2->height; y++) {
-    for (uint32_t x = 0; x < scene->surface2->width; x++) {
-      uint32_t index = (y * scene->surface2->width) + x;
-      uint8_t shade = (uint8_t)((x ^ y) + 32);
-      scene->surface2->asciimap[index].rune = 219;
-      scene->surface2->asciimap[index].fore.r = shade;
-      scene->surface2->asciimap[index].fore.g = shade;
-      scene->surface2->asciimap[index].fore.b = 128;
-    }
-  }
-
-  for (uint32_t y = 0; y < scene->surface3->height; y++) {
-    for (uint32_t x = 0; x < scene->surface3->width; x++) {
-      uint32_t index = (y * scene->surface3->width) + x;
-      uint8_t shade = (uint8_t)((x ^ y) + 32);
-      scene->surface3->asciimap[index].rune = 219;
-      scene->surface3->asciimap[index].fore.r = 128;
-      scene->surface3->asciimap[index].fore.g = shade;
-      scene->surface3->asciimap[index].fore.b = shade;
-    }
-  }
 
   scene->input = textinput_create(1, config->ascii_height - 2, config->ascii_width - 2);
 
@@ -192,8 +166,6 @@ void scene_test_destroy(SceneTest *scene) {
 
   textinput_destroy(scene->input);
 
-  surface_destroy(scene->surface3);
-  surface_destroy(scene->surface2);
   surface_destroy(scene->surface);
 
   tiles_ascii_destroy(scene->tiles_ascii);
@@ -241,11 +213,6 @@ void scene_test_update(SceneTest *scene, double delta) {
       }
     }
 
-    // Moving surface
-    {
-      scene->surface3->x = 24 + (uint32_t)(cos(scene->offset) * 12);
-    }
-
     textinput_update(scene->input, scene->timing);
   }
 }
@@ -254,8 +221,6 @@ void scene_test_draw(SceneTest *scene) {
   assert(scene);
 
   surface_draw(scene->surface, scene->tiles_ascii);
-  surface_draw(scene->surface2, scene->tiles_ascii);
-  surface_draw(scene->surface3, scene->tiles_ascii);
   surface_draw(scene->input->surface, scene->tiles_ascii);
 
   tiles_ascii_draw(scene->tiles_ascii);

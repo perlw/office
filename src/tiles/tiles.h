@@ -123,4 +123,3 @@ void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint
 
 void surface_draw(Surface *surface, TilesAscii *tiles);
 // -Surface
-
