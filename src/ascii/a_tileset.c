@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ascii.h"
 #include "assets.h"
-#include "tiles.h"
 
 TileSet *tileset_create(void) {
   TileSet *tileset = calloc(1, sizeof(TileSet));

@@ -4,10 +4,10 @@
 
 #include "bedrock/bedrock.h"
 
+#include "ascii/ascii.h"
 #include "config.h"
 #include "messages.h"
 #include "scenes.h"
-#include "tiles/tiles.h"
 
 typedef struct {
   TilesAscii *ascii;

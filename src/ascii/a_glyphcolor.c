@@ -1,4 +1,4 @@
-#include "tiles.h"
+#include "ascii.h"
 
 GlyphColor glyphcolor_add(GlyphColor a, GlyphColor b) {
   GlyphColor c = {

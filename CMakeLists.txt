@@ -24,7 +24,7 @@ set (
   "src/scene_sound-test.c"
 )
 add_subdirectory (src/debug)
-add_subdirectory (src/tiles)
+add_subdirectory (src/ascii)
 add_executable (office ${SOURCES})
 
 if (UNIX)

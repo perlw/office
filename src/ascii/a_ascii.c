@@ -6,8 +6,8 @@
 
 #include "bedrock/bedrock.h"
 
+#include "ascii.h"
 #include "assets.h"
-#include "tiles.h"
 
 TilesAscii *tiles_ascii_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height) {
   TilesAscii *layer = calloc(1, sizeof(TilesAscii));

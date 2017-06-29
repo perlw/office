@@ -4,8 +4,8 @@
 
 #include "bedrock/bedrock.h"
 
+#include "ascii/ascii.h"
 #include "config.h"
-#include "tiles/tiles.h"
 
 typedef struct {
   double timing;

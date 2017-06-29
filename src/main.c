@@ -11,6 +11,7 @@
 
 #include "bedrock/bedrock.h"
 
+#include "ascii/ascii.h"
 #include "assets.h"
 #include "config.h"
 #include "debug/debug.h"
@@ -18,7 +19,6 @@
 #include "messages.h"
 #include "scenes.h"
 #include "sound.h"
-#include "tiles/tiles.h"
 
 #include "scene_game.h"
 #include "scene_sound-test.h"

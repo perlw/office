@@ -9,9 +9,9 @@
 
 #include "bedrock/bedrock.h"
 
+#include "ascii/ascii.h"
 #include "config.h"
 #include "messages.h"
-#include "tiles/tiles.h"
 
 // +TextInput
 typedef struct {

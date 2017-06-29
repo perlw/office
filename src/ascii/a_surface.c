@@ -2,7 +2,7 @@
 
 #include "bedrock/bedrock.h"
 
-#include "tiles.h"
+#include "ascii.h"
 
 Surface *surface_create(uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t height) {
   Surface *surface = calloc(1, sizeof(Surface));
