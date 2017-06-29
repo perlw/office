@@ -9,8 +9,8 @@
 #include "ascii.h"
 #include "assets.h"
 
-TilesAscii *tiles_ascii_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height) {
-  TilesAscii *layer = calloc(1, sizeof(TilesAscii));
+AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height) {
+  AsciiBuffer *layer = calloc(1, sizeof(AsciiBuffer));
 
   layer->quad = picasso_buffergroup_create();
 
@@ -39,7 +39,7 @@ TilesAscii *tiles_ascii_create(uint32_t width, uint32_t height, uint32_t ascii_w
   PicassoBuffer *coord_buffer = picasso_buffer_create(layer->quad, PICASSO_BUFFER_TYPE_ARRAY, PICASSO_BUFFER_USAGE_STATIC);
   picasso_buffer_set_data(coord_buffer, 2, PICASSO_TYPE_FLOAT, sizeof(*coord_data) * 12, coord_data);
 
-  layer->program = (PicassoProgram *)tome_fetch(ASSET_SHADER, "tiles_ascii", "shaders/asciilayer");
+  layer->program = (PicassoProgram *)tome_fetch(ASSET_SHADER, "ascii_buffer", "shaders/asciilayer");
   if (!layer->program) {
     printf("Something went wrong when fetching ascii shader :(\n");
     exit(-1);
@@ -65,14 +65,14 @@ TilesAscii *tiles_ascii_create(uint32_t width, uint32_t height, uint32_t ascii_w
   }
 
   {
-    layer->font_texture = (PicassoTexture *)tome_fetch(ASSET_TEXTURE, "tiles_ascii_font", "fonts/cp437_8x8.png");
+    layer->font_texture = (PicassoTexture *)tome_fetch(ASSET_TEXTURE, "ascii_buffer_font", "fonts/cp437_8x8.png");
     if (!layer->font_texture) {
       printf("Something went wrong when fetching ascii font :(\n");
       exit(-1);
     }
     picasso_texture_bind_to(layer->font_texture, 0);
 
-    int32_t texture_uniform = picasso_program_uniform_location(layer->program, "tiles_ascii_font");
+    int32_t texture_uniform = picasso_program_uniform_location(layer->program, "ascii_buffer_font");
     picasso_program_uniform_int(layer->program, texture_uniform, 0);
   }
 
@@ -132,7 +132,7 @@ TilesAscii *tiles_ascii_create(uint32_t width, uint32_t height, uint32_t ascii_w
   return layer;
 }
 
-void tiles_ascii_destroy(TilesAscii *layer) {
+void ascii_buffer_destroy(AsciiBuffer *layer) {
   assert(layer);
 
   free(layer->last_asciimap);
@@ -142,15 +142,15 @@ void tiles_ascii_destroy(TilesAscii *layer) {
   picasso_texture_destroy(layer->forecolors_texture);
   picasso_texture_destroy(layer->asciimap_texture);
 
-  tome_release(ASSET_TEXTURE, "tiles_ascii_font");
-  tome_release(ASSET_SHADER, "tiles_ascii");
+  tome_release(ASSET_TEXTURE, "ascii_buffer_font");
+  tome_release(ASSET_SHADER, "ascii_buffer");
 
   picasso_buffergroup_destroy(layer->quad);
 
   free(layer);
 }
 
-void tiles_ascii_draw(TilesAscii *layer) {
+void ascii_buffer_draw(AsciiBuffer *layer) {
   assert(layer);
 
   if (memcmp(layer->asciimap, layer->last_asciimap, sizeof(Glyph) * layer->ascii_size) != 0) {

@@ -12,7 +12,7 @@ Surface *surface_create(uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t
   surface->width = width;
   surface->height = height;
   surface->size = surface->width * surface->height;
-  surface->asciimap = calloc(surface->size, sizeof(Glyph));
+  surface->buffer = calloc(surface->size, sizeof(Glyph));
 
   return surface;
 }
@@ -20,7 +20,7 @@ Surface *surface_create(uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t
 void surface_destroy(Surface *surface) {
   assert(surface);
 
-  free(surface->asciimap);
+  free(surface->buffer);
 
   free(surface);
 }
@@ -39,9 +39,9 @@ void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, con
       break;
     }
 
-    surface->asciimap[t].rune = string[u];
-    surface->asciimap[t].fore = fore_color;
-    surface->asciimap[t].back = back_color;
+    surface->buffer[t].rune = string[u];
+    surface->buffer[t].fore = fore_color;
+    surface->buffer[t].back = back_color;
   }
 }
 
@@ -60,41 +60,41 @@ void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint
 
       if (yy == y) {
         if (xx == x) {
-          surface->asciimap[index].rune = rect_tiles.tl;
+          surface->buffer[index].rune = rect_tiles.tl;
         } else if (xx == end_x - 1) {
-          surface->asciimap[index].rune = rect_tiles.tr;
+          surface->buffer[index].rune = rect_tiles.tr;
         } else {
-          surface->asciimap[index].rune = rect_tiles.t;
+          surface->buffer[index].rune = rect_tiles.t;
         }
       } else if (yy == end_y - 1) {
         if (xx == x) {
-          surface->asciimap[index].rune = rect_tiles.bl;
+          surface->buffer[index].rune = rect_tiles.bl;
         } else if (xx == end_x - 1) {
-          surface->asciimap[index].rune = rect_tiles.br;
+          surface->buffer[index].rune = rect_tiles.br;
         } else {
-          surface->asciimap[index].rune = rect_tiles.b;
+          surface->buffer[index].rune = rect_tiles.b;
         }
       } else {
         if (xx == x) {
-          surface->asciimap[index].rune = rect_tiles.l;
+          surface->buffer[index].rune = rect_tiles.l;
         } else if (xx == end_x - 1) {
-          surface->asciimap[index].rune = rect_tiles.r;
+          surface->buffer[index].rune = rect_tiles.r;
         } else {
           if (!filled) {
             continue;
           }
 
-          surface->asciimap[index].rune = rect_tiles.c;
+          surface->buffer[index].rune = rect_tiles.c;
         }
       }
 
-      surface->asciimap[index].fore = fore_color;
-      surface->asciimap[index].back = back_color;
+      surface->buffer[index].fore = fore_color;
+      surface->buffer[index].back = back_color;
     }
   }
 }
 
-void surface_draw(Surface *surface, TilesAscii *tiles) {
+void surface_draw(Surface *surface, AsciiBuffer *tiles) {
   for (uint32_t y = 0; y < surface->height; y++) {
     for (uint32_t x = 0; x < surface->width; x++) {
       uint32_t s_index = (y * surface->width) + x;
@@ -103,7 +103,7 @@ void surface_draw(Surface *surface, TilesAscii *tiles) {
         continue;
       }
 
-      tiles->asciimap[index] = surface->asciimap[s_index];
+      tiles->asciimap[index] = surface->buffer[s_index];
     }
   }
 }

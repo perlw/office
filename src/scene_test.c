@@ -37,11 +37,11 @@ TextInput *textinput_create(uint32_t x, uint32_t y, uint32_t width) {
   memset(input->buffer, 0, 128);
 
   input->surface = surface_create(x, y, width, 1);
-  input->surface->asciimap[0].rune = 219;
-  input->surface->asciimap[0].fore = (GlyphColor){ 255, 255, 255 };
+  input->surface->buffer[0].rune = 219;
+  input->surface->buffer[0].fore = (GlyphColor){ 255, 255, 255 };
   for (uint32_t t = 1; t < width; t++) {
-    input->surface->asciimap[t].rune = ' ';
-    input->surface->asciimap[t].fore = (GlyphColor){ 255, 255, 255 };
+    input->surface->buffer[t].rune = ' ';
+    input->surface->buffer[t].fore = (GlyphColor){ 255, 255, 255 };
   }
 
   input->input_handle = gossip_subscribe(MSG_INPUT_KEYBOARD, &textinput_event, input);
@@ -68,11 +68,11 @@ void textinput_update(TextInput *input, double delta) {
   }
 
   if (input->cursor_visible) {
-    input->surface->asciimap[input->cursor_pos].rune = 219;
-    input->surface->asciimap[input->cursor_pos].fore = (GlyphColor){ 255, 255, 255 };
+    input->surface->buffer[input->cursor_pos].rune = 219;
+    input->surface->buffer[input->cursor_pos].fore = (GlyphColor){ 255, 255, 255 };
   } else {
-    input->surface->asciimap[input->cursor_pos].rune = ' ';
-    input->surface->asciimap[input->cursor_pos].fore = (GlyphColor){ 0, 0, 0 };
+    input->surface->buffer[input->cursor_pos].rune = ' ';
+    input->surface->buffer[input->cursor_pos].fore = (GlyphColor){ 0, 0, 0 };
   }
 }
 
@@ -92,11 +92,11 @@ void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
       }
 
       memset(input->buffer, 0, 128);
-      input->surface->asciimap[0].rune = 219;
-      input->surface->asciimap[0].fore = (GlyphColor){ 255, 255, 255 };
+      input->surface->buffer[0].rune = 219;
+      input->surface->buffer[0].fore = (GlyphColor){ 255, 255, 255 };
       for (uint32_t t = 1; t < input->cursor_max_pos + 1; t++) {
-        input->surface->asciimap[t].rune = ' ';
-        input->surface->asciimap[t].fore = (GlyphColor){ 0, 0, 0 };
+        input->surface->buffer[t].rune = ' ';
+        input->surface->buffer[t].fore = (GlyphColor){ 0, 0, 0 };
       }
 
       return;
@@ -104,8 +104,8 @@ void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
 
     if (event->key == PICASSO_KEY_BACKSPACE) {
       if (input->cursor_pos > 0) {
-        input->surface->asciimap[input->cursor_pos].rune = ' ';
-        input->surface->asciimap[input->cursor_pos].fore = (GlyphColor){ 0, 0, 0 };
+        input->surface->buffer[input->cursor_pos].rune = ' ';
+        input->surface->buffer[input->cursor_pos].fore = (GlyphColor){ 0, 0, 0 };
         input->cursor_visible = true;
         input->cursor_pos--;
         input->buffer[input->cursor_pos] = 0;
@@ -123,9 +123,9 @@ void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
 
         input->buffer[input->cursor_pos] = event->key + offset;
 
-        input->surface->asciimap[input->cursor_pos + 1] = input->surface->asciimap[input->cursor_pos];
-        input->surface->asciimap[input->cursor_pos].rune = event->key + offset;
-        input->surface->asciimap[input->cursor_pos].fore = (GlyphColor){ 255, 255, 255 };
+        input->surface->buffer[input->cursor_pos + 1] = input->surface->buffer[input->cursor_pos];
+        input->surface->buffer[input->cursor_pos].rune = event->key + offset;
+        input->surface->buffer[input->cursor_pos].fore = (GlyphColor){ 255, 255, 255 };
         input->cursor_pos++;
       }
     }
@@ -139,7 +139,7 @@ typedef struct {
   double timing;
   double since_update;
 
-  TilesAscii *tiles_ascii;
+  AsciiBuffer *ascii_buffer;
 
   Surface *surface;
 
@@ -153,7 +153,7 @@ SceneTest *scene_test_create(const Config *config) {
   scene->timing = 1 / 30.0;
   scene->since_update = scene->timing;
 
-  scene->tiles_ascii = tiles_ascii_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
+  scene->ascii_buffer = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
   scene->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
 
   scene->input = textinput_create(1, config->ascii_height - 2, config->ascii_width - 2);
@@ -168,7 +168,7 @@ void scene_test_destroy(SceneTest *scene) {
 
   surface_destroy(scene->surface);
 
-  tiles_ascii_destroy(scene->tiles_ascii);
+  ascii_buffer_destroy(scene->ascii_buffer);
 
   free(scene);
 }
@@ -200,15 +200,15 @@ void scene_test_update(SceneTest *scene, double delta) {
           uintmax_t i = (y * scene->surface->width) + x;
           uint8_t color = (uint8_t)(final_color * 255.0);
           if (color < 96) {
-            scene->surface->asciimap[i].rune = '.';
+            scene->surface->buffer[i].rune = '.';
           } else if (color < 178) {
-            scene->surface->asciimap[i].rune = '+';
+            scene->surface->buffer[i].rune = '+';
           } else {
-            scene->surface->asciimap[i].rune = '*';
+            scene->surface->buffer[i].rune = '*';
           }
-          scene->surface->asciimap[i].fore.r = (uint8_t)(255.0 * (1.0 - final_color));
-          scene->surface->asciimap[i].fore.g = (uint8_t)(255.0 * final_color);
-          scene->surface->asciimap[i].fore.b = 255;
+          scene->surface->buffer[i].fore.r = (uint8_t)(255.0 * (1.0 - final_color));
+          scene->surface->buffer[i].fore.g = (uint8_t)(255.0 * final_color);
+          scene->surface->buffer[i].fore.b = 255;
         }
       }
     }
@@ -220,9 +220,9 @@ void scene_test_update(SceneTest *scene, double delta) {
 void scene_test_draw(SceneTest *scene) {
   assert(scene);
 
-  surface_draw(scene->surface, scene->tiles_ascii);
-  surface_draw(scene->input->surface, scene->tiles_ascii);
+  surface_draw(scene->surface, scene->ascii_buffer);
+  surface_draw(scene->input->surface, scene->ascii_buffer);
 
-  tiles_ascii_draw(scene->tiles_ascii);
+  ascii_buffer_draw(scene->ascii_buffer);
 }
 // -Scene

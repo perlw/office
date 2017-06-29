@@ -20,7 +20,7 @@ typedef struct {
   GossipHandle spectrum_handle;
   GossipHandle input_handle;
 
-  TilesAscii *screen;
+  AsciiBuffer *screen;
   Surface *spectrum;
 } SceneSoundTest;
 
@@ -70,7 +70,7 @@ SceneSoundTest *scene_sound_test_create(const Config *config) {
   scene->timing = 1 / 30.0;
   scene->since_update = scene->timing;
 
-  scene->screen = tiles_ascii_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
+  scene->screen = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
 
   // +Spectrum UI
   scene->spectrum = surface_create(0, 0, config->ascii_width, 30);
@@ -82,9 +82,9 @@ SceneSoundTest *scene_sound_test_create(const Config *config) {
   surface_rect(scene->spectrum, 0, 0, config->ascii_width, 30, rect_tiles, true, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
   surface_text(scene->spectrum, 2, 29, 21, " Play | Stop | Next ", (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
   uint32_t base = (29 * config->ascii_width) + 3;
-  scene->spectrum->asciimap[base].fore = (GlyphColor){ 255, 255, 255 };
-  scene->spectrum->asciimap[base + 7].fore = (GlyphColor){ 255, 255, 255 };
-  scene->spectrum->asciimap[base + 14].fore = (GlyphColor){ 255, 255, 255 };
+  scene->spectrum->buffer[base].fore = (GlyphColor){ 255, 255, 255 };
+  scene->spectrum->buffer[base + 7].fore = (GlyphColor){ 255, 255, 255 };
+  scene->spectrum->buffer[base + 14].fore = (GlyphColor){ 255, 255, 255 };
   // -Spectrum UI
 
   scene->spectrum_handle = gossip_subscribe(MSG_SOUND_SPECTRUM, &scene_sound_test_spectrum, scene);
@@ -101,7 +101,7 @@ void scene_sound_test_destroy(SceneSoundTest *scene) {
   gossip_emit(MSG_SOUND_STOP_SONG, NULL);
 
   surface_destroy(scene->spectrum);
-  tiles_ascii_destroy(scene->screen);
+  ascii_buffer_destroy(scene->screen);
 
   free(scene);
 }
@@ -136,10 +136,10 @@ void scene_sound_test_update(SceneSoundTest *scene, double delta) {
             .b = 0,
           };
 
-          scene->spectrum->asciimap[index_l].rune = (y == height_l - 1 ? 178 : 177);
-          scene->spectrum->asciimap[index_l].fore = flame;
+          scene->spectrum->buffer[index_l].rune = (y == height_l - 1 ? 178 : 177);
+          scene->spectrum->buffer[index_l].fore = flame;
         } else {
-          scene->spectrum->asciimap[index_l].fore = glyphcolor_muls(scene->spectrum->asciimap[index_l].fore, 0.9f);
+          scene->spectrum->buffer[index_l].fore = glyphcolor_muls(scene->spectrum->buffer[index_l].fore, 0.9f);
         }
         if (y < height_r) {
           float gradient = (float)y / (float)height_r;
@@ -149,10 +149,10 @@ void scene_sound_test_update(SceneSoundTest *scene, double delta) {
             .b = 0,
           };
 
-          scene->spectrum->asciimap[index_r].rune = (y == height_r - 1 ? 178 : 177);
-          scene->spectrum->asciimap[index_r].fore = flame;
+          scene->spectrum->buffer[index_r].rune = (y == height_r - 1 ? 178 : 177);
+          scene->spectrum->buffer[index_r].fore = flame;
         } else {
-          scene->spectrum->asciimap[index_r].fore = glyphcolor_muls(scene->spectrum->asciimap[index_r].fore, 0.9f);
+          scene->spectrum->buffer[index_r].fore = glyphcolor_muls(scene->spectrum->buffer[index_r].fore, 0.9f);
         }
       }
     }
@@ -172,5 +172,5 @@ void scene_sound_test_draw(SceneSoundTest *scene) {
 
   surface_draw(scene->spectrum, scene->screen);
 
-  tiles_ascii_draw(scene->screen);
+  ascii_buffer_draw(scene->screen);
 }

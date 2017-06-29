@@ -22,7 +22,7 @@ void tileset_destroy(TileSet *const tileset);
 void tileset_load_defs(TileSet *const tileset, const char *filepath);
 // -TileSet
 
-// +TilesAscii
+// +AsciiBuffer
 typedef struct {
   uint8_t r;
   uint8_t g;
@@ -63,13 +63,13 @@ typedef struct {
     int32_t ascii_width_uniform;
     int32_t ascii_height_uniform;
   } shader;
-} TilesAscii;
+} AsciiBuffer;
 
-TilesAscii *tiles_ascii_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height);
-void tiles_ascii_destroy(TilesAscii *layer);
+AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height);
+void ascii_buffer_destroy(AsciiBuffer *layer);
 
-void tiles_ascii_draw(TilesAscii *layer);
-// -TilesAscii
+void ascii_buffer_draw(AsciiBuffer *layer);
+// -AsciiBuffer
 
 // +Surface
 typedef struct {
@@ -78,7 +78,7 @@ typedef struct {
   uint32_t width;
   uint32_t height;
   uint32_t size;
-  Glyph *asciimap;
+  Glyph *buffer;
 } Surface;
 
 typedef struct {
@@ -93,5 +93,5 @@ void surface_destroy(Surface *surface);
 void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string, GlyphColor fore_color, GlyphColor back_color);
 void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, SurfaceRectTiles rect_tiles, bool filled, GlyphColor fore_color, GlyphColor back_color);
 
-void surface_draw(Surface *surface, TilesAscii *tiles);
+void surface_draw(Surface *surface, AsciiBuffer *tiles);
 // -Surface

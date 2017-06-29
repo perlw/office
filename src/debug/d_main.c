@@ -10,7 +10,7 @@
 #include "scenes.h"
 
 typedef struct {
-  TilesAscii *ascii;
+  AsciiBuffer *ascii;
   uint32_t frames;
   double current_second;
   char fps_buffer[32];
@@ -19,7 +19,7 @@ typedef struct {
   float mem_values[10];
 } DebugOverlay;
 
-void ascii_text(TilesAscii *tiles, uint32_t x, uint32_t y, uint32_t length, const char *string) {
+void ascii_text(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t length, const char *string) {
   assert(tiles);
 
   if (x >= tiles->ascii_width || y >= tiles->ascii_height) {
@@ -50,7 +50,7 @@ float lerp(float a, float b, float t) {
   return ((1.0f - t) * a) + (t * b);
 }
 
-void ascii_graph(TilesAscii *tiles, uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint32_t num_values, const float *values) {
+void ascii_graph(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint32_t num_values, const float *values) {
   assert(tiles);
   assert(values);
 
@@ -99,7 +99,7 @@ void scene_changed(int32_t id, void *subscriberdata, void *userdata) {
 DebugOverlay *debugoverlay_create(const Config *config) {
   DebugOverlay *overlay = calloc(1, sizeof(DebugOverlay));
 
-  overlay->ascii = tiles_ascii_create(config->res_width, config->res_height, config->res_width / 8, config->res_height / 8);
+  overlay->ascii = ascii_buffer_create(config->res_width, config->res_height, config->res_width / 8, config->res_height / 8);
   for (uint32_t t = 0; t < overlay->ascii->ascii_size; t++) {
     overlay->ascii->asciimap[t].rune = 0;
     overlay->ascii->asciimap[t].fore = (GlyphColor){ 0, 0, 0 };
@@ -127,7 +127,7 @@ DebugOverlay *debugoverlay_create(const Config *config) {
 void debugoverlay_destroy(DebugOverlay *overlay) {
   assert(overlay);
 
-  tiles_ascii_destroy(overlay->ascii);
+  ascii_buffer_destroy(overlay->ascii);
 
   free(overlay);
 }
@@ -165,6 +165,6 @@ void debugoverlay_update(DebugOverlay *overlay, double dt) {
 void debugoverlay_draw(DebugOverlay *overlay) {
   assert(overlay);
 
-  tiles_ascii_draw(overlay->ascii);
+  ascii_buffer_draw(overlay->ascii);
   overlay->frames++;
 }
