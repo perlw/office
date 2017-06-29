@@ -22,6 +22,7 @@ set (
   "src/scene_test.c"
   "src/scene_game.c"
   "src/scene_sound-test.c"
+  "src/scene_world-edit.c"
 )
 add_subdirectory (src/debug)
 add_subdirectory (src/ascii)

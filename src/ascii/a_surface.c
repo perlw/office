@@ -95,6 +95,8 @@ void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint
 }
 
 void surface_draw(Surface *surface, AsciiBuffer *tiles) {
+  assert(surface);
+
   for (uint32_t y = 0; y < surface->height; y++) {
     for (uint32_t x = 0; x < surface->width; x++) {
       uint32_t s_index = (y * surface->width) + x;
