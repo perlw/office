@@ -77,34 +77,34 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
   }
 
   {
-    layer->ascii_width = ascii_width;
-    layer->ascii_height = ascii_height;
-    layer->ascii_size = layer->ascii_width * layer->ascii_height;
-    layer->buffer = calloc(layer->ascii_size, sizeof(Glyph));
-    layer->last_buffer = calloc(layer->ascii_size, sizeof(Glyph));
+    layer->width = ascii_width;
+    layer->height = ascii_height;
+    layer->size = layer->width * layer->height;
+    layer->buffer = calloc(layer->size, sizeof(Glyph));
+    layer->last_buffer = calloc(layer->size, sizeof(Glyph));
 
-    memset(layer->buffer, 0, sizeof(Glyph) * layer->ascii_size);
-    memset(layer->last_buffer, 0, sizeof(Glyph) * layer->ascii_size);
+    memset(layer->buffer, 0, sizeof(Glyph) * layer->size);
+    memset(layer->last_buffer, 0, sizeof(Glyph) * layer->size);
 
     {
-      layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->ascii_width, layer->ascii_height, PICASSO_TEXTURE_R);
+      layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->width, layer->height, PICASSO_TEXTURE_R);
       picasso_texture_bind_to(layer->asciimap_texture, 1);
-      layer->forecolors_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->ascii_width, layer->ascii_height, PICASSO_TEXTURE_RGB);
+      layer->forecolors_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->width, layer->height, PICASSO_TEXTURE_RGB);
       picasso_texture_bind_to(layer->forecolors_texture, 2);
-      layer->backcolors_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->ascii_width, layer->ascii_height, PICASSO_TEXTURE_RGB);
+      layer->backcolors_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->width, layer->height, PICASSO_TEXTURE_RGB);
       picasso_texture_bind_to(layer->backcolors_texture, 3);
 
-      uint8_t *runes = calloc(layer->ascii_size, sizeof(uint8_t));
-      GlyphColor *fore = calloc(layer->ascii_size, sizeof(GlyphColor));
-      GlyphColor *back = calloc(layer->ascii_size, sizeof(GlyphColor));
-      for (uintmax_t t = 0; t < layer->ascii_size; t++) {
+      uint8_t *runes = calloc(layer->size, sizeof(uint8_t));
+      GlyphColor *fore = calloc(layer->size, sizeof(GlyphColor));
+      GlyphColor *back = calloc(layer->size, sizeof(GlyphColor));
+      for (uintmax_t t = 0; t < layer->size; t++) {
         runes[t] = layer->buffer[t].rune;
         fore[t] = layer->buffer[t].fore;
         back[t] = layer->buffer[t].back;
       }
-      picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, runes);
-      picasso_texture_set_data(layer->forecolors_texture, 0, 0, layer->ascii_width, layer->ascii_height, fore);
-      picasso_texture_set_data(layer->backcolors_texture, 0, 0, layer->ascii_width, layer->ascii_height, back);
+      picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->width, layer->height, runes);
+      picasso_texture_set_data(layer->forecolors_texture, 0, 0, layer->width, layer->height, fore);
+      picasso_texture_set_data(layer->backcolors_texture, 0, 0, layer->width, layer->height, back);
       free(back);
       free(fore);
       free(runes);
@@ -125,8 +125,8 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
 
     layer->shader.ascii_width_uniform = picasso_program_uniform_location(layer->program, "ascii_res_width");
     layer->shader.ascii_height_uniform = picasso_program_uniform_location(layer->program, "ascii_res_height");
-    picasso_program_uniform_int(layer->program, layer->shader.ascii_width_uniform, layer->ascii_width);
-    picasso_program_uniform_int(layer->program, layer->shader.ascii_height_uniform, layer->ascii_height);
+    picasso_program_uniform_int(layer->program, layer->shader.ascii_width_uniform, layer->width);
+    picasso_program_uniform_int(layer->program, layer->shader.ascii_height_uniform, layer->height);
   }
 
   return layer;
@@ -153,23 +153,23 @@ void ascii_buffer_destroy(AsciiBuffer *layer) {
 void ascii_buffer_draw(AsciiBuffer *layer) {
   assert(layer);
 
-  if (memcmp(layer->buffer, layer->last_buffer, sizeof(Glyph) * layer->ascii_size) != 0) {
-    uint8_t *runes = calloc(layer->ascii_size, sizeof(uint8_t));
-    GlyphColor *fore = calloc(layer->ascii_size, sizeof(GlyphColor));
-    GlyphColor *back = calloc(layer->ascii_size, sizeof(GlyphColor));
-    for (uintmax_t t = 0; t < layer->ascii_size; t++) {
+  if (memcmp(layer->buffer, layer->last_buffer, sizeof(Glyph) * layer->size) != 0) {
+    uint8_t *runes = calloc(layer->size, sizeof(uint8_t));
+    GlyphColor *fore = calloc(layer->size, sizeof(GlyphColor));
+    GlyphColor *back = calloc(layer->size, sizeof(GlyphColor));
+    for (uintmax_t t = 0; t < layer->size; t++) {
       runes[t] = layer->buffer[t].rune;
       fore[t] = layer->buffer[t].fore;
       back[t] = layer->buffer[t].back;
     }
-    picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, runes);
-    picasso_texture_set_data(layer->forecolors_texture, 0, 0, layer->ascii_width, layer->ascii_height, fore);
-    picasso_texture_set_data(layer->backcolors_texture, 0, 0, layer->ascii_width, layer->ascii_height, back);
+    picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->width, layer->height, runes);
+    picasso_texture_set_data(layer->forecolors_texture, 0, 0, layer->width, layer->height, fore);
+    picasso_texture_set_data(layer->backcolors_texture, 0, 0, layer->width, layer->height, back);
     free(back);
     free(fore);
     free(runes);
 
-    memcpy(layer->last_buffer, layer->buffer, sizeof(Glyph) * layer->ascii_size);
+    memcpy(layer->last_buffer, layer->buffer, sizeof(Glyph) * layer->size);
     Glyph *swp = layer->last_buffer;
     layer->last_buffer = layer->buffer;
     layer->buffer = swp;
@@ -179,8 +179,8 @@ void ascii_buffer_draw(AsciiBuffer *layer) {
 
   {
     picasso_program_uniform_mat4(layer->program, layer->shader.pmatrix_uniform, (float *)&layer->shader.projection_matrix);
-    picasso_program_uniform_int(layer->program, layer->shader.ascii_width_uniform, layer->ascii_width);
-    picasso_program_uniform_int(layer->program, layer->shader.ascii_height_uniform, layer->ascii_height);
+    picasso_program_uniform_int(layer->program, layer->shader.ascii_width_uniform, layer->width);
+    picasso_program_uniform_int(layer->program, layer->shader.ascii_height_uniform, layer->height);
   }
 
   picasso_texture_bind_to(layer->font_texture, 0);

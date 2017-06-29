@@ -98,8 +98,8 @@ void surface_draw(Surface *surface, AsciiBuffer *tiles) {
   for (uint32_t y = 0; y < surface->height; y++) {
     for (uint32_t x = 0; x < surface->width; x++) {
       uint32_t s_index = (y * surface->width) + x;
-      uint32_t index = ((y + surface->y) * tiles->ascii_width) + (x + surface->x);
-      if (index >= tiles->ascii_size) {
+      uint32_t index = ((y + surface->y) * tiles->width) + (x + surface->x);
+      if (index >= tiles->size) {
         continue;
       }
 
@@ -107,4 +107,3 @@ void surface_draw(Surface *surface, AsciiBuffer *tiles) {
     }
   }
 }
-// -Surface

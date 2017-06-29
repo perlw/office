@@ -22,13 +22,13 @@ typedef struct {
 void ascii_text(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t length, const char *string) {
   assert(tiles);
 
-  if (x >= tiles->ascii_width || y >= tiles->ascii_height) {
+  if (x >= tiles->width || y >= tiles->height) {
     return;
   }
 
   bool skip = false;
-  uint32_t index = (y * tiles->ascii_width) + x;
-  uint32_t max = index + (x + length >= tiles->ascii_width ? tiles->ascii_width - x : x + length);
+  uint32_t index = (y * tiles->width) + x;
+  uint32_t max = index + (x + length >= tiles->width ? tiles->width - x : x + length);
   for (uint32_t t = index, u = 0; t < max; t++, u++) {
     if (string[u] == '\0') {
       skip = true;
@@ -54,7 +54,7 @@ void ascii_graph(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t width, uin
   assert(tiles);
   assert(values);
 
-  if (x >= tiles->ascii_width || y >= tiles->ascii_height || x + width > tiles->ascii_width || y + height > tiles->ascii_height) {
+  if (x >= tiles->width || y >= tiles->height || x + width > tiles->width || y + height > tiles->height) {
     return;
   }
 
@@ -67,7 +67,7 @@ void ascii_graph(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t width, uin
       for (uint32_t xx = 0; xx < width_per_step; xx++) {
         uint32_t fudged_height = (uint32_t)(lerp((float)val_height, (float)next_val_height, (float)xx / (float)width_per_step) + 0.5f);
 
-        uint32_t index = ((y + yy) * tiles->ascii_width) + (x + (t * width_per_step) + xx);
+        uint32_t index = ((y + yy) * tiles->width) + (x + (t * width_per_step) + xx);
         if (yy >= fudged_height) {
           if (yy == fudged_height) {
             tiles->buffer[index].rune = '+';
@@ -100,7 +100,7 @@ DebugOverlay *debugoverlay_create(const Config *config) {
   DebugOverlay *overlay = calloc(1, sizeof(DebugOverlay));
 
   overlay->ascii = ascii_buffer_create(config->res_width, config->res_height, config->res_width / 8, config->res_height / 8);
-  for (uint32_t t = 0; t < overlay->ascii->ascii_size; t++) {
+  for (uint32_t t = 0; t < overlay->ascii->size; t++) {
     overlay->ascii->buffer[t].rune = 0;
     overlay->ascii->buffer[t].fore = (GlyphColor){ 0, 0, 0 };
     overlay->ascii->buffer[t].back = (GlyphColor){ 255, 0, 255 };

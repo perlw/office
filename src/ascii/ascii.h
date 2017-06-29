@@ -47,9 +47,9 @@ typedef struct {
   PicassoProgram *program;
   PicassoTexture *font_texture;
 
-  uint32_t ascii_width;
-  uint32_t ascii_height;
-  uint32_t ascii_size;
+  uint32_t width;
+  uint32_t height;
+  uint32_t size;
   Glyph *buffer;
   Glyph *last_buffer;
 
