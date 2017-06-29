@@ -60,15 +60,16 @@ void scene_world_edit_update(SceneWorldEdit *scene, double delta) {
 
     {
       for (uint32_t t = 0; t < scene->ascii->size; t++) {
-        scene->ascii->buffer[t].fore = glyphcolor_muls(scene->ascii->buffer[t].fore, 0.9);
-        scene->ascii->buffer[t].back = glyphcolor_muls(scene->ascii->buffer[t].back, 0.9);
+        scene->ascii->buffer[t].fore = glyphcolor_muls(scene->ascii->buffer[t].fore, 0.95);
+        scene->ascii->buffer[t].back = glyphcolor_muls(scene->ascii->buffer[t].back, 0.95);
       }
-      uint32_t index = (scene->m_y * scene->ascii->width) + scene->m_x;
-      scene->ascii->buffer[index].rune = 1;
-      scene->ascii->buffer[index].fore = (GlyphColor){ 255, 255, 0 };
-      scene->ascii->buffer[index].back = (GlyphColor){ 0, 0, 0 };
     }
   }
+
+  uint32_t index = (scene->m_y * scene->ascii->width) + scene->m_x;
+  scene->ascii->buffer[index].rune = 1;
+  scene->ascii->buffer[index].fore = (GlyphColor){ 255, 255, 0 };
+  scene->ascii->buffer[index].back = (GlyphColor){ 0, 0, 0 };
 }
 
 void scene_world_edit_draw(SceneWorldEdit *scene) {
