@@ -35,13 +35,13 @@ void ascii_text(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t length, con
     }
 
     if (!skip) {
-      tiles->asciimap[t].rune = string[u];
-      tiles->asciimap[t].fore = (GlyphColor){ 255, 255, 255 };
-      tiles->asciimap[t].back = (GlyphColor){ 128, 0, 0 };
+      tiles->buffer[t].rune = string[u];
+      tiles->buffer[t].fore = (GlyphColor){ 255, 255, 255 };
+      tiles->buffer[t].back = (GlyphColor){ 128, 0, 0 };
     } else {
-      tiles->asciimap[t].rune = 0;
-      tiles->asciimap[t].fore = (GlyphColor){ 0, 0, 0 };
-      tiles->asciimap[t].back = (GlyphColor){ 255, 0, 255 };
+      tiles->buffer[t].rune = 0;
+      tiles->buffer[t].fore = (GlyphColor){ 0, 0, 0 };
+      tiles->buffer[t].back = (GlyphColor){ 255, 0, 255 };
     }
   }
 }
@@ -70,17 +70,17 @@ void ascii_graph(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t width, uin
         uint32_t index = ((y + yy) * tiles->ascii_width) + (x + (t * width_per_step) + xx);
         if (yy >= fudged_height) {
           if (yy == fudged_height) {
-            tiles->asciimap[index].rune = '+';
-            tiles->asciimap[index].fore = (GlyphColor){ 255, 255, 255 };
+            tiles->buffer[index].rune = '+';
+            tiles->buffer[index].fore = (GlyphColor){ 255, 255, 255 };
           } else if (yy > fudged_height) {
-            tiles->asciimap[index].rune = '.';
-            tiles->asciimap[index].fore = (GlyphColor){ 128, 128, 128 };
+            tiles->buffer[index].rune = '.';
+            tiles->buffer[index].fore = (GlyphColor){ 128, 128, 128 };
           }
-          tiles->asciimap[index].back = (GlyphColor){ 66, 66, 66 };
+          tiles->buffer[index].back = (GlyphColor){ 66, 66, 66 };
         } else {
-          tiles->asciimap[index].rune = 0;
-          tiles->asciimap[index].fore = (GlyphColor){ 0, 0, 0 };
-          tiles->asciimap[index].back = (GlyphColor){ 255, 0, 255 };
+          tiles->buffer[index].rune = 0;
+          tiles->buffer[index].fore = (GlyphColor){ 0, 0, 0 };
+          tiles->buffer[index].back = (GlyphColor){ 255, 0, 255 };
         }
       }
     }
@@ -101,9 +101,9 @@ DebugOverlay *debugoverlay_create(const Config *config) {
 
   overlay->ascii = ascii_buffer_create(config->res_width, config->res_height, config->res_width / 8, config->res_height / 8);
   for (uint32_t t = 0; t < overlay->ascii->ascii_size; t++) {
-    overlay->ascii->asciimap[t].rune = 0;
-    overlay->ascii->asciimap[t].fore = (GlyphColor){ 0, 0, 0 };
-    overlay->ascii->asciimap[t].back = (GlyphColor){ 255, 0, 255 };
+    overlay->ascii->buffer[t].rune = 0;
+    overlay->ascii->buffer[t].fore = (GlyphColor){ 0, 0, 0 };
+    overlay->ascii->buffer[t].back = (GlyphColor){ 255, 0, 255 };
   }
 
   overlay->frames = 0;

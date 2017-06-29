@@ -103,7 +103,7 @@ void surface_draw(Surface *surface, AsciiBuffer *tiles) {
         continue;
       }
 
-      tiles->asciimap[index] = surface->buffer[s_index];
+      tiles->buffer[index] = surface->buffer[s_index];
     }
   }
 }

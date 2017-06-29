@@ -50,8 +50,8 @@ typedef struct {
   uint32_t ascii_width;
   uint32_t ascii_height;
   uint32_t ascii_size;
-  Glyph *asciimap;
-  Glyph *last_asciimap;
+  Glyph *buffer;
+  Glyph *last_buffer;
 
   PicassoTexture *asciimap_texture;
   PicassoTexture *forecolors_texture;

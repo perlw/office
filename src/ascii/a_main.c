@@ -80,11 +80,11 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
     layer->ascii_width = ascii_width;
     layer->ascii_height = ascii_height;
     layer->ascii_size = layer->ascii_width * layer->ascii_height;
-    layer->asciimap = calloc(layer->ascii_size, sizeof(Glyph));
-    layer->last_asciimap = calloc(layer->ascii_size, sizeof(Glyph));
+    layer->buffer = calloc(layer->ascii_size, sizeof(Glyph));
+    layer->last_buffer = calloc(layer->ascii_size, sizeof(Glyph));
 
-    memset(layer->asciimap, 0, sizeof(Glyph) * layer->ascii_size);
-    memset(layer->last_asciimap, 0, sizeof(Glyph) * layer->ascii_size);
+    memset(layer->buffer, 0, sizeof(Glyph) * layer->ascii_size);
+    memset(layer->last_buffer, 0, sizeof(Glyph) * layer->ascii_size);
 
     {
       layer->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, layer->ascii_width, layer->ascii_height, PICASSO_TEXTURE_R);
@@ -98,9 +98,9 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
       GlyphColor *fore = calloc(layer->ascii_size, sizeof(GlyphColor));
       GlyphColor *back = calloc(layer->ascii_size, sizeof(GlyphColor));
       for (uintmax_t t = 0; t < layer->ascii_size; t++) {
-        runes[t] = layer->asciimap[t].rune;
-        fore[t] = layer->asciimap[t].fore;
-        back[t] = layer->asciimap[t].back;
+        runes[t] = layer->buffer[t].rune;
+        fore[t] = layer->buffer[t].fore;
+        back[t] = layer->buffer[t].back;
       }
       picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, runes);
       picasso_texture_set_data(layer->forecolors_texture, 0, 0, layer->ascii_width, layer->ascii_height, fore);
@@ -135,8 +135,8 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
 void ascii_buffer_destroy(AsciiBuffer *layer) {
   assert(layer);
 
-  free(layer->last_asciimap);
-  free(layer->asciimap);
+  free(layer->last_buffer);
+  free(layer->buffer);
 
   picasso_texture_destroy(layer->backcolors_texture);
   picasso_texture_destroy(layer->forecolors_texture);
@@ -153,14 +153,14 @@ void ascii_buffer_destroy(AsciiBuffer *layer) {
 void ascii_buffer_draw(AsciiBuffer *layer) {
   assert(layer);
 
-  if (memcmp(layer->asciimap, layer->last_asciimap, sizeof(Glyph) * layer->ascii_size) != 0) {
+  if (memcmp(layer->buffer, layer->last_buffer, sizeof(Glyph) * layer->ascii_size) != 0) {
     uint8_t *runes = calloc(layer->ascii_size, sizeof(uint8_t));
     GlyphColor *fore = calloc(layer->ascii_size, sizeof(GlyphColor));
     GlyphColor *back = calloc(layer->ascii_size, sizeof(GlyphColor));
     for (uintmax_t t = 0; t < layer->ascii_size; t++) {
-      runes[t] = layer->asciimap[t].rune;
-      fore[t] = layer->asciimap[t].fore;
-      back[t] = layer->asciimap[t].back;
+      runes[t] = layer->buffer[t].rune;
+      fore[t] = layer->buffer[t].fore;
+      back[t] = layer->buffer[t].back;
     }
     picasso_texture_set_data(layer->asciimap_texture, 0, 0, layer->ascii_width, layer->ascii_height, runes);
     picasso_texture_set_data(layer->forecolors_texture, 0, 0, layer->ascii_width, layer->ascii_height, fore);
@@ -169,10 +169,10 @@ void ascii_buffer_draw(AsciiBuffer *layer) {
     free(fore);
     free(runes);
 
-    memcpy(layer->last_asciimap, layer->asciimap, sizeof(Glyph) * layer->ascii_size);
-    Glyph *swp = layer->last_asciimap;
-    layer->last_asciimap = layer->asciimap;
-    layer->asciimap = swp;
+    memcpy(layer->last_buffer, layer->buffer, sizeof(Glyph) * layer->ascii_size);
+    Glyph *swp = layer->last_buffer;
+    layer->last_buffer = layer->buffer;
+    layer->buffer = swp;
   }
 
   picasso_program_use(layer->program);
