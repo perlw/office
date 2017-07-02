@@ -26,6 +26,7 @@ set (
 )
 add_subdirectory (src/debug)
 add_subdirectory (src/ascii)
+add_subdirectory (src/ui)
 add_executable (office ${SOURCES})
 
 if (UNIX)
