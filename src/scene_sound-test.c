@@ -28,6 +28,8 @@ void scene_sound_test_spectrum(uint32_t id, void *const subscriberdata, void *co
   SceneSoundTest *scene = (SceneSoundTest *)subscriberdata;
   Spectrum *spectrum = (Spectrum *)userdata;
 
+  scene->song = spectrum->song_id;
+
   uint32_t step = 1;
   for (uint32_t t = 0, u = 0; u < 78; t += step, u++) {
     float l = 0.0f;
@@ -98,7 +100,6 @@ void scene_sound_test_destroy(SceneSoundTest *scene) {
 
   gossip_unsubscribe(MSG_SOUND, MSG_SOUND_SPECTRUM, scene->spectrum_handle);
   gossip_unsubscribe(MSG_INPUT, MSG_INPUT_KEYBOARD, scene->input_handle);
-  gossip_emit(MSG_SOUND, MSG_SOUND_STOP_SONG, NULL);
 
   surface_destroy(scene->spectrum);
   ascii_buffer_destroy(scene->screen);

@@ -81,8 +81,10 @@ void soundsys_update(SoundSys *soundsys, double delta) {
   if (boombox_cassette_playing(soundsys->song) || boombox_cassette_playing(soundsys->song2)) {
     Spectrum spectrum;
     if (boombox_cassette_playing(soundsys->song)) {
+      spectrum.song_id = 0;
       boombox_cassette_get_spectrum(soundsys->song, spectrum.left, spectrum.right);
     } else if (boombox_cassette_playing(soundsys->song2)) {
+      spectrum.song_id = 1;
       boombox_cassette_get_spectrum(soundsys->song2, spectrum.left, spectrum.right);
     }
     gossip_emit(MSG_SOUND, MSG_SOUND_SPECTRUM, &spectrum);

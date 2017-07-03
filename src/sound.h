@@ -5,6 +5,7 @@
 typedef struct SoundSys SoundSys;
 
 typedef struct {
+  uint32_t song_id;
   float left[2048];
   float right[2048];
 } Spectrum;
