@@ -3,8 +3,10 @@
 typedef enum {
   MSG_GAME = GOSSIP_GROUP_ALL + 1,
   MSG_SCENE,
+  MSG_SCENE_EVENT,
   MSG_SOUND,
   MSG_INPUT,
+  MSG_UI_WINDOW,
 } MessageGroups;
 
 typedef enum {

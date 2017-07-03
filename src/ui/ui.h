@@ -5,7 +5,7 @@
 #include "ascii/ascii.h"
 
 typedef enum {
-  UI_WINDOW_EVENT_MOUSEMOVE,
+  UI_WINDOW_EVENT_MOUSEMOVE = GOSSIP_ID_ALL + 1,
   UI_WINDOW_EVENT_CLICK,
   UI_WINDOW_EVENT_PAINT,
 } UIWindowEvent;
