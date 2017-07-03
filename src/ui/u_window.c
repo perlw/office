@@ -14,10 +14,6 @@ struct UIWindow {
   Surface *surface;
 
   GossipHandle mouse_handle;
-  struct {
-    UIWindowEventCallback callback;
-    void *userdata;
-  } events;
 };
 
 void ui_window_mouse_event(uint32_t id, void *const subscriberdata, void *const userdata) {
@@ -40,7 +36,7 @@ void ui_window_mouse_event(uint32_t id, void *const subscriberdata, void *const 
   }
 }
 
-UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t height, UIWindowEventCallback callback, void *const userdata) {
+UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
   UIWindow *window = calloc(1, sizeof(UIWindow));
 
   *window = (UIWindow){
@@ -49,10 +45,6 @@ UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t heig
     .width = width,
     .height = height,
     .surface = surface_create(x, y, width, height),
-    .events = {
-      .callback = callback,
-      .userdata = userdata,
-    },
   };
 
   SurfaceRectTiles rect_tiles = {
@@ -104,8 +96,6 @@ void ui_window_update(UIWindow *const window, double delta) {
 void ui_window_draw(UIWindow *const window, AsciiBuffer *const ascii) {
   assert(window);
   assert(ascii);
-
-  //window->events.callback(window, UI_WINDOW_EVENT_PAINT, NULL, window->events.userdata);
 
   surface_draw(window->surface, ascii);
 }

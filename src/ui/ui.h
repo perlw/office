@@ -24,7 +24,7 @@ typedef struct {
 typedef struct UIWindow UIWindow;
 typedef void (*UIWindowEventCallback)(UIWindow *const window, UIWindowEvent event, void *const eventdata, void *const userdata);
 
-UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t height, UIWindowEventCallback callback, void *const userdata);
+UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 void ui_window_destroy(UIWindow *const window);
 
 void ui_window_glyph(UIWindow *const window, uint32_t x, uint32_t y, Glyph glyph);

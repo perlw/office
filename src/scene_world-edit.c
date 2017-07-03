@@ -113,7 +113,7 @@ SceneWorldEdit *scene_world_edit_create(const Config *config) {
 
   {
     scene->chosen_rune = 1;
-    scene->font_window = ui_window_create(config->ascii_width - 20, 20, 18, 18, NULL, NULL);
+    scene->font_window = ui_window_create(config->ascii_width - 20, 20, 18, 18);
     scene->font_window_event_handle = gossip_subscribe(MSG_UI_WINDOW, GOSSIP_ID_ALL, &font_window_events, scene->font_window);
 
     gossip_emit(MSG_SCENE_EVENT, FONT_EVENT_RUNE_SELECTED, &scene->chosen_rune);
