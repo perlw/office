@@ -15,7 +15,7 @@ struct SoundSys {
   BoomboxCassette *song2;
 };
 
-void soundsys_event(int32_t id, void *subscriberdata, void *userdata);
+void soundsys_event(uint32_t id, void *const subscriberdata, void *const userdata);
 
 SoundSys *soundsys_create(void) {
   SoundSys *soundsys = calloc(1, sizeof(SoundSys));
@@ -52,10 +52,10 @@ SoundSys *soundsys_create(void) {
     return NULL;
   }
 
-  gossip_subscribe(MSG_GAME_INIT, &soundsys_event, soundsys);
-  gossip_subscribe(MSG_SOUND_PLAY_TAP, &soundsys_event, soundsys);
-  gossip_subscribe(MSG_SOUND_PLAY_SONG, &soundsys_event, soundsys);
-  gossip_subscribe(MSG_SOUND_STOP_SONG, &soundsys_event, soundsys);
+  gossip_subscribe(MSG_GAME, MSG_GAME_INIT, &soundsys_event, soundsys);
+  gossip_subscribe(MSG_SOUND, MSG_SOUND_PLAY_TAP, &soundsys_event, soundsys);
+  gossip_subscribe(MSG_SOUND, MSG_SOUND_PLAY_SONG, &soundsys_event, soundsys);
+  gossip_subscribe(MSG_SOUND, MSG_SOUND_STOP_SONG, &soundsys_event, soundsys);
 
   return soundsys;
 }
@@ -85,11 +85,11 @@ void soundsys_update(SoundSys *soundsys, double delta) {
     } else if (boombox_cassette_playing(soundsys->song2)) {
       boombox_cassette_get_spectrum(soundsys->song2, spectrum.left, spectrum.right);
     }
-    gossip_emit(MSG_SOUND_SPECTRUM, &spectrum);
+    gossip_emit(MSG_SOUND, MSG_SOUND_SPECTRUM, &spectrum);
   }
 }
 
-void soundsys_event(int32_t id, void *subscriberdata, void *userdata) {
+void soundsys_event(uint32_t id, void *const subscriberdata, void *const userdata) {
   SoundSys *soundsys = (SoundSys *)subscriberdata;
 
   switch (id) {

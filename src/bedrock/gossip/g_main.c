@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -7,79 +8,145 @@
 #include "rectify/rectify.h"
 
 typedef struct {
+  uint32_t id;
   GossipHandle handle;
   void *subscriberdata;
   GossipCallback callback;
 } Listener;
 
 typedef struct {
+  uint32_t id;
   Listener *listeners;
-} Gossiper;
-Gossiper gossipers[GOSSIP_ID_MAX];
+} Group;
+
+typedef struct {
+  Group *groups;
+} Gossip;
+Gossip *gossip = NULL;
 
 void gossip_init(void) {
-  for (uintmax_t t = 0; t < GOSSIP_ID_MAX; t += 1) {
-    gossipers[t].listeners = NULL;
+  if (gossip) {
+    return;
   }
+
+  gossip = calloc(1, sizeof(Gossip));
+  *gossip = (Gossip){
+    .groups = rectify_array_alloc(4, sizeof(Group)),
+  };
 }
 
 void gossip_destroy(void) {
-  for (uintmax_t t = 0; t < GOSSIP_ID_MAX; t += 1) {
-    if (gossipers[t].listeners) {
-      rectify_array_free(gossipers[t].listeners);
-    }
+  assert(gossip);
+
+  for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
+    rectify_array_free(gossip->groups[t].listeners);
   }
+  rectify_array_free(gossip->groups);
+
+  free(gossip);
 }
 
-GossipHandle gossip_subscribe(uint32_t id, GossipCallback callback, void *const subscriberdata) {
-  if (id > GOSSIP_ID_MAX) {
-    printf("GOSSIP: Warning, ignored subscribing to %d id, too large.\n", id);
-    return 0;
-  }
-
-  Gossiper *const g = &gossipers[id];
-  if (!g->listeners) {
-    g->listeners = rectify_array_alloc(4, sizeof(Listener));
-  }
+GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata) {
+  assert(gossip);
 
   Listener listener = (Listener){
+    .id = id,
     .subscriberdata = subscriberdata,
     .callback = callback,
   };
   listener.handle = (uintptr_t)&listener;
-  g->listeners = rectify_array_push(g->listeners, &listener);
+
+  printf("Gossip: Subscribing to %d:%d... ", group_id, id);
+
+  Group *group = NULL;
+  for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
+    Group *const g = &gossip->groups[t];
+
+    if (group_id != GOSSIP_GROUP_ALL && g->id != group_id) {
+      continue;
+    }
+
+    group = g;
+
+    if (group_id != GOSSIP_GROUP_ALL) {
+      break;
+    }
+  }
+
+  if (!group) {
+    group = &(Group){
+      .id = group_id,
+      .listeners = rectify_array_alloc(10, sizeof(Listener)),
+    };
+    gossip->groups = rectify_array_push(gossip->groups, group);
+  }
+
+  group->listeners = rectify_array_push(group->listeners, &listener);
+  printf("subscribed.\n");
 
   return listener.handle;
 }
 
-void gossip_unsubscribe(uint32_t id, GossipHandle handle) {
-  if (id > GOSSIP_ID_MAX) {
-    printf("GOSSIP: Warning, ignored subscribing to %d id, too large.\n", id);
-    return;
-  }
+void gossip_unsubscribe(uint32_t group_id, uint32_t id, GossipHandle handle) {
+  assert(gossip);
 
-  Gossiper *g = &gossipers[id];
-  for (uintmax_t t = 0; t < rectify_array_size(g->listeners); t += 1) {
-    if (g->listeners[t].handle == handle) {
-      g->listeners = rectify_array_delete(g->listeners, t);
+  printf("Gossip: Unsubscribing from %d:%d... ", group_id, id);
+  for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
+    Group *const group = &gossip->groups[t];
+
+    if (group_id != GOSSIP_GROUP_ALL && group->id != group_id) {
+      continue;
+    }
+
+    for (uintmax_t u = 0; u < rectify_array_size(group->listeners); u++) {
+      Listener *const listener = &group->listeners[u];
+
+      if (id != GOSSIP_ID_ALL && listener->id != id) {
+        continue;
+      }
+
+      if (listener->handle == handle) {
+        group->listeners = rectify_array_delete(group->listeners, u);
+        break;
+      }
+
+      if (id != GOSSIP_ID_ALL) {
+        break;
+      }
+    }
+
+    if (group_id != GOSSIP_GROUP_ALL) {
       break;
     }
   }
+  printf("unsubscribed\n");
 }
 
-void gossip_emit(uint32_t id, void *const userdata) {
-  if (id > GOSSIP_ID_MAX) {
-    printf("GOSSIP: Warning, ignored emitting %d id, too large.\n", id);
-    return;
-  }
+void gossip_emit(uint32_t group_id, uint32_t id, void *const userdata) {
+  assert(gossip);
 
-  Gossiper *g = &gossipers[id];
-  if (!g->listeners) {
-    return;
-  }
+  printf("Gossip: Emitting to %d:%d... ", group_id, id);
+  for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
+    Group *const group = &gossip->groups[t];
 
-  for (uintmax_t t = 0; t < rectify_array_size(g->listeners); t += 1) {
-    GossipCallback callback = g->listeners[t].callback;
-    callback(id, g->listeners[t].subscriberdata, userdata);
+    if (group_id != GOSSIP_GROUP_ALL && group->id != group_id) {
+      continue;
+    }
+
+    for (uintmax_t u = 0; u < rectify_array_size(group->listeners); u++) {
+      Listener *const listener = &group->listeners[u];
+
+      if (id != GOSSIP_ID_ALL && listener->id != id) {
+        continue;
+      }
+
+      GossipCallback callback = listener->callback;
+      callback(id, listener->subscriberdata, userdata);
+    }
+
+    if (group_id != GOSSIP_GROUP_ALL) {
+      break;
+    }
   }
+  printf("emitted.\n");
 }

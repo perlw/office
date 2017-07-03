@@ -25,7 +25,7 @@ typedef struct {
   GossipHandle input_handle;
 } TextInput;
 
-void textinput_event(int32_t id, void *subscriberdata, void *userdata);
+void textinput_event(uint32_t id, void *const subscriberdata, void *const userdata);
 
 TextInput *textinput_create(uint32_t x, uint32_t y, uint32_t width) {
   TextInput *input = calloc(1, sizeof(TextInput));
@@ -44,7 +44,7 @@ TextInput *textinput_create(uint32_t x, uint32_t y, uint32_t width) {
     input->surface->buffer[t].fore = (GlyphColor){ 255, 255, 255 };
   }
 
-  input->input_handle = gossip_subscribe(MSG_INPUT_KEYBOARD, &textinput_event, input);
+  input->input_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_KEYBOARD, &textinput_event, input);
 
   return input;
 }
@@ -52,7 +52,7 @@ TextInput *textinput_create(uint32_t x, uint32_t y, uint32_t width) {
 void textinput_destroy(TextInput *input) {
   assert(input);
 
-  gossip_unsubscribe(MSG_INPUT_KEYBOARD, input->input_handle);
+  gossip_unsubscribe(MSG_INPUT, MSG_INPUT_KEYBOARD, input->input_handle);
 
   surface_destroy(input->surface);
 
@@ -76,19 +76,19 @@ void textinput_update(TextInput *input, double delta) {
   }
 }
 
-void textinput_event(int32_t id, void *subscriberdata, void *userdata) {
+void textinput_event(uint32_t id, void *const subscriberdata, void *const userdata) {
   TextInput *input = (TextInput *)subscriberdata;
   PicassoWindowKeyboardEvent *event = (PicassoWindowKeyboardEvent *)userdata;
 
   if (event->pressed) {
-    gossip_emit(MSG_SOUND_PLAY_TAP, NULL);
+    gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_TAP, NULL);
 
     if (event->key == PICASSO_KEY_ENTER) {
       input->cursor_pos = 0;
       input->cursor_visible = true;
       printf("TEXTINPUT: YOU WROTE \"%s\"\n", input->buffer);
       if (strcmp(input->buffer, "quit") == 0) {
-        gossip_emit(MSG_GAME_KILL, NULL);
+        gossip_emit(MSG_GAME, MSG_GAME_KILL, NULL);
       }
 
       memset(input->buffer, 0, 128);

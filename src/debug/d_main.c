@@ -87,7 +87,7 @@ void ascii_graph(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t width, uin
   }
 }
 
-void scene_changed(int32_t id, void *subscriberdata, void *userdata) {
+void scene_changed(uint32_t id, void *const subscriberdata, void *const userdata) {
   DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
   Scene *scene = (Scene *)userdata;
 
@@ -119,7 +119,7 @@ DebugOverlay *debugoverlay_create(const Config *config) {
   snprintf(overlay->scene_buffer, 32, "SCENE: na");
   ascii_text(overlay->ascii, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer);
 
-  gossip_subscribe(MSG_SCENE_CHANGED, &scene_changed, overlay);
+  gossip_subscribe(MSG_SCENE, MSG_SCENE_CHANGED, &scene_changed, overlay);
 
   return overlay;
 }

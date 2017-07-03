@@ -4,10 +4,10 @@
 
 #include "bedrock/bedrock.h"
 
-#include "ui/ui.h"
 #include "ascii/ascii.h"
 #include "config.h"
 #include "messages.h"
+#include "ui/ui.h"
 
 typedef struct {
   double timing;
@@ -24,7 +24,7 @@ typedef struct {
   uint32_t m_x, m_y;
 } SceneWorldEdit;
 
-void scene_world_edit_mouse_event(int32_t id, void *const subscriberdata, void *const userdata) {
+void scene_world_edit_mouse_event(uint32_t id, void *const subscriberdata, void *const userdata) {
   SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
 
@@ -33,7 +33,7 @@ void scene_world_edit_mouse_event(int32_t id, void *const subscriberdata, void *
 
   if (scene->m_x > 0 && scene->m_y > 0 && scene->m_x < scene->world->width - 1 && scene->m_y < scene->world->height - 1) {
     if (event->pressed) {
-      gossip_emit(MSG_SOUND_PLAY_TAP, NULL);
+      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_TAP, NULL);
 
       uint32_t index = (scene->m_y * scene->world->width) + scene->m_x;
       scene->world->buffer[index] = (Glyph){
@@ -99,7 +99,7 @@ SceneWorldEdit *scene_world_edit_create(const Config *config) {
   };
   surface_rect(scene->world, 0, 0, scene->world->width, scene->world->height, rect_tiles, false, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
 
-  scene->mouse_handle = gossip_subscribe(MSG_INPUT_MOUSE, &scene_world_edit_mouse_event, scene);
+  scene->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_MOUSE, &scene_world_edit_mouse_event, scene);
 
   {
     scene->chosen_rune = 1;
@@ -112,7 +112,7 @@ SceneWorldEdit *scene_world_edit_create(const Config *config) {
 void scene_world_edit_destroy(SceneWorldEdit *scene) {
   assert(scene);
 
-  gossip_unsubscribe(MSG_INPUT_MOUSE, scene->mouse_handle);
+  gossip_unsubscribe(MSG_INPUT, MSG_INPUT_MOUSE, scene->mouse_handle);
 
   ui_window_destroy(scene->font_window);
 

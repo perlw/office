@@ -1,5 +1,5 @@
-#include <stdint.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include "ascii/ascii.h"
 #include "messages.h"
@@ -20,7 +20,7 @@ struct UIWindow {
   } events;
 };
 
-void ui_window_mouse_event(int32_t id, void *const subscriberdata, void *const userdata) {
+void ui_window_mouse_event(uint32_t id, void *const subscriberdata, void *const userdata) {
   UIWindow *window = (UIWindow *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
 
@@ -32,16 +32,16 @@ void ui_window_mouse_event(int32_t id, void *const subscriberdata, void *const u
   uint32_t m_y = (event->y / 8.0);
 
   if (m_x > window->x && m_x < window->x + window->width - 1
-      && m_y > window->y && m_y < window->y + window->width - 1){
+      && m_y > window->y && m_y < window->y + window->width - 1) {
     window->events.callback(window, UI_WINDOW_EVENT_MOUSEMOVE, &(UIEventMouseMove){
-      .x = m_x - window->x - 1,
-      .y = m_y - window->y - 1,
-    }, window->events.userdata);
+                                                                 .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                                               },
+      window->events.userdata);
     if (event->pressed) {
       window->events.callback(window, UI_WINDOW_EVENT_CLICK, &(UIEventClick){
-      .x = m_x - window->x - 1,
-      .y = m_y - window->y - 1,
-      }, window->events.userdata);
+                                                               .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                                             },
+        window->events.userdata);
     }
   }
 }
@@ -75,7 +75,7 @@ UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t heig
   };
   window->surface->buffer[width - 4].rune = 181;
 
-  window->mouse_handle = gossip_subscribe(MSG_INPUT_MOUSE, &ui_window_mouse_event, window);
+  window->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_MOUSE, &ui_window_mouse_event, window);
 
   return window;
 }
@@ -83,7 +83,7 @@ UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t heig
 void ui_window_destroy(UIWindow *const window) {
   assert(window);
 
-  gossip_unsubscribe(MSG_INPUT_MOUSE, window->mouse_handle);
+  gossip_unsubscribe(MSG_INPUT, MSG_INPUT_MOUSE, window->mouse_handle);
 
   surface_destroy(window->surface);
 
