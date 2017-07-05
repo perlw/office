@@ -60,10 +60,7 @@ SoundSys *soundsys_create(void) {
   }
 
   gossip_subscribe(MSG_GAME, MSG_GAME_INIT, &soundsys_event, soundsys);
-  gossip_subscribe(MSG_SOUND, MSG_SOUND_PLAY_TAP, &soundsys_event, soundsys);
-  gossip_subscribe(MSG_SOUND, MSG_SOUND_PLAY_BOOM, &soundsys_event, soundsys);
-  gossip_subscribe(MSG_SOUND, MSG_SOUND_PLAY_SONG, &soundsys_event, soundsys);
-  gossip_subscribe(MSG_SOUND, MSG_SOUND_STOP_SONG, &soundsys_event, soundsys);
+  gossip_subscribe(MSG_SOUND, GOSSIP_ID_ALL, &soundsys_event, soundsys);
 
   return soundsys;
 }
