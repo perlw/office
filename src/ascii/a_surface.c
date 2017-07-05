@@ -17,12 +17,37 @@ Surface *surface_create(uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t
   return surface;
 }
 
+Surface *surface_clone(Surface *original) {
+  assert(original);
+
+  Surface *surface = calloc(1, sizeof(Surface));
+
+  *surface = (Surface){
+    .x = original->x,
+    .y = original->y,
+    .width = original->width,
+    .height = original->height,
+    .size = original->size,
+    .buffer = rectify_memory_alloc_copy(original->buffer, sizeof(Glyph) * original->size),
+  };
+
+  return surface;
+}
+
 void surface_destroy(Surface *surface) {
   assert(surface);
 
   free(surface->buffer);
 
   free(surface);
+}
+
+void surface_clear(Surface *surface, Glyph glyph) {
+  assert(surface);
+
+  for (uint32_t t = 0; t < surface->size; t++) {
+    surface->buffer[t] = glyph;
+  }
 }
 
 void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string, GlyphColor fore_color, GlyphColor back_color) {
@@ -101,7 +126,7 @@ void surface_draw(Surface *surface, AsciiBuffer *tiles) {
     for (uint32_t x = 0; x < surface->width; x++) {
       uint32_t s_index = (y * surface->width) + x;
       uint32_t index = ((y + surface->y) * tiles->width) + (x + surface->x);
-      if (index >= tiles->size) {
+      if (index >= tiles->size || surface->buffer[s_index].rune == 0) {
         continue;
       }
 

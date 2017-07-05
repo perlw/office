@@ -88,8 +88,10 @@ typedef struct {
 } SurfaceRectTiles;
 
 Surface *surface_create(uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t height);
+Surface *surface_clone(Surface *original);
 void surface_destroy(Surface *surface);
 
+void surface_clear(Surface *surface, Glyph glyph);
 void surface_text(Surface *surface, uint32_t x, uint32_t y, uint32_t length, const char *string, GlyphColor fore_color, GlyphColor back_color);
 void surface_rect(Surface *surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, SurfaceRectTiles rect_tiles, bool filled, GlyphColor fore_color, GlyphColor back_color);
 

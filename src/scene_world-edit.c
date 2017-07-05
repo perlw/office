@@ -20,6 +20,7 @@ typedef struct {
   AsciiBuffer *ascii;
 
   Surface *world;
+  Surface *overlay;
 
   uint8_t chosen_rune;
   UIWindow *font_window;
@@ -101,6 +102,14 @@ SceneWorldEdit *scene_world_edit_create(const Config *config) {
   scene->ascii = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
 
   scene->world = surface_create(0, 0, config->ascii_width - 20, config->ascii_height);
+  scene->overlay = surface_clone(scene->world);
+
+  surface_clear(scene->world, (Glyph){
+                                .rune = ' ',
+                                .fore = 0,
+                                .back = 0,
+                              });
+
   SurfaceRectTiles rect_tiles = {
     '+', '-', '+',
     '|', 0, '|',
@@ -131,6 +140,7 @@ void scene_world_edit_destroy(SceneWorldEdit *scene) {
 
   ui_window_destroy(scene->font_window);
 
+  surface_destroy(scene->overlay);
   surface_destroy(scene->world);
   ascii_buffer_destroy(scene->ascii);
 
@@ -143,6 +153,30 @@ void scene_world_edit_update(SceneWorldEdit *scene, double delta) {
   scene->since_update += delta;
   while (scene->since_update >= scene->timing) {
     scene->since_update -= scene->timing;
+
+    /* *Need to break out to own asciilayer for blur
+    for (uint32_t t = 0; t < scene->overlay->size; t++) {
+      scene->overlay->buffer[t].fore = glyphcolor_muls(scene->overlay->buffer[t].fore, 0.75);
+      if (scene->overlay->buffer[t].fore.r < 0.99) {
+        scene->overlay->buffer[t].rune = 0;
+      }
+    }
+    */
+  }
+
+  surface_clear(scene->overlay, (Glyph){
+                                  .rune = 0,
+                                  .fore = 0,
+                                  .back = 0,
+                                });
+  if (scene->m_x > 0 && scene->m_x < scene->overlay->width - 1
+      && scene->m_y > 0 && scene->m_y < scene->overlay->height - 1) {
+    uint32_t index = (scene->m_y * scene->overlay->width) + scene->m_x;
+    scene->overlay->buffer[index] = (Glyph){
+      .rune = scene->chosen_rune,
+      .fore = (GlyphColor){ 255, 255, 0 },
+      .back = 0,
+    };
   }
 
   ui_window_update(scene->font_window, delta);
@@ -152,6 +186,7 @@ void scene_world_edit_draw(SceneWorldEdit *scene) {
   assert(scene);
 
   surface_draw(scene->world, scene->ascii);
+  surface_draw(scene->overlay, scene->ascii);
   ui_window_draw(scene->font_window, scene->ascii);
 
   ascii_buffer_draw(scene->ascii);

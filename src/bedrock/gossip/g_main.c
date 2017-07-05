@@ -125,7 +125,7 @@ void gossip_unsubscribe(uint32_t group_id, uint32_t id, GossipHandle handle) {
 void gossip_emit(uint32_t group_id, uint32_t id, void *const userdata) {
   assert(gossip);
 
-  printf("Gossip: Emitting to %d:%d... ", group_id, id);
+  //printf("Gossip: Emitting to %d:%d... ", group_id, id);
   for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
     Group *const group = &gossip->groups[t];
 
@@ -148,5 +148,5 @@ void gossip_emit(uint32_t group_id, uint32_t id, void *const userdata) {
       break;
     }
   }
-  printf("emitted.\n");
+  //printf("emitted.\n");
 }
