@@ -26,7 +26,8 @@ typedef struct {
     uint32_t x, y;
     float radius;
     bool rolling;
-  } wave;
+  } waves[10];
+  uint32_t next_wave;
 
   uint8_t chosen_rune;
   UIWindow *font_window;
@@ -58,10 +59,14 @@ void scene_world_edit_mouse_event(uint32_t id, void *const subscriberdata, void 
         .back = (GlyphColor){ 0, 0, 0 },
       };
 
-      scene->wave.rolling = true;
-      scene->wave.x = scene->m_x;
-      scene->wave.y = scene->m_y;
-      scene->wave.radius = 10.0f;
+      scene->waves[scene->next_wave].rolling = true;
+      scene->waves[scene->next_wave].x = scene->m_x;
+      scene->waves[scene->next_wave].y = scene->m_y;
+      scene->waves[scene->next_wave].radius = 10.0f;
+      scene->next_wave++;
+      if (scene->next_wave >= 10) {
+        scene->next_wave = 0;
+      }
     }
   }
 }
@@ -112,6 +117,7 @@ SceneWorldEdit *scene_world_edit_create(const Config *config) {
   scene->since_update = scene->timing;
   scene->m_x = 0;
   scene->m_y = 0;
+  scene->next_wave = 0;
 
   scene->ascii = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
 
@@ -175,56 +181,58 @@ void scene_world_edit_update(SceneWorldEdit *scene, double delta) {
       }
     }
 
-    if (scene->wave.rolling) {
-      bool did_paint = false;
-      int32_t x = (int32_t)(scene->wave.radius + 0.5f);
-      int32_t y = 0;
-      int32_t err = 0;
-      while (x >= y) {
-        uint32_t ax[] = {
-          scene->wave.x + x,
-          scene->wave.x + y,
-          scene->wave.x - y,
-          scene->wave.x - x,
-          scene->wave.x - x,
-          scene->wave.x - y,
-          scene->wave.x + y,
-          scene->wave.x + x,
-        };
-        uint32_t ay[] = {
-          scene->wave.y + y,
-          scene->wave.y + x,
-          scene->wave.y + x,
-          scene->wave.y + y,
-          scene->wave.y - y,
-          scene->wave.y - x,
-          scene->wave.y - x,
-          scene->wave.y - y,
-        };
-        for (uint32_t t = 0; t < 8; t++) {
-          if (ax[t] > 0 && ax[t] < scene->overlay->width - 1
-              && ay[t] > 0 && ay[t] < scene->overlay->height - 1) {
-            uint32_t index = (ay[t] * scene->overlay->width) + ax[t];
-            scene->overlay->buffer[index] = (Glyph){
-              .rune = 2,
-              .fore = (GlyphColor){ 255, 255, 0 },
-              .back = 0,
-            };
-            did_paint = true;
+    for (uint32_t t = 0; t < 10; t++) {
+      if (scene->waves[t].rolling) {
+        bool did_paint = false;
+        int32_t x = (int32_t)(scene->waves[t].radius + 0.5f);
+        int32_t y = 0;
+        int32_t err = 0;
+        while (x >= y) {
+          uint32_t ax[] = {
+            scene->waves[t].x + x,
+            scene->waves[t].x + y,
+            scene->waves[t].x - y,
+            scene->waves[t].x - x,
+            scene->waves[t].x - x,
+            scene->waves[t].x - y,
+            scene->waves[t].x + y,
+            scene->waves[t].x + x,
+          };
+          uint32_t ay[] = {
+            scene->waves[t].y + y,
+            scene->waves[t].y + x,
+            scene->waves[t].y + x,
+            scene->waves[t].y + y,
+            scene->waves[t].y - y,
+            scene->waves[t].y - x,
+            scene->waves[t].y - x,
+            scene->waves[t].y - y,
+          };
+          for (uint32_t u = 0; u < 8; u++) {
+            if (ax[u] > 0 && ax[u] < scene->overlay->width - 1
+                && ay[u] > 0 && ay[u] < scene->overlay->height - 1) {
+              uint32_t index = (ay[u] * scene->overlay->width) + ax[u];
+              scene->overlay->buffer[index] = (Glyph){
+                .rune = 2,
+                .fore = (GlyphColor){ 255, 255, 0 },
+                .back = 0,
+              };
+              did_paint = true;
+            }
+          }
+
+          y++;
+          if (err <= 0) {
+            err += (2 * y) + 1;
+          } else {
+            x--;
+            err += (2 * (y - x)) + 1;
           }
         }
 
-        y++;
-        if (err <= 0) {
-          err += (2 * y) + 1;
-        } else {
-          x--;
-          err += (2 * (y - x)) + 1;
-        }
+        scene->waves[t].radius += 1.0f;
+        scene->waves[t].rolling = did_paint;
       }
-
-      scene->wave.radius += 1.0f;
-      scene->wave.rolling = did_paint;
     }
   }
 
