@@ -22,6 +22,12 @@ typedef struct {
   Surface *world;
   Surface *overlay;
 
+  struct {
+    uint32_t x, y;
+    float radius;
+    bool rolling;
+  } wave;
+
   uint8_t chosen_rune;
   UIWindow *font_window;
   GossipHandle font_window_event_handle;
@@ -29,18 +35,21 @@ typedef struct {
   GossipHandle mouse_handle;
   GossipHandle rune_handle;
   uint32_t m_x, m_y;
+  uint32_t o_x, o_y;
 } SceneWorldEdit;
 
 void scene_world_edit_mouse_event(uint32_t id, void *const subscriberdata, void *const userdata) {
   SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
 
+  scene->o_x = scene->m_x;
+  scene->o_y = scene->m_y;
   scene->m_x = (uint32_t)(event->x / 8.0);
   scene->m_y = (uint32_t)(event->y / 8.0);
 
   if (scene->m_x > 0 && scene->m_y > 0 && scene->m_x < scene->world->width - 1 && scene->m_y < scene->world->height - 1) {
     if (event->pressed) {
-      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_TAP, NULL);
+      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_BOOM, NULL);
 
       uint32_t index = (scene->m_y * scene->world->width) + scene->m_x;
       scene->world->buffer[index] = (Glyph){
@@ -48,6 +57,11 @@ void scene_world_edit_mouse_event(uint32_t id, void *const subscriberdata, void 
         .fore = (GlyphColor){ 255, 255, 255 },
         .back = (GlyphColor){ 0, 0, 0 },
       };
+
+      scene->wave.rolling = true;
+      scene->wave.x = scene->m_x;
+      scene->wave.y = scene->m_y;
+      scene->wave.radius = 10.0f;
     }
   }
 }
@@ -154,21 +168,74 @@ void scene_world_edit_update(SceneWorldEdit *scene, double delta) {
   while (scene->since_update >= scene->timing) {
     scene->since_update -= scene->timing;
 
-    /* *Need to break out to own asciilayer for blur
     for (uint32_t t = 0; t < scene->overlay->size; t++) {
       scene->overlay->buffer[t].fore = glyphcolor_muls(scene->overlay->buffer[t].fore, 0.75);
-      if (scene->overlay->buffer[t].fore.r < 0.99) {
+      if (scene->overlay->buffer[t].fore.r < 0.9) {
         scene->overlay->buffer[t].rune = 0;
       }
     }
-    */
+
+    if (scene->wave.rolling) {
+      bool did_paint = false;
+      int32_t x = (int32_t)(scene->wave.radius + 0.5f);
+      int32_t y = 0;
+      int32_t err = 0;
+      while (x >= y) {
+        uint32_t ax[] = {
+          scene->wave.x + x,
+          scene->wave.x + y,
+          scene->wave.x - y,
+          scene->wave.x - x,
+          scene->wave.x - x,
+          scene->wave.x - y,
+          scene->wave.x + y,
+          scene->wave.x + x,
+        };
+        uint32_t ay[] = {
+          scene->wave.y + y,
+          scene->wave.y + x,
+          scene->wave.y + x,
+          scene->wave.y + y,
+          scene->wave.y - y,
+          scene->wave.y - x,
+          scene->wave.y - x,
+          scene->wave.y - y,
+        };
+        for (uint32_t t = 0; t < 8; t++) {
+          if (ax[t] > 0 && ax[t] < scene->overlay->width - 1
+              && ay[t] > 0 && ay[t] < scene->overlay->height - 1) {
+            uint32_t index = (ay[t] * scene->overlay->width) + ax[t];
+            scene->overlay->buffer[index] = (Glyph){
+              .rune = 2,
+              .fore = (GlyphColor){ 255, 255, 0 },
+              .back = 0,
+            };
+            did_paint = true;
+          }
+        }
+
+        y++;
+        if (err <= 0) {
+          err += (2 * y) + 1;
+        } else {
+          x--;
+          err += (2 * (y - x)) + 1;
+        }
+      }
+
+      scene->wave.radius += 1.0f;
+      scene->wave.rolling = did_paint;
+    }
   }
 
-  surface_clear(scene->overlay, (Glyph){
-                                  .rune = 0,
-                                  .fore = 0,
-                                  .back = 0,
-                                });
+  {
+    uint32_t index = (scene->o_y * scene->overlay->width) + scene->o_x;
+    scene->overlay->buffer[index] = (Glyph){
+      .rune = 0,
+      .fore = 0,
+      .back = 0,
+    };
+  }
   if (scene->m_x > 0 && scene->m_x < scene->overlay->width - 1
       && scene->m_y > 0 && scene->m_y < scene->overlay->height - 1) {
     uint32_t index = (scene->m_y * scene->overlay->width) + scene->m_x;

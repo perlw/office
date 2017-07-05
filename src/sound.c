@@ -10,6 +10,7 @@ struct SoundSys {
   Boombox *boombox;
   BoomboxCassette *init_sound;
   BoomboxCassette *tap_sound;
+  BoomboxCassette *boom_sound;
 
   BoomboxCassette *song;
   BoomboxCassette *song2;
@@ -28,6 +29,7 @@ SoundSys *soundsys_create(void) {
 
   soundsys->init_sound = boombox_cassette_create(soundsys->boombox);
   soundsys->tap_sound = boombox_cassette_create(soundsys->boombox);
+  soundsys->boom_sound = boombox_cassette_create(soundsys->boombox);
   soundsys->song = boombox_cassette_create(soundsys->boombox);
   soundsys->song2 = boombox_cassette_create(soundsys->boombox);
 
@@ -38,6 +40,11 @@ SoundSys *soundsys_create(void) {
   }
   if (boombox_cassette_load_sound(soundsys->tap_sound, "tap.ogg") != BOOMBOX_OK) {
     printf("Boombox: failed to load tap sound\n");
+    boombox_destroy(soundsys->boombox);
+    return NULL;
+  }
+  if (boombox_cassette_load_sound(soundsys->boom_sound, "boom.wav") != BOOMBOX_OK) {
+    printf("Boombox: failed to load boom sound\n");
     boombox_destroy(soundsys->boombox);
     return NULL;
   }
@@ -54,6 +61,7 @@ SoundSys *soundsys_create(void) {
 
   gossip_subscribe(MSG_GAME, MSG_GAME_INIT, &soundsys_event, soundsys);
   gossip_subscribe(MSG_SOUND, MSG_SOUND_PLAY_TAP, &soundsys_event, soundsys);
+  gossip_subscribe(MSG_SOUND, MSG_SOUND_PLAY_BOOM, &soundsys_event, soundsys);
   gossip_subscribe(MSG_SOUND, MSG_SOUND_PLAY_SONG, &soundsys_event, soundsys);
   gossip_subscribe(MSG_SOUND, MSG_SOUND_STOP_SONG, &soundsys_event, soundsys);
 
@@ -65,6 +73,7 @@ void soundsys_destroy(SoundSys *soundsys) {
 
   boombox_cassette_destroy(soundsys->song2);
   boombox_cassette_destroy(soundsys->song);
+  boombox_cassette_destroy(soundsys->boom_sound);
   boombox_cassette_destroy(soundsys->tap_sound);
   boombox_cassette_destroy(soundsys->init_sound);
   boombox_destroy(soundsys->boombox);
@@ -102,6 +111,10 @@ void soundsys_event(uint32_t id, void *const subscriberdata, void *const userdat
     case MSG_SOUND_PLAY_TAP:
       boombox_cassette_play(soundsys->tap_sound);
       boombox_cassette_set_pitch(soundsys->tap_sound, 0.9f + ((float)(rand() % 20) / 100.0f));
+      break;
+
+    case MSG_SOUND_PLAY_BOOM:
+      boombox_cassette_play(soundsys->boom_sound);
       break;
 
     case MSG_SOUND_PLAY_SONG: {
