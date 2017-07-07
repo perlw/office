@@ -3,27 +3,11 @@
 #include <stdint.h>
 
 #include "ascii/ascii.h"
-
-typedef enum {
-  UI_WINDOW_EVENT_MOUSEMOVE = GOSSIP_ID_ALL + 1,
-  UI_WINDOW_EVENT_CLICK,
-  UI_WINDOW_EVENT_PAINT,
-} UIWindowEvent;
-
-typedef struct {
-  uint32_t x;
-  uint32_t y;
-} UIEventMouseMove;
-
-typedef struct {
-  uint32_t x;
-  uint32_t y;
-} UIEventClick;
+#include "u_dialogs.h"
+#include "u_types.h"
+#include "u_widgets.h"
 
 // +UIWindow
-typedef struct UIWindow UIWindow;
-typedef void (*UIWindowEventCallback)(UIWindow *const window, UIWindowEvent event, void *const eventdata, void *const userdata);
-
 UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 void ui_window_destroy(UIWindow *const window);
 

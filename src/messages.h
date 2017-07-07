@@ -7,6 +7,7 @@ typedef enum {
   MSG_SOUND,
   MSG_INPUT,
   MSG_UI_WINDOW,
+  MSG_UI_WIDGET,
 } MessageGroups;
 
 typedef enum {

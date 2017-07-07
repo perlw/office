@@ -3,18 +3,9 @@
 
 #include "ascii/ascii.h"
 #include "messages.h"
+
+#define UI_INTERNAL
 #include "ui.h"
-
-struct UIWindow {
-  uint32_t x;
-  uint32_t y;
-  uint32_t width;
-  uint32_t height;
-
-  Surface *surface;
-
-  GossipHandle mouse_handle;
-};
 
 void ui_window_mouse_event(uint32_t id, void *const subscriberdata, void *const userdata) {
   UIWindow *window = (UIWindow *)subscriberdata;
@@ -26,11 +17,11 @@ void ui_window_mouse_event(uint32_t id, void *const subscriberdata, void *const 
   if (m_x > window->x && m_x < window->x + window->width - 1
       && m_y > window->y && m_y < window->y + window->width - 1) {
     gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_MOUSEMOVE, &(UIEventMouseMove){
-                                                            .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                                            .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
                                                           });
     if (event->pressed) {
       gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_CLICK, &(UIEventClick){
-                                                          .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                                          .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
                                                         });
     }
   }
@@ -40,6 +31,8 @@ UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t heig
   UIWindow *window = calloc(1, sizeof(UIWindow));
 
   *window = (UIWindow){
+    .timing = 1 / 30.0,
+    .since_update = 1 / 30.0,
     .x = x,
     .y = y,
     .width = width,
@@ -91,6 +84,13 @@ void ui_window_glyph(UIWindow *const window, uint32_t x, uint32_t y, Glyph glyph
 
 void ui_window_update(UIWindow *const window, double delta) {
   assert(window);
+
+  window->since_update += delta;
+  while (window->since_update >= window->timing) {
+    window->since_update -= window->timing;
+
+    gossip_emit(MSG_UI_WIDGET, UI_WIDGET_EVENT_PAINT, window);
+  }
 }
 
 void ui_window_draw(UIWindow *const window, AsciiBuffer *const ascii) {

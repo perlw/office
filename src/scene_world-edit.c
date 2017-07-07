@@ -9,10 +9,6 @@
 #include "messages.h"
 #include "ui/ui.h"
 
-typedef enum {
-  FONT_EVENT_RUNE_SELECTED = GOSSIP_ID_ALL + 1,
-} FontWindowEvent;
-
 typedef struct {
   double timing;
   double since_update;
@@ -30,8 +26,7 @@ typedef struct {
   uint32_t next_wave;
 
   uint8_t chosen_rune;
-  UIWindow *font_window;
-  GossipHandle font_window_event_handle;
+  UIDialogRuneSelector *rune_selector;
 
   GossipHandle mouse_handle;
   GossipHandle rune_handle;
@@ -71,43 +66,9 @@ void scene_world_edit_mouse_event(uint32_t id, void *const subscriberdata, void 
   }
 }
 
-void font_window_events(uint32_t id, void *const subscriberdata, void *const userdata) {
-  UIWindow *window = (UIWindow *)subscriberdata;
-
-  switch (id) {
-    case UI_WINDOW_EVENT_CLICK: {
-      UIEventClick *event = (UIEventClick *)userdata;
-      uint32_t rune = (event->y * 16) + event->x;
-      gossip_emit(MSG_SCENE_EVENT, FONT_EVENT_RUNE_SELECTED, &rune);
-      break;
-    }
-  }
-}
-
 void scene_world_edit_rune_selected(uint32_t id, void *const subscriberdata, void *const userdata) {
   SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
   scene->chosen_rune = *(uint32_t *)userdata;
-
-  for (uint32_t y = 0; y < 16; y++) {
-    for (uint32_t x = 0; x < 16; x++) {
-      uint8_t rune = (y * 16) + x;
-      Glyph glyph = {
-        .rune = rune,
-        .fore = (GlyphColor){ 128, 128, 128 },
-        .back = (GlyphColor){ 0, 0, 0 },
-      };
-
-      if (rune == scene->chosen_rune) {
-        glyph.fore = (GlyphColor){ 255, 255, 255 };
-      } else if (rune / 16 == scene->chosen_rune / 16) {
-        glyph.fore = (GlyphColor){ 200, 200, 200 };
-      } else if (rune % 16 == scene->chosen_rune % 16) {
-        glyph.fore = (GlyphColor){ 200, 200, 200 };
-      }
-
-      ui_window_glyph(scene->font_window, x, y, glyph);
-    }
-  }
 }
 
 SceneWorldEdit *scene_world_edit_create(const Config *config) {
@@ -138,14 +99,11 @@ SceneWorldEdit *scene_world_edit_create(const Config *config) {
   surface_rect(scene->world, 0, 0, scene->world->width, scene->world->height, rect_tiles, false, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
 
   scene->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_MOUSE, &scene_world_edit_mouse_event, scene);
-  scene->rune_handle = gossip_subscribe(MSG_SCENE_EVENT, FONT_EVENT_RUNE_SELECTED, &scene_world_edit_rune_selected, scene);
+  scene->rune_handle = gossip_subscribe(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, &scene_world_edit_rune_selected, scene);
 
   {
     scene->chosen_rune = 1;
-    scene->font_window = ui_window_create(config->ascii_width - 20, 20, 18, 18);
-    scene->font_window_event_handle = gossip_subscribe(MSG_UI_WINDOW, GOSSIP_ID_ALL, &font_window_events, scene->font_window);
-
-    gossip_emit(MSG_SCENE_EVENT, FONT_EVENT_RUNE_SELECTED, &scene->chosen_rune);
+    scene->rune_selector = ui_dialog_rune_selector_create(config->ascii_width - 20, 20);
   }
 
   return scene;
@@ -154,11 +112,10 @@ SceneWorldEdit *scene_world_edit_create(const Config *config) {
 void scene_world_edit_destroy(SceneWorldEdit *scene) {
   assert(scene);
 
-  gossip_unsubscribe(MSG_UI_WINDOW, GOSSIP_ID_ALL, scene->font_window_event_handle);
-  gossip_unsubscribe(MSG_SCENE_EVENT, FONT_EVENT_RUNE_SELECTED, scene->rune_handle);
+  gossip_unsubscribe(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, scene->rune_handle);
   gossip_unsubscribe(MSG_INPUT, MSG_INPUT_MOUSE, scene->mouse_handle);
 
-  ui_window_destroy(scene->font_window);
+  ui_dialog_rune_selector_destroy(scene->rune_selector);
 
   surface_destroy(scene->overlay);
   surface_destroy(scene->world);
@@ -254,7 +211,7 @@ void scene_world_edit_update(SceneWorldEdit *scene, double delta) {
     };
   }
 
-  ui_window_update(scene->font_window, delta);
+  ui_dialog_rune_selector_update(scene->rune_selector, delta);
 }
 
 void scene_world_edit_draw(SceneWorldEdit *scene) {
@@ -262,7 +219,8 @@ void scene_world_edit_draw(SceneWorldEdit *scene) {
 
   surface_draw(scene->world, scene->ascii);
   surface_draw(scene->overlay, scene->ascii);
-  ui_window_draw(scene->font_window, scene->ascii);
+
+  ui_dialog_rune_selector_draw(scene->rune_selector, scene->ascii);
 
   ascii_buffer_draw(scene->ascii);
 }
