@@ -2,10 +2,8 @@ TODO
 ===
 ## Game
 The actual game
-* Bedrock modules should not be interdependant
-  * Potentially pull occulus out of bedrock?
-* Move projection mapping outside of tiles n stuff?
-* Tilemapping with actual tileinformation
+* Rebuild scene management as a system
+* Rebuild ui management as a system
 
 ## Bedrock
 Tests?
@@ -53,3 +51,6 @@ Asset management
 
 ### Synapse
 Networking
+
+### System management
+For handling global systems, startup, shutdown, etc
