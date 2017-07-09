@@ -11,6 +11,7 @@
 typedef struct {
   uint32_t id;
   GossipHandle handle;
+  void *filter;
   void *subscriberdata;
   GossipCallback callback;
 } Listener;
@@ -47,13 +48,14 @@ void gossip_destroy(void) {
   free(gossip);
 }
 
-GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata) {
+GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata, void *const filter) {
   assert(gossip);
 
   Listener listener = (Listener){
     .id = id,
     .subscriberdata = subscriberdata,
     .callback = callback,
+    .filter = filter,
   };
   listener.handle = (uintptr_t)&listener;
 
@@ -108,7 +110,7 @@ void gossip_unsubscribe(GossipHandle handle) {
   printf("handle not found.\n");
 }
 
-void gossip_emit(uint32_t group_id, uint32_t id, void *const userdata) {
+void gossip_emit(uint32_t group_id, uint32_t id, void *const self, void *const userdata) {
   assert(gossip);
 
   //printf("Gossip: Emitting to %d:%d... ", group_id, id);
@@ -123,6 +125,10 @@ void gossip_emit(uint32_t group_id, uint32_t id, void *const userdata) {
       Listener *const listener = &group->listeners[u];
 
       if (id != GOSSIP_ID_ALL && listener->id != GOSSIP_ID_ALL && listener->id != id) {
+        continue;
+      }
+
+      if (listener->filter && (!self || listener->filter != self)) {
         continue;
       }
 

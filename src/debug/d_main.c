@@ -119,7 +119,7 @@ DebugOverlay *debugoverlay_create(const Config *config) {
   snprintf(overlay->scene_buffer, 32, "SCENE: na");
   ascii_text(overlay->ascii, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer);
 
-  gossip_subscribe(MSG_SCENE, MSG_SCENE_CHANGED, &scene_changed, overlay);
+  gossip_subscribe(MSG_SCENE, MSG_SCENE_CHANGED, &scene_changed, overlay, NULL);
 
   return overlay;
 }

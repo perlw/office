@@ -36,13 +36,13 @@ void navigate_scene(uint32_t id, void *const subscriberdata, void *const userdat
   switch (id) {
     case MSG_SCENE_PREV: {
       Scene *scene = scenes_prev(scenes);
-      gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, scene);
+      gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, NULL, scene);
       break;
     }
 
     case MSG_SCENE_NEXT: {
       Scene *scene = scenes_next(scenes);
-      gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, scene);
+      gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, NULL, scene);
       break;
     }
   }
@@ -108,20 +108,20 @@ int main(int argc, char **argv) {
   scenes_register(scenes, &scene_game);
   scenes_register(scenes, &scene_sound_test);
   scenes_register(scenes, &scene_world_edit);
-  gossip_subscribe(MSG_SCENE, MSG_SCENE_PREV, &navigate_scene, (void *)scenes);
-  gossip_subscribe(MSG_SCENE, MSG_SCENE_NEXT, &navigate_scene, (void *)scenes);
+  gossip_subscribe(MSG_SCENE, MSG_SCENE_PREV, &navigate_scene, (void *)scenes, NULL);
+  gossip_subscribe(MSG_SCENE, MSG_SCENE_NEXT, &navigate_scene, (void *)scenes, NULL);
 
   {
     Scene *const scene = scenes_goto(scenes, init_scene);
-    gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, scene);
+    gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, NULL, scene);
   }
 
   const double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
   double next_frame = frame_timing;
 
-  gossip_subscribe(MSG_GAME, MSG_GAME_KILL, &game_kill_event, NULL);
+  gossip_subscribe(MSG_GAME, MSG_GAME_KILL, &game_kill_event, NULL, NULL);
 
-  gossip_emit(MSG_GAME, MSG_GAME_INIT, NULL);
+  gossip_emit(MSG_GAME, MSG_GAME_INIT, NULL, NULL);
 
   double last_tick = bedrock_time();
   while (!picasso_window_should_close() && !quit_game) {

@@ -27,6 +27,7 @@ typedef struct {
 
   uint8_t chosen_rune;
   UIDialogRuneSelector *rune_selector;
+  UIDialogRuneSelector *rune_selector2;
 
   GossipHandle mouse_handle;
   GossipHandle rune_handle;
@@ -45,7 +46,7 @@ void scene_world_edit_mouse_event(uint32_t id, void *const subscriberdata, void 
 
   if (scene->m_x > 0 && scene->m_y > 0 && scene->m_x < scene->world->width - 1 && scene->m_y < scene->world->height - 1) {
     if (event->pressed) {
-      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_BOOM, NULL);
+      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_BOOM, NULL, NULL);
 
       uint32_t index = (scene->m_y * scene->world->width) + scene->m_x;
       scene->world->buffer[index] = (Glyph){
@@ -98,12 +99,14 @@ SceneWorldEdit *scene_world_edit_create(const Config *config) {
   };
   surface_rect(scene->world, 0, 0, scene->world->width, scene->world->height, rect_tiles, false, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
 
-  scene->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_MOUSE, &scene_world_edit_mouse_event, scene);
-  scene->rune_handle = gossip_subscribe(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, &scene_world_edit_rune_selected, scene);
+  scene->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_MOUSE, &scene_world_edit_mouse_event, scene, NULL);
+  scene->rune_handle = gossip_subscribe(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, &scene_world_edit_rune_selected, scene, NULL);
 
   {
     scene->chosen_rune = 1;
     scene->rune_selector = ui_dialog_rune_selector_create(config->ascii_width - 20, 20);
+ 
+    scene->rune_selector2 = ui_dialog_rune_selector_create(config->ascii_width - 20, 40);
   }
 
   return scene;
@@ -115,6 +118,7 @@ void scene_world_edit_destroy(SceneWorldEdit *scene) {
   gossip_unsubscribe(scene->rune_handle);
   gossip_unsubscribe(scene->mouse_handle);
 
+  ui_dialog_rune_selector_destroy(scene->rune_selector2);
   ui_dialog_rune_selector_destroy(scene->rune_selector);
 
   surface_destroy(scene->overlay);
@@ -212,6 +216,7 @@ void scene_world_edit_update(SceneWorldEdit *scene, double delta) {
   }
 
   ui_dialog_rune_selector_update(scene->rune_selector, delta);
+  ui_dialog_rune_selector_update(scene->rune_selector2, delta);
 }
 
 void scene_world_edit_draw(SceneWorldEdit *scene) {
@@ -221,6 +226,7 @@ void scene_world_edit_draw(SceneWorldEdit *scene) {
   surface_draw(scene->overlay, scene->ascii);
 
   ui_dialog_rune_selector_draw(scene->rune_selector, scene->ascii);
+  ui_dialog_rune_selector_draw(scene->rune_selector2, scene->ascii);
 
   ascii_buffer_draw(scene->ascii);
 }

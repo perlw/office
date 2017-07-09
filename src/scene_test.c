@@ -44,7 +44,7 @@ TextInput *textinput_create(uint32_t x, uint32_t y, uint32_t width) {
     input->surface->buffer[t].fore = (GlyphColor){ 255, 255, 255 };
   }
 
-  input->input_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_KEYBOARD, &textinput_event, input);
+  input->input_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_KEYBOARD, &textinput_event, input, NULL);
 
   return input;
 }
@@ -81,14 +81,14 @@ void textinput_event(uint32_t id, void *const subscriberdata, void *const userda
   PicassoWindowKeyboardEvent *event = (PicassoWindowKeyboardEvent *)userdata;
 
   if (event->pressed) {
-    gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_TAP, NULL);
+    gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_TAP, NULL, NULL);
 
     if (event->key == PICASSO_KEY_ENTER) {
       input->cursor_pos = 0;
       input->cursor_visible = true;
       printf("TEXTINPUT: YOU WROTE \"%s\"\n", input->buffer);
       if (strcmp(input->buffer, "quit") == 0) {
-        gossip_emit(MSG_GAME, MSG_GAME_KILL, NULL);
+        gossip_emit(MSG_GAME, MSG_GAME_KILL, NULL, NULL);
       }
 
       memset(input->buffer, 0, 128);

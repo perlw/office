@@ -33,7 +33,7 @@ void input_kill() {
 }
 
 void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
-  gossip_emit(MSG_INPUT, MSG_INPUT_KEYBOARD, (void *)event);
+  gossip_emit(MSG_INPUT, MSG_INPUT_KEYBOARD, NULL, (void *)event);
 
   if (event->released) {
     return;
@@ -47,22 +47,22 @@ void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
 }
 
 void input_mouse_callback(const PicassoWindowMouseEvent *event) {
-  gossip_emit(MSG_INPUT, MSG_INPUT_MOUSE, (void *)event);
+  gossip_emit(MSG_INPUT, MSG_INPUT_MOUSE, NULL, (void *)event);
 }
 
 void input_action(InputActionBinding *binding, void *userdata) {
   printf("INPUT: %s\n", binding->action);
 
   if (strcmp(binding->action, "close") == 0) {
-    gossip_emit(MSG_GAME, MSG_GAME_KILL, NULL);
+    gossip_emit(MSG_GAME, MSG_GAME_KILL, NULL, NULL);
     return;
   }
   if (strcmp(binding->action, "prev_scene") == 0) {
-    gossip_emit(MSG_SCENE, MSG_SCENE_PREV, NULL);
+    gossip_emit(MSG_SCENE, MSG_SCENE_PREV, NULL, NULL);
     return;
   }
   if (strcmp(binding->action, "next_scene") == 0) {
-    gossip_emit(MSG_SCENE, MSG_SCENE_NEXT, NULL);
+    gossip_emit(MSG_SCENE, MSG_SCENE_NEXT, NULL, NULL);
     return;
   }
 
