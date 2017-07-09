@@ -10,6 +10,11 @@ The actual game
 
 ### System management
 For handling global systems, startup, shutdown, etc
+* Message passing
+* How to register a system? Necessary?
+* Targetted start/stop
+* Start/stop all
+* Pausing?
 
 ## Bedrock
 Tests?
