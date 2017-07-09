@@ -110,7 +110,7 @@ void debugoverlay_internal_system_event(uint32_t id, void *const subscriberdata,
       debugoverlay_internal_update(overlay, *(double *)userdata);
       break;
 
-    case MSG_SYSTEM_DRAW:
+    case MSG_SYSTEM_DRAW_LAYER0:
       debugoverlay_internal_draw(overlay);
       break;
   }

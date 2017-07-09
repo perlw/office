@@ -136,7 +136,9 @@ int main(int argc, char **argv) {
       next_frame = 0.0;
       picasso_window_clear();
 
-      gossip_emit(MSG_SYSTEM, MSG_SYSTEM_DRAW, NULL, NULL);
+      for (uint32_t t = MSG_SYSTEM_DRAW_LAYER0; t <= MSG_SYSTEM_DRAW; t++) {
+        gossip_emit(MSG_SYSTEM, t, NULL, NULL);
+      }
 
       picasso_window_swap();
     }
