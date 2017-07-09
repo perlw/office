@@ -4,21 +4,15 @@ TODO
 The actual game
 * Rebuild scene management as a system
 * Rebuild ui management as a system
+* Global config/settings/parameters module?
+* Logging
+  - Log to file aswell as log to console
+
+### System management
+For handling global systems, startup, shutdown, etc
 
 ## Bedrock
 Tests?
-* Global config/settings/parameters module?
-* Rename modules?
-  - archivist -> tbd
-  - boombox -> tbd, bard?
-  - gossip -> tbd, hermes?
-  - picasso -> tbd
-  - rectify -> tbd
-  - occulus -> is fine
-  - muse -> is fine
-  - tome -> is fine
-* Logging
-  - Log to file aswell as log to console
 
 ### Picasso
 Graphics, pipeline
@@ -51,6 +45,3 @@ Asset management
 
 ### Synapse
 Networking
-
-### System management
-For handling global systems, startup, shutdown, etc
