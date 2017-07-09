@@ -112,8 +112,8 @@ SceneWorldEdit *scene_world_edit_create(const Config *config) {
 void scene_world_edit_destroy(SceneWorldEdit *scene) {
   assert(scene);
 
-  gossip_unsubscribe(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, scene->rune_handle);
-  gossip_unsubscribe(MSG_INPUT, MSG_INPUT_MOUSE, scene->mouse_handle);
+  gossip_unsubscribe(scene->rune_handle);
+  gossip_unsubscribe(scene->mouse_handle);
 
   ui_dialog_rune_selector_destroy(scene->rune_selector);
 

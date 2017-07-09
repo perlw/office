@@ -68,8 +68,8 @@ UIWidgetRuneSelector *ui_widget_rune_selector_create(UIWindow *const parent) {
 void ui_widget_rune_selector_destroy(UIWidgetRuneSelector *const widget) {
   assert(widget);
 
-  gossip_unsubscribe(MSG_UI_WIDGET, UI_WINDOW_EVENT_CLICK, widget->mouse_event_handle);
-  gossip_unsubscribe(MSG_UI_WIDGET, GOSSIP_ID_ALL, widget->event_handle);
+  gossip_unsubscribe(widget->mouse_event_handle);
+  gossip_unsubscribe(widget->event_handle);
 
   free(widget);
 }

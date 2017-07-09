@@ -98,8 +98,8 @@ SceneSoundTest *scene_sound_test_create(const Config *config) {
 void scene_sound_test_destroy(SceneSoundTest *scene) {
   assert(scene);
 
-  gossip_unsubscribe(MSG_SOUND, MSG_SOUND_SPECTRUM, scene->spectrum_handle);
-  gossip_unsubscribe(MSG_INPUT, MSG_INPUT_KEYBOARD, scene->input_handle);
+  gossip_unsubscribe(scene->spectrum_handle);
+  gossip_unsubscribe(scene->input_handle);
 
   surface_destroy(scene->spectrum);
   ascii_buffer_destroy(scene->screen);

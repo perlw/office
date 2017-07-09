@@ -12,6 +12,6 @@ void gossip_init(void);
 void gossip_destroy(void);
 
 GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata);
-void gossip_unsubscribe(uint32_t group_id, uint32_t id, GossipHandle handle);
+void gossip_unsubscribe(GossipHandle handle);
 
 void gossip_emit(uint32_t group_id, uint32_t id, void *const userdata);

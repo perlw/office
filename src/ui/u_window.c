@@ -62,7 +62,7 @@ UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t heig
 void ui_window_destroy(UIWindow *const window) {
   assert(window);
 
-  gossip_unsubscribe(MSG_INPUT, MSG_INPUT_MOUSE, window->mouse_handle);
+  gossip_unsubscribe(window->mouse_handle);
 
   surface_destroy(window->surface);
 

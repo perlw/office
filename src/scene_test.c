@@ -52,7 +52,7 @@ TextInput *textinput_create(uint32_t x, uint32_t y, uint32_t width) {
 void textinput_destroy(TextInput *input) {
   assert(input);
 
-  gossip_unsubscribe(MSG_INPUT, MSG_INPUT_KEYBOARD, input->input_handle);
+  gossip_unsubscribe(input->input_handle);
 
   surface_destroy(input->surface);
 

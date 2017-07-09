@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 #include "occulus/occulus.h"
 
@@ -82,44 +83,29 @@ GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback cal
   }
 
   group->listeners = rectify_array_push(group->listeners, &listener);
-  printf("subscribed.\n");
+  printf("subscribed, 0x%" PRIuPTR ".\n", listener.handle);
 
   return listener.handle;
 }
 
-void gossip_unsubscribe(uint32_t group_id, uint32_t id, GossipHandle handle) {
+void gossip_unsubscribe(GossipHandle handle) {
   assert(gossip);
 
-  printf("Gossip: Unsubscribing from %d:%d... ", group_id, id);
+  printf("Gossip: Unsubscribing 0x%" PRIuPTR "... ", handle);
   for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
     Group *const group = &gossip->groups[t];
-
-    if (group_id != GOSSIP_GROUP_ALL && group->id != group_id) {
-      continue;
-    }
 
     for (uintmax_t u = 0; u < rectify_array_size(group->listeners); u++) {
       Listener *const listener = &group->listeners[u];
 
-      if (id != GOSSIP_ID_ALL && listener->id != id) {
-        continue;
-      }
-
       if (listener->handle == handle) {
         group->listeners = rectify_array_delete(group->listeners, u);
-        break;
+        printf("unsubscribed.\n");
+        return;
       }
-
-      if (id != GOSSIP_ID_ALL) {
-        break;
-      }
-    }
-
-    if (group_id != GOSSIP_GROUP_ALL) {
-      break;
     }
   }
-  printf("unsubscribed\n");
+  printf("handle not found.\n");
 }
 
 void gossip_emit(uint32_t group_id, uint32_t id, void *const userdata) {
