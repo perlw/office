@@ -5,6 +5,7 @@
 #include "bedrock/bedrock.h"
 
 #include "scenes.h"
+#include "messages.h"
 
 struct Scenes {
   Scene *scenes;
@@ -12,6 +13,8 @@ struct Scenes {
 
   Scene *current_scene;
   void *current_scene_data;
+
+  GossipHandle system_handle;
 };
 
 void *scenes_dummy_create(const Config *config) {
@@ -35,6 +38,8 @@ Scene scene_dummy = {
   .draw = &scenes_dummy_draw,
 };
 
+void scenes_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata);
+
 Scenes *scenes_create(Config *config) {
   Scenes *scenes = calloc(1, sizeof(Scenes));
 
@@ -43,11 +48,15 @@ Scenes *scenes_create(Config *config) {
   scenes->current_scene = &scene_dummy;
   scenes->current_scene_data = NULL;
 
+  scenes->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &scenes_internal_system_event, scenes, NULL);
+
   return scenes;
 }
 
 void scenes_destroy(Scenes *scenes) {
   assert(scenes);
+
+  gossip_unsubscribe(scenes->system_handle);
 
   if (scenes->current_scene) {
     scenes->current_scene->destroy(scenes->current_scene_data);
@@ -58,22 +67,6 @@ void scenes_destroy(Scenes *scenes) {
   }
   rectify_array_free(scenes->scenes);
   free(scenes);
-}
-
-void scenes_update(Scenes *scenes, double delta) {
-  assert(scenes);
-
-  if (scenes->current_scene) {
-    scenes->current_scene->update(scenes->current_scene_data, delta);
-  }
-}
-
-void scenes_draw(Scenes *scenes) {
-  assert(scenes);
-
-  if (scenes->current_scene) {
-    scenes->current_scene->draw(scenes->current_scene_data);
-  }
 }
 
 void scenes_register(Scenes *scenes, Scene *scene) {
@@ -147,4 +140,18 @@ Scene *scenes_prev(Scenes *scenes) {
 Scene *scenes_next(Scenes *scenes) {
   scenes_go(scenes, 1);
   return scenes->current_scene;
+}
+
+void scenes_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+  Scenes *scenes = (Scenes *)subscriberdata;
+
+  switch (id) {
+    case MSG_SYSTEM_UPDATE:
+      scenes->current_scene->update(scenes->current_scene_data, *(double *)userdata);
+      break;
+
+    case MSG_SYSTEM_DRAW:
+      scenes->current_scene->draw(scenes->current_scene_data);
+      break;
+  }
 }

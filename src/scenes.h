@@ -19,8 +19,6 @@ typedef struct Scenes Scenes;
 
 Scenes *scenes_create(Config *config);
 void scenes_destroy(Scenes *scenes);
-void scenes_update(Scenes *scenes, double delta);
-void scenes_draw(Scenes *scenes);
 
 void scenes_register(Scenes *scenes, Scene *scene);
 Scene *scenes_goto(Scenes *scenes, const char *name);

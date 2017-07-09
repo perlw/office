@@ -2,6 +2,7 @@
 
 typedef enum {
   MSG_GAME = GOSSIP_GROUP_ALL + 1,
+  MSG_SYSTEM,
   MSG_SCENE,
   MSG_SCENE_EVENT,
   MSG_SOUND,
@@ -13,6 +14,9 @@ typedef enum {
 typedef enum {
   MSG_GAME_INIT = 0x001,
   MSG_GAME_KILL,
+
+  MSG_SYSTEM_UPDATE,
+  MSG_SYSTEM_DRAW,
 
   MSG_SCENE_PREV,
   MSG_SCENE_NEXT,

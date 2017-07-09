@@ -17,7 +17,13 @@ typedef struct {
   char scene_buffer[32];
   uintmax_t raw_mem[10];
   float mem_values[10];
+
+  GossipHandle scene_handle;
+  GossipHandle system_handle;
 } DebugOverlay;
+
+void debugoverlay_internal_update(DebugOverlay *overlay, double dt);
+void debugoverlay_internal_draw(DebugOverlay *overlay);
 
 void ascii_text(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t length, const char *string) {
   assert(tiles);
@@ -87,13 +93,27 @@ void ascii_graph(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t width, uin
   }
 }
 
-void scene_changed(uint32_t id, void *const subscriberdata, void *const userdata) {
+void debugoverlay_internal_scene_changed(uint32_t id, void *const subscriberdata, void *const userdata) {
   DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
   Scene *scene = (Scene *)userdata;
 
   snprintf(overlay->scene_buffer, 32, "SCENE: %s", scene->name);
   printf("%s\n", overlay->scene_buffer);
   ascii_text(overlay->ascii, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer);
+}
+
+void debugoverlay_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+  DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
+
+  switch (id) {
+    case MSG_SYSTEM_UPDATE:
+      debugoverlay_internal_update(overlay, *(double *)userdata);
+      break;
+
+    case MSG_SYSTEM_DRAW:
+      debugoverlay_internal_draw(overlay);
+      break;
+  }
 }
 
 DebugOverlay *debugoverlay_create(const Config *config) {
@@ -119,7 +139,8 @@ DebugOverlay *debugoverlay_create(const Config *config) {
   snprintf(overlay->scene_buffer, 32, "SCENE: na");
   ascii_text(overlay->ascii, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer);
 
-  gossip_subscribe(MSG_SCENE, MSG_SCENE_CHANGED, &scene_changed, overlay, NULL);
+  overlay->scene_handle = gossip_subscribe(MSG_SCENE, MSG_SCENE_CHANGED, &debugoverlay_internal_scene_changed, overlay, NULL);
+  overlay->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &debugoverlay_internal_system_event, overlay, NULL);
 
   return overlay;
 }
@@ -127,12 +148,15 @@ DebugOverlay *debugoverlay_create(const Config *config) {
 void debugoverlay_destroy(DebugOverlay *overlay) {
   assert(overlay);
 
+  gossip_unsubscribe(overlay->system_handle);
+  gossip_unsubscribe(overlay->scene_handle);
+
   ascii_buffer_destroy(overlay->ascii);
 
   free(overlay);
 }
 
-void debugoverlay_update(DebugOverlay *overlay, double dt) {
+void debugoverlay_internal_update(DebugOverlay *overlay, double dt) {
   assert(overlay);
 
   overlay->current_second += dt;
@@ -162,7 +186,7 @@ void debugoverlay_update(DebugOverlay *overlay, double dt) {
   }
 }
 
-void debugoverlay_draw(DebugOverlay *overlay) {
+void debugoverlay_internal_draw(DebugOverlay *overlay) {
   assert(overlay);
 
   ascii_buffer_draw(overlay->ascii);

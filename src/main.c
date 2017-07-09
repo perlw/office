@@ -125,21 +125,18 @@ int main(int argc, char **argv) {
 
   double last_tick = bedrock_time();
   while (!picasso_window_should_close() && !quit_game) {
-    const double tick = bedrock_time();
-    const double delta = tick - last_tick;
+    double tick = bedrock_time();
+    double delta = tick - last_tick;
     last_tick = tick;
 
-    soundsys_update(soundsys, delta);
-    scenes_update(scenes, delta);
-    debugoverlay_update(debug_overlay, delta);
+    gossip_emit(MSG_SYSTEM, MSG_SYSTEM_UPDATE, NULL, &delta);
 
     next_frame += delta;
     if (next_frame >= frame_timing) {
       next_frame = 0.0;
       picasso_window_clear();
 
-      debugoverlay_draw(debug_overlay);
-      scenes_draw(scenes);
+      gossip_emit(MSG_SYSTEM, MSG_SYSTEM_DRAW, NULL, NULL);
 
       picasso_window_swap();
     }

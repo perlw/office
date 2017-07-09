@@ -14,9 +14,13 @@ struct SoundSys {
 
   BoomboxCassette *song;
   BoomboxCassette *song2;
+
+  GossipHandle sound_handle;
+  GossipHandle system_handle;
 };
 
-void soundsys_event(uint32_t id, void *const subscriberdata, void *const userdata);
+void soundsys_internal_sound_event(uint32_t id, void *const subscriberdata, void *const userdata);
+void soundsys_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata);
 
 SoundSys *soundsys_create(void) {
   SoundSys *soundsys = calloc(1, sizeof(SoundSys));
@@ -59,14 +63,18 @@ SoundSys *soundsys_create(void) {
     return NULL;
   }
 
-  gossip_subscribe(MSG_GAME, MSG_GAME_INIT, &soundsys_event, soundsys, NULL);
-  gossip_subscribe(MSG_SOUND, GOSSIP_ID_ALL, &soundsys_event, soundsys, NULL);
+  //gossip_subscribe(MSG_GAME, MSG_GAME_INIT, &soundsys_event, soundsys, NULL);
+  soundsys->sound_handle = gossip_subscribe(MSG_SOUND, GOSSIP_ID_ALL, &soundsys_internal_sound_event, soundsys, NULL);
+  soundsys->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &soundsys_internal_system_event, soundsys, NULL);
 
   return soundsys;
 }
 
 void soundsys_destroy(SoundSys *soundsys) {
   assert(soundsys);
+
+  gossip_unsubscribe(soundsys->system_handle);
+  gossip_unsubscribe(soundsys->sound_handle);
 
   boombox_cassette_destroy(soundsys->song2);
   boombox_cassette_destroy(soundsys->song);
@@ -78,7 +86,7 @@ void soundsys_destroy(SoundSys *soundsys) {
   free(soundsys);
 }
 
-void soundsys_update(SoundSys *soundsys, double delta) {
+void soundsys_internal_update(SoundSys *soundsys, double delta) {
   assert(soundsys);
 
   boombox_update(soundsys->boombox);
@@ -97,7 +105,7 @@ void soundsys_update(SoundSys *soundsys, double delta) {
   }
 }
 
-void soundsys_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+void soundsys_internal_sound_event(uint32_t id, void *const subscriberdata, void *const userdata) {
   SoundSys *soundsys = (SoundSys *)subscriberdata;
 
   switch (id) {
@@ -130,6 +138,16 @@ void soundsys_event(uint32_t id, void *const subscriberdata, void *const userdat
       break;
 
     default:
+      break;
+  }
+}
+
+void soundsys_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+  SoundSys *soundsys = (SoundSys *)subscriberdata;
+
+  switch (id) {
+    case MSG_SYSTEM_UPDATE:
+      soundsys_internal_update(soundsys, *(double *)userdata);
       break;
   }
 }
