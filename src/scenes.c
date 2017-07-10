@@ -4,8 +4,9 @@
 
 #include "bedrock/bedrock.h"
 
-#include "scenes.h"
+#include "ascii/ascii.h"
 #include "messages.h"
+#include "scenes.h"
 
 struct Scenes {
   Scene *scenes;
@@ -21,13 +22,13 @@ void *scenes_dummy_create(const Config *config) {
   return NULL;
 }
 
-void scenes_dummy_destroy(void *scene) {
+void scenes_dummy_destroy(void *const scene) {
 }
 
-void scenes_dummy_update(void *scene, double delta) {
+void scenes_dummy_update(void *const scene, double delta) {
 }
 
-void scenes_dummy_draw(void *scene) {
+void scenes_dummy_draw(void *const scene, AsciiBuffer *const screen) {
 }
 
 Scene scene_dummy = {
@@ -150,8 +151,10 @@ void scenes_internal_system_event(uint32_t id, void *const subscriberdata, void 
       scenes->current_scene->update(scenes->current_scene_data, *(double *)userdata);
       break;
 
-    case MSG_SYSTEM_DRAW:
-      scenes->current_scene->draw(scenes->current_scene_data);
+    case MSG_SYSTEM_DRAW: {
+      AsciiBuffer *screen = (AsciiBuffer *)userdata;
+      scenes->current_scene->draw(scenes->current_scene_data, screen);
       break;
+    }
   }
 }

@@ -139,8 +139,6 @@ typedef struct {
   double timing;
   double since_update;
 
-  AsciiBuffer *ascii_buffer;
-
   Surface *surface;
 
   TextInput *input;
@@ -153,7 +151,6 @@ SceneTest *scene_test_create(const Config *config) {
   scene->timing = 1 / 30.0;
   scene->since_update = scene->timing;
 
-  scene->ascii_buffer = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
   scene->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
 
   scene->input = textinput_create(1, config->ascii_height - 2, config->ascii_width - 2);
@@ -161,19 +158,17 @@ SceneTest *scene_test_create(const Config *config) {
   return scene;
 }
 
-void scene_test_destroy(SceneTest *scene) {
+void scene_test_destroy(SceneTest *const scene) {
   assert(scene);
 
   textinput_destroy(scene->input);
 
   surface_destroy(scene->surface);
 
-  ascii_buffer_destroy(scene->ascii_buffer);
-
   free(scene);
 }
 
-void scene_test_update(SceneTest *scene, double delta) {
+void scene_test_update(SceneTest *const scene, double delta) {
   assert(scene);
 
   scene->since_update += delta;
@@ -217,12 +212,10 @@ void scene_test_update(SceneTest *scene, double delta) {
   }
 }
 
-void scene_test_draw(SceneTest *scene) {
+void scene_test_draw(SceneTest *const scene, AsciiBuffer *const screen) {
   assert(scene);
 
-  surface_draw(scene->surface, scene->ascii_buffer);
-  surface_draw(scene->input->surface, scene->ascii_buffer);
-
-  ascii_buffer_draw(scene->ascii_buffer);
+  surface_draw(scene->surface, screen);
+  surface_draw(scene->input->surface, screen);
 }
 // -Scene

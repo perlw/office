@@ -20,7 +20,6 @@ typedef struct {
   GossipHandle spectrum_handle;
   GossipHandle input_handle;
 
-  AsciiBuffer *screen;
   Surface *spectrum;
 } SceneSoundTest;
 
@@ -72,10 +71,8 @@ SceneSoundTest *scene_sound_test_create(const Config *config) {
   scene->timing = 1 / 30.0;
   scene->since_update = scene->timing;
 
-  scene->screen = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
-
   // +Spectrum UI
-  scene->spectrum = surface_create(0, 0, config->ascii_width, 30);
+  scene->spectrum = surface_create(0, 0, config->ascii_width, config->ascii_height);
   SurfaceRectTiles rect_tiles = {
     '+', '-', '+',
     '|', 0, '|',
@@ -95,19 +92,18 @@ SceneSoundTest *scene_sound_test_create(const Config *config) {
   return scene;
 }
 
-void scene_sound_test_destroy(SceneSoundTest *scene) {
+void scene_sound_test_destroy(SceneSoundTest *const scene) {
   assert(scene);
 
   gossip_unsubscribe(scene->spectrum_handle);
   gossip_unsubscribe(scene->input_handle);
 
   surface_destroy(scene->spectrum);
-  ascii_buffer_destroy(scene->screen);
 
   free(scene);
 }
 
-void scene_sound_test_update(SceneSoundTest *scene, double delta) {
+void scene_sound_test_update(SceneSoundTest *const scene, double delta) {
   assert(scene);
 
   scene->since_update += delta;
@@ -168,10 +164,8 @@ void scene_sound_test_update(SceneSoundTest *scene, double delta) {
   }
 }
 
-void scene_sound_test_draw(SceneSoundTest *scene) {
+void scene_sound_test_draw(SceneSoundTest *const scene, AsciiBuffer *const screen) {
   assert(scene);
 
-  surface_draw(scene->spectrum, scene->screen);
-
-  ascii_buffer_draw(scene->screen);
+  surface_draw(scene->spectrum, screen);
 }

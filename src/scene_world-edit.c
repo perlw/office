@@ -13,8 +13,6 @@ typedef struct {
   double timing;
   double since_update;
 
-  AsciiBuffer *ascii;
-
   Surface *world;
   Surface *overlay;
 
@@ -81,8 +79,6 @@ SceneWorldEdit *scene_world_edit_create(const Config *config) {
   scene->m_y = 0;
   scene->next_wave = 0;
 
-  scene->ascii = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
-
   scene->world = surface_create(0, 0, config->ascii_width - 20, config->ascii_height);
   scene->overlay = surface_clone(scene->world);
 
@@ -105,14 +101,14 @@ SceneWorldEdit *scene_world_edit_create(const Config *config) {
   {
     scene->chosen_rune = 1;
     scene->rune_selector = ui_dialog_rune_selector_create(config->ascii_width - 20, 20);
- 
+
     scene->rune_selector2 = ui_dialog_rune_selector_create(config->ascii_width - 20, 40);
   }
 
   return scene;
 }
 
-void scene_world_edit_destroy(SceneWorldEdit *scene) {
+void scene_world_edit_destroy(SceneWorldEdit *const scene) {
   assert(scene);
 
   gossip_unsubscribe(scene->rune_handle);
@@ -123,12 +119,11 @@ void scene_world_edit_destroy(SceneWorldEdit *scene) {
 
   surface_destroy(scene->overlay);
   surface_destroy(scene->world);
-  ascii_buffer_destroy(scene->ascii);
 
   free(scene);
 }
 
-void scene_world_edit_update(SceneWorldEdit *scene, double delta) {
+void scene_world_edit_update(SceneWorldEdit *const scene, double delta) {
   assert(scene);
 
   scene->since_update += delta;
@@ -219,14 +214,12 @@ void scene_world_edit_update(SceneWorldEdit *scene, double delta) {
   ui_dialog_rune_selector_update(scene->rune_selector2, delta);
 }
 
-void scene_world_edit_draw(SceneWorldEdit *scene) {
+void scene_world_edit_draw(SceneWorldEdit *const scene, AsciiBuffer *const screen) {
   assert(scene);
 
-  surface_draw(scene->world, scene->ascii);
-  surface_draw(scene->overlay, scene->ascii);
+  surface_draw(scene->world, screen);
+  surface_draw(scene->overlay, screen);
 
-  ui_dialog_rune_selector_draw(scene->rune_selector, scene->ascii);
-  ui_dialog_rune_selector_draw(scene->rune_selector2, scene->ascii);
-
-  ascii_buffer_draw(scene->ascii);
+  ui_dialog_rune_selector_draw(scene->rune_selector, screen);
+  ui_dialog_rune_selector_draw(scene->rune_selector2, screen);
 }

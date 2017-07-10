@@ -1,11 +1,12 @@
 #pragma once
 
+#include "ascii/ascii.h"
 #include "config.h"
 
 typedef void *(*ScenesCreate)(const Config *config);
-typedef void (*ScenesDestroy)(void *scene);
-typedef void (*ScenesUpdate)(void *scene, double delta);
-typedef void (*ScenesDraw)(void *scene);
+typedef void (*ScenesDestroy)(void *const scene);
+typedef void (*ScenesUpdate)(void *const scene, double delta);
+typedef void (*ScenesDraw)(void *const scene, AsciiBuffer *const screen);
 
 typedef struct {
   char *name;

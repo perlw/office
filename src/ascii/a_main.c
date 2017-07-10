@@ -132,7 +132,7 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
   return layer;
 }
 
-void ascii_buffer_destroy(AsciiBuffer *layer) {
+void ascii_buffer_destroy(AsciiBuffer *const layer) {
   assert(layer);
 
   free(layer->last_buffer);
@@ -150,7 +150,7 @@ void ascii_buffer_destroy(AsciiBuffer *layer) {
   free(layer);
 }
 
-void ascii_buffer_draw(AsciiBuffer *layer) {
+void ascii_buffer_draw(AsciiBuffer *const layer) {
   assert(layer);
 
   if (memcmp(layer->buffer, layer->last_buffer, sizeof(Glyph) * layer->size) != 0) {
@@ -169,10 +169,11 @@ void ascii_buffer_draw(AsciiBuffer *layer) {
     free(fore);
     free(runes);
 
-    memcpy(layer->last_buffer, layer->buffer, sizeof(Glyph) * layer->size);
     Glyph *swp = layer->last_buffer;
     layer->last_buffer = layer->buffer;
     layer->buffer = swp;
+
+    memset(layer->buffer, 0, sizeof(Glyph) * layer->size);
   }
 
   picasso_program_use(layer->program);

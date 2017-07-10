@@ -10,7 +10,6 @@
 #include "scenes.h"
 
 typedef struct {
-  AsciiBuffer *ascii;
   uint32_t frames;
   double current_second;
   char fps_buffer[32];
@@ -18,80 +17,13 @@ typedef struct {
   uintmax_t raw_mem[10];
   float mem_values[10];
 
+  Surface *surface;
+
   GossipHandle scene_handle;
   GossipHandle system_handle;
 } DebugOverlay;
 
 void debugoverlay_internal_update(DebugOverlay *overlay, double dt);
-void debugoverlay_internal_draw(DebugOverlay *overlay);
-
-void ascii_text(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t length, const char *string) {
-  assert(tiles);
-
-  if (x >= tiles->width || y >= tiles->height) {
-    return;
-  }
-
-  bool skip = false;
-  uint32_t index = (y * tiles->width) + x;
-  uint32_t max = index + (x + length >= tiles->width ? tiles->width - x : x + length);
-  for (uint32_t t = index, u = 0; t < max; t++, u++) {
-    if (string[u] == '\0') {
-      skip = true;
-    }
-
-    if (!skip) {
-      tiles->buffer[t].rune = string[u];
-      tiles->buffer[t].fore = (GlyphColor){ 255, 255, 255 };
-      tiles->buffer[t].back = (GlyphColor){ 128, 0, 0 };
-    } else {
-      tiles->buffer[t].rune = 0;
-      tiles->buffer[t].fore = (GlyphColor){ 0, 0, 0 };
-      tiles->buffer[t].back = (GlyphColor){ 255, 0, 255 };
-    }
-  }
-}
-
-float lerp(float a, float b, float t) {
-  return ((1.0f - t) * a) + (t * b);
-}
-
-void ascii_graph(AsciiBuffer *tiles, uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint32_t num_values, const float *values) {
-  assert(tiles);
-  assert(values);
-
-  if (x >= tiles->width || y >= tiles->height || x + width > tiles->width || y + height > tiles->height) {
-    return;
-  }
-
-  uint32_t width_per_step = width / num_values;
-  for (uint32_t t = 0; t < num_values; t++) {
-    uint32_t val_height = (uint32_t)((float)(height - 1) * (1.0 - values[t]));
-    uint32_t next_val_height = (t < num_values - 1 ? (uint32_t)((float)(height - 1) * (1.0 - values[t + 1])) : val_height);
-
-    for (uint32_t yy = 0; yy < height; yy++) {
-      for (uint32_t xx = 0; xx < width_per_step; xx++) {
-        uint32_t fudged_height = (uint32_t)(lerp((float)val_height, (float)next_val_height, (float)xx / (float)width_per_step) + 0.5f);
-
-        uint32_t index = ((y + yy) * tiles->width) + (x + (t * width_per_step) + xx);
-        if (yy >= fudged_height) {
-          if (yy == fudged_height) {
-            tiles->buffer[index].rune = '+';
-            tiles->buffer[index].fore = (GlyphColor){ 255, 255, 255 };
-          } else if (yy > fudged_height) {
-            tiles->buffer[index].rune = '.';
-            tiles->buffer[index].fore = (GlyphColor){ 128, 128, 128 };
-          }
-          tiles->buffer[index].back = (GlyphColor){ 66, 66, 66 };
-        } else {
-          tiles->buffer[index].rune = 0;
-          tiles->buffer[index].fore = (GlyphColor){ 0, 0, 0 };
-          tiles->buffer[index].back = (GlyphColor){ 255, 0, 255 };
-        }
-      }
-    }
-  }
-}
 
 void debugoverlay_internal_scene_changed(uint32_t id, void *const subscriberdata, void *const userdata) {
   DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
@@ -99,7 +31,7 @@ void debugoverlay_internal_scene_changed(uint32_t id, void *const subscriberdata
 
   snprintf(overlay->scene_buffer, 32, "SCENE: %s", scene->name);
   printf("%s\n", overlay->scene_buffer);
-  ascii_text(overlay->ascii, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer);
+  surface_text(overlay->surface, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 }
 
 void debugoverlay_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata) {
@@ -110,34 +42,32 @@ void debugoverlay_internal_system_event(uint32_t id, void *const subscriberdata,
       debugoverlay_internal_update(overlay, *(double *)userdata);
       break;
 
-    case MSG_SYSTEM_DRAW_LAYER0:
-      debugoverlay_internal_draw(overlay);
+    case MSG_SYSTEM_DRAW_TOP: {
+      AsciiBuffer *screen = (AsciiBuffer *)userdata;
+      surface_draw(overlay->surface, screen);
+      overlay->frames++;
       break;
+    }
   }
 }
 
 DebugOverlay *debugoverlay_create(const Config *config) {
   DebugOverlay *overlay = calloc(1, sizeof(DebugOverlay));
 
-  overlay->ascii = ascii_buffer_create(config->res_width, config->res_height, config->res_width / 8, config->res_height / 8);
-  for (uint32_t t = 0; t < overlay->ascii->size; t++) {
-    overlay->ascii->buffer[t].rune = 0;
-    overlay->ascii->buffer[t].fore = (GlyphColor){ 0, 0, 0 };
-    overlay->ascii->buffer[t].back = (GlyphColor){ 255, 0, 255 };
-  }
+  overlay->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
 
   overlay->frames = 0;
   overlay->current_second = 0.0;
   snprintf(overlay->fps_buffer, 32, "FPS: 0 | MEM: 0.00kb");
-  ascii_text(overlay->ascii, 0, 59, 32, overlay->fps_buffer);
+  surface_text(overlay->surface, 0, 59, 31, overlay->fps_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
   memset(overlay->raw_mem, 0, 10 * sizeof(uintmax_t));
   memset(overlay->mem_values, 0, 10 * sizeof(float));
-  ascii_graph(overlay->ascii, 60, 0, 20, 6, 10, overlay->mem_values);
+  surface_graph(overlay->surface, 60, 0, 20, 6, 10, overlay->mem_values);
 
   memset(overlay->scene_buffer, 0, 32 * sizeof(char));
   snprintf(overlay->scene_buffer, 32, "SCENE: na");
-  ascii_text(overlay->ascii, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer);
+  surface_text(overlay->surface, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
   overlay->scene_handle = gossip_subscribe(MSG_SCENE, MSG_SCENE_CHANGED, &debugoverlay_internal_scene_changed, overlay, NULL);
   overlay->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &debugoverlay_internal_system_event, overlay, NULL);
@@ -151,7 +81,7 @@ void debugoverlay_destroy(DebugOverlay *overlay) {
   gossip_unsubscribe(overlay->system_handle);
   gossip_unsubscribe(overlay->scene_handle);
 
-  ascii_buffer_destroy(overlay->ascii);
+  surface_destroy(overlay->surface);
 
   free(overlay);
 }
@@ -162,7 +92,7 @@ void debugoverlay_internal_update(DebugOverlay *overlay, double dt) {
   overlay->current_second += dt;
   if (overlay->current_second >= 1) {
     snprintf(overlay->fps_buffer, 32, "FPS: %d | MEM: %.2fkb", overlay->frames, (double)occulus_current_allocated() / 1024.0);
-    ascii_text(overlay->ascii, 0, 59, 32, overlay->fps_buffer);
+    surface_text(overlay->surface, 0, 59, 31, overlay->fps_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
     {
       uintmax_t raw_new_mem = occulus_current_allocated();
@@ -178,17 +108,10 @@ void debugoverlay_internal_update(DebugOverlay *overlay, double dt) {
         overlay->mem_values[t] = (float)overlay->raw_mem[t] / (float)raw_mem_max;
       }
 
-      ascii_graph(overlay->ascii, 60, 0, 20, 6, 10, overlay->mem_values);
+      surface_graph(overlay->surface, 60, 0, 20, 6, 10, overlay->mem_values);
     }
 
     overlay->current_second = 0;
     overlay->frames = 0;
   }
-}
-
-void debugoverlay_internal_draw(DebugOverlay *overlay) {
-  assert(overlay);
-
-  ascii_buffer_draw(overlay->ascii);
-  overlay->frames++;
 }

@@ -116,6 +116,8 @@ int main(int argc, char **argv) {
     gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, NULL, scene);
   }
 
+  AsciiBuffer *ascii_screen = ascii_buffer_create(config.res_width, config.res_height, config.ascii_width, config.ascii_height);
+
   const double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
   double next_frame = frame_timing;
 
@@ -136,9 +138,11 @@ int main(int argc, char **argv) {
       next_frame = 0.0;
       picasso_window_clear();
 
-      for (uint32_t t = MSG_SYSTEM_DRAW_LAYER0; t <= MSG_SYSTEM_DRAW; t++) {
-        gossip_emit(MSG_SYSTEM, t, NULL, NULL);
+      for (uint32_t t = MSG_SYSTEM_DRAW; t <= MSG_SYSTEM_DRAW_TOP; t++) {
+        gossip_emit(MSG_SYSTEM, t, NULL, ascii_screen);
       }
+
+      ascii_buffer_draw(ascii_screen);
 
       picasso_window_swap();
     }
@@ -149,6 +153,8 @@ int main(int argc, char **argv) {
 
   scenes_destroy(scenes);
   input_kill();
+
+  ascii_buffer_destroy(ascii_screen);
 
   soundsys_destroy(soundsys);
   tome_kill();
