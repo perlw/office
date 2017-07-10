@@ -209,9 +209,6 @@ void scene_world_edit_update(SceneWorldEdit *const scene, double delta) {
       .back = 0,
     };
   }
-
-  ui_dialog_rune_selector_update(scene->rune_selector, delta);
-  ui_dialog_rune_selector_update(scene->rune_selector2, delta);
 }
 
 void scene_world_edit_draw(SceneWorldEdit *const scene, AsciiBuffer *const screen) {
@@ -219,7 +216,4 @@ void scene_world_edit_draw(SceneWorldEdit *const scene, AsciiBuffer *const scree
 
   surface_draw(scene->world, screen);
   surface_draw(scene->overlay, screen);
-
-  ui_dialog_rune_selector_draw(scene->rune_selector, screen);
-  ui_dialog_rune_selector_draw(scene->rune_selector2, screen);
 }
