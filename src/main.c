@@ -23,6 +23,7 @@
 #include "messages.h"
 #include "scenes.h"
 #include "sound.h"
+#include "ui/ui.h"
 
 #include "scene_game.h"
 #include "scene_sound-test.h"
@@ -83,6 +84,10 @@ struct {
     .name = "game",
     .key = MSG_GAME,
     .children = {
+      {
+        .name = "init",
+        .key = MSG_GAME_INIT,
+      },
       {
         .name = "kill",
         .key = MSG_GAME_KILL,
@@ -218,6 +223,35 @@ int internal_lua_gossip_emit(lua_State *state) {
   return 0;
 }
 
+int internal_lua_ui_create_window(lua_State *state) {
+  if (lua_gettop(state) < 4) {
+    printf("Main: Too few arguments to function \"ui.create_window\".\n");
+    return 0;
+  }
+
+  uint32_t x = (uint32_t)lua_tonumber(state, 1);
+  uint32_t y = (uint32_t)lua_tonumber(state, 2);
+  uint32_t width = (uint32_t)lua_tonumber(state, 3);
+  uint32_t height = (uint32_t)lua_tonumber(state, 4);
+
+  UIWindow *window = ui_window_create(x, y, width, height);
+  lua_pushnumber(state, (lua_Number)(uintptr_t)window);
+
+  return 1;
+}
+
+int internal_lua_ui_destroy_window(lua_State *state) {
+  if (lua_gettop(state) < 1) {
+    printf("Main: Too few arguments to function \"ui.destroy_window\".\n");
+    return 0;
+  }
+
+  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  ui_window_destroy(window);
+
+  return 0;
+}
+
 void register_lua_module(lua_State *state, const char *name, int (*load_func)(lua_State *)) {
   lua_getglobal(state, "package");
   lua_pushstring(state, "preload");
@@ -250,6 +284,17 @@ int internal_lua_gossiplib(lua_State *state) {
     lua_pushnumber(state, gossip_keys[t].key);
     lua_setfield(state, -2, gossip_keys[t].name);
   }
+
+  return 1;
+}
+
+int internal_lua_ui(lua_State *state) {
+  lua_newtable(state);
+
+  lua_pushcfunction(state, &internal_lua_ui_create_window);
+  lua_setfield(state, -2, "create_window");
+  lua_pushcfunction(state, &internal_lua_ui_destroy_window);
+  lua_setfield(state, -2, "destroy_window");
 
   return 1;
 }
@@ -299,6 +344,7 @@ int main(int argc, char **argv) {
 
     register_lua_module(state, "testlib", internal_lua_testlib);
     register_lua_module(state, "gossip", internal_lua_gossiplib);
+    register_lua_module(state, "ui", internal_lua_ui);
 
     luaL_loadfile(state, "main.lua");
     {
