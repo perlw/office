@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "bedrock/bedrock.h"
-
 #include "lauxlib.h"
 #include "lua.h"
 #include "lualib.h"
+
+#include "bedrock/bedrock.h"
 
 #include "config.h"
 #include "input.h"
@@ -580,7 +580,6 @@ Config read_config(void) {
   }
 
   luaL_loadfile(state, "config.lua");
-
   {
     int result = lua_pcall(state, 0, LUA_MULTRET, 0);
     if (result != LUA_OK) {

@@ -9,6 +9,10 @@
 #include "arkanis/math_3d.h"
 #undef MATH_3D_IMPLEMENTATION
 
+#include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
+
 #include "bedrock/bedrock.h"
 
 #include "ascii/ascii.h"
@@ -48,14 +52,16 @@ void navigate_scene(uint32_t id, void *const subscriberdata, void *const userdat
   }
 }
 
-/*
-void mod_func1(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
+int internal_action(lua_State *state) {
+}
+
+int internal_mod_func1(lua_State *state) {
   printf("LUA FUNC 1\n");
 }
-void mod_func2(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
-  printf("LUA FUNC 1\n");
+
+int internal_mod_func2(lua_State *state) {
+  printf("LUA FUNC 2\n");
 }
-*/
 
 int main(int argc, char **argv) {
   srand(time(NULL));
@@ -79,8 +85,6 @@ int main(int argc, char **argv) {
   tome_init();
   setup_asset_loaders();
 
-  //Muse *const muse = muse_create();
-
   input_action_callback(&input_action, NULL);
 
   input_init();
@@ -95,48 +99,31 @@ int main(int argc, char **argv) {
   picasso_window_mouse_move_callback(&input_mouse_callback);
   picasso_window_mouse_button_callback(&input_mouse_callback);
 
-  /*
-  const luaL_Reg test_lib[] = {
-   { "set_message", l_set_message },
-   { "set_ascii", l_set_ascii },
-   { "switch_font", l_switch_font },
-   { "add_keyboard_callback", l_add_keyboard_callback },
-   { "quit", l_quit },
-   { NULL, NULL }
-   };
-   lua_newtable(lua_state);
-   luaL_setfuncs(lua_state, test_lib, 0);
-   lua_setglobal(lua_state, "testlib");
-   */
-  /*MuseFunctionDef action_def = {
-    .name = "action",
-    .func = &lua_action,
-    .num_arguments = 2,
-    .arguments = (MuseType[]){
-      MUSE_TYPE_STRING,
-      MUSE_TYPE_FUNCTION,
-    },
-    .userdata = NULL,
-  };
-  MuseFunctionDef test_module_def[] = {
+  lua_State *state = luaL_newstate();
+  {
+    lua_pushcclosure(state, &internal_action, 0);
+    lua_setglobal(state, "action");
     {
-      .name = "func1",
-      .func = &mod_func1,
-      .num_arguments = 0,
-      .arguments = NULL,
-      .userdata = NULL,
-    },
+      const luaL_Reg test_lib[] = {
+        { "func1", internal_mod_func1 },
+        { "func2", internal_mod_func2 },
+        { NULL, NULL }
+      };
+      lua_newtable(state);
+      luaL_setfuncs(state, test_lib, 0);
+      lua_setglobal(state, "testlib");
+    }
+
+    luaL_loadfile(state, "main.lua");
     {
-      .name = "func2",
-      .func = &mod_func2,
-      .num_arguments = 0,
-      .arguments = NULL,
-      .userdata = NULL,
-    },
-  };
-  muse_add_func(muse, &action_def);
-  muse_add_module(muse, "test_mod", 2, test_module_def);
-  muse_load_file(muse, "main.lua");*/
+      int result = lua_pcall(state, 0, LUA_MULTRET, 0);
+      if (result != LUA_OK) {
+        const char *message = lua_tostring(state, -1);
+        printf("LUA: %s: %s\n", __func__, message);
+        lua_pop(state, 1);
+      }
+    }
+  }
 
   SoundSys *const soundsys = soundsys_create();
 
@@ -157,13 +144,11 @@ int main(int argc, char **argv) {
 
   AsciiBuffer *ascii_screen = ascii_buffer_create(config.res_width, config.res_height, config.ascii_width, config.ascii_height);
 
-  const double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
-  double next_frame = frame_timing;
-
   gossip_subscribe(MSG_GAME, MSG_GAME_KILL, &game_kill_event, NULL, NULL);
-
   gossip_emit(MSG_GAME, MSG_GAME_INIT, NULL, NULL);
 
+  const double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
+  double next_frame = frame_timing;
   double last_tick = bedrock_time();
   while (!picasso_window_should_close() && !quit_game) {
     double tick = bedrock_time();
@@ -197,7 +182,9 @@ int main(int argc, char **argv) {
 
   soundsys_destroy(soundsys);
   tome_kill();
-  //muse_destroy(muse);
+
+  lua_close(state);
+
   gossip_destroy();
   picasso_window_kill();
 
