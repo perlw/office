@@ -502,6 +502,11 @@ struct {
 };
 
 int config_internal_resolution(lua_State *state) {
+  if (lua_gettop(state) < 2) {
+    printf("Config: Too few arguments to function \"resolution\".\n");
+    return 0;
+  }
+
   Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
   config->res_width = (uint32_t)lua_tonumber(state, 1);
   config->res_height = (uint32_t)lua_tonumber(state, 2);
@@ -509,18 +514,33 @@ int config_internal_resolution(lua_State *state) {
 }
 
 int config_internal_gl_debug(lua_State *state) {
+  if (lua_gettop(state) < 1) {
+    printf("Config: Too few arguments to function \"gl_debug\".\n");
+    return 0;
+  }
+
   Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
   config->gl_debug = (uint32_t)lua_toboolean(state, 1);
   printf("Config: Debugging turned %s\n", (config->gl_debug ? "on" : "off"));
 }
 
 int config_internal_frame_lock(lua_State *state) {
+  if (lua_gettop(state) < 1) {
+    printf("Config: Too few arguments to function \"frame_lock\".\n");
+    return 0;
+  }
+
   Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
   config->frame_lock = (uint32_t)lua_tonumber(state, 1);
   printf("Config: Frame limit set to %d fps\n", config->frame_lock);
 }
 
 int config_internal_ascii_resolution(lua_State *state) {
+  if (lua_gettop(state) < 2) {
+    printf("Config: Too few arguments to function \"ascii_resolution\".\n");
+    return 0;
+  }
+
   Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
   config->ascii_width = (uint32_t)lua_tonumber(state, 1);
   config->ascii_height = (uint32_t)lua_tonumber(state, 2);
@@ -528,6 +548,11 @@ int config_internal_ascii_resolution(lua_State *state) {
 }
 
 int config_internal_bind(lua_State *state) {
+  if (lua_gettop(state) < 2) {
+    printf("Config: Too few arguments to function \"bind\".\n");
+    return 0;
+  }
+
   InputActionBinding binding = (InputActionBinding){
     .action = (char *)lua_tolstring(state, 1, NULL),
     .key = (int32_t)lua_tonumber(state, 2),

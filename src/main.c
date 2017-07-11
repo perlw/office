@@ -68,6 +68,169 @@ int internal_mod_func2(lua_State *state) {
   printf("LUA FUNC 2\n");
 }
 
+struct {
+  char *name;
+  uint32_t key;
+  struct {
+    char *name;
+    uint32_t key;
+  } children[10];
+} gossip_keys[] = {
+  {
+    .name = "game",
+    .key = MSG_GAME,
+    .children = {
+      {
+        .name = "kill",
+        .key = MSG_GAME_KILL,
+      },
+      {
+        .name = NULL,
+        .key = 0,
+      },
+    },
+  },
+  {
+    .name = NULL,
+    .key = 0,
+  },
+};
+
+typedef struct {
+  lua_State *state;
+  int32_t func_ref;
+} GossipLuaPackage;
+
+void internal_lua_gossip_call(uint32_t id, void *const subscriberdata, void *const userdata) {
+  GossipLuaPackage *pkg = (GossipLuaPackage *)subscriberdata;
+  lua_rawgeti(pkg->state, LUA_REGISTRYINDEX, pkg->func_ref);
+  int result = lua_pcall(pkg->state, 0, 0, 0);
+  if (result != LUA_OK) {
+    const char *message = lua_tostring(pkg->state, -1);
+    printf("LUA: %s: %s\n", __func__, message);
+    lua_pop(pkg->state, 1);
+  }
+  free(subscriberdata);
+}
+
+int internal_lua_gossip_subscribe(lua_State *state) {
+  if (lua_gettop(state) < 2) {
+    printf("Main: Too few arguments to function \"gossip.subscribe\".\n");
+    return 0;
+  }
+
+  if (!lua_isstring(state, 1)) {
+    printf("Main: Incorrect argumenttypes, expected string, function.\n");
+    return 0;
+  }
+
+  const char *msg_name = lua_tolstring(state, 1, NULL);
+  int32_t func_ref = (int32_t)luaL_ref(state, LUA_REGISTRYINDEX);
+
+  int32_t group = -1;
+  int32_t id = -1;
+  char *tokens = rectify_memory_alloc_copy(msg_name, strlen(msg_name) + 1);
+  char *token_group = strtok(tokens, ":");
+  char *token_id = strtok(NULL, ":");
+  for (uint32_t t = 0; gossip_keys[t].name; t++) {
+    if (strcmp(token_group, gossip_keys[t].name) == 0) {
+      group = gossip_keys[t].key;
+      for (uint32_t u = 0; gossip_keys[t].children[u].name; u++) {
+        if (strcmp(token_id, gossip_keys[t].children[u].name) == 0) {
+          id = gossip_keys[t].children[u].key;
+          break;
+        }
+      }
+      break;
+    }
+  }
+  free(tokens);
+  if (group < 0 || id < 0) {
+    return 0;
+  }
+
+  GossipLuaPackage *pkg = calloc(1, sizeof(GossipLuaPackage));
+  *pkg = (GossipLuaPackage){
+    .state = state,
+    .func_ref = func_ref,
+  };
+  gossip_subscribe(group, id, &internal_lua_gossip_call, pkg, NULL);
+}
+
+int internal_lua_gossip_emit(lua_State *state) {
+  if (lua_gettop(state) < 1) {
+    printf("Main: Too few arguments to function \"gossip.emit\".\n");
+    return 0;
+  }
+
+  if (!lua_isstring(state, 1)) {
+    printf("Main: Incorrect argumenttypes, expected string, function.\n");
+    return 0;
+  }
+
+  const char *msg_name = lua_tolstring(state, 1, NULL);
+
+  int32_t group = -1;
+  int32_t id = -1;
+  char *tokens = rectify_memory_alloc_copy(msg_name, strlen(msg_name) + 1);
+  char *token_group = strtok(tokens, ":");
+  char *token_id = strtok(NULL, ":");
+  for (uint32_t t = 0; gossip_keys[t].name; t++) {
+    if (strcmp(token_group, gossip_keys[t].name) == 0) {
+      group = gossip_keys[t].key;
+      for (uint32_t u = 0; gossip_keys[t].children[u].name; u++) {
+        if (strcmp(token_id, gossip_keys[t].children[u].name) == 0) {
+          id = gossip_keys[t].children[u].key;
+          break;
+        }
+      }
+      break;
+    }
+  }
+  free(tokens);
+  if (group < 0 || id < 0) {
+    return 0;
+  }
+
+  gossip_emit(group, id, NULL, NULL);
+}
+
+void register_lua_module(lua_State *state, const char *name, int (*load_func)(lua_State *)) {
+  lua_getglobal(state, "package");
+  lua_pushstring(state, "preload");
+  lua_gettable(state, -2);
+  lua_pushcclosure(state, load_func, 0);
+  lua_setfield(state, -2, name);
+  lua_settop(state, 0);
+}
+
+int internal_lua_testlib(lua_State *state) {
+  lua_newtable(state);
+
+  lua_pushcfunction(state, &internal_mod_func1);
+  lua_setfield(state, -2, "func1");
+  lua_pushcfunction(state, &internal_mod_func2);
+  lua_setfield(state, -2, "func2");
+
+  return 1;
+}
+
+int internal_lua_gossiplib(lua_State *state) {
+  lua_newtable(state);
+
+  lua_pushcfunction(state, &internal_lua_gossip_subscribe);
+  lua_setfield(state, -2, "subscribe");
+  lua_pushcfunction(state, &internal_lua_gossip_emit);
+  lua_setfield(state, -2, "emit");
+
+  for (uint32_t t = 0; gossip_keys[t].name; t++) {
+    lua_pushnumber(state, gossip_keys[t].key);
+    lua_setfield(state, -2, gossip_keys[t].name);
+  }
+
+  return 1;
+}
+
 int main(int argc, char **argv) {
   srand(time(NULL));
 
@@ -110,16 +273,9 @@ int main(int argc, char **argv) {
   {
     lua_pushcclosure(state, &internal_action, 0);
     lua_setglobal(state, "action");
-    {
-      const luaL_Reg test_lib[] = {
-        { "func1", internal_mod_func1 },
-        { "func2", internal_mod_func2 },
-        { NULL, NULL }
-      };
-      lua_newtable(state);
-      luaL_setfuncs(state, test_lib, 0);
-      lua_setglobal(state, "testlib");
-    }
+
+    register_lua_module(state, "testlib", internal_lua_testlib);
+    register_lua_module(state, "gossip", internal_lua_gossiplib);
 
     luaL_loadfile(state, "main.lua");
     {
