@@ -48,6 +48,15 @@ void navigate_scene(uint32_t id, void *const subscriberdata, void *const userdat
   }
 }
 
+/*
+void mod_func1(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
+  printf("LUA FUNC 1\n");
+}
+void mod_func2(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
+  printf("LUA FUNC 1\n");
+}
+*/
+
 int main(int argc, char **argv) {
   srand(time(NULL));
 
@@ -70,9 +79,9 @@ int main(int argc, char **argv) {
   tome_init();
   setup_asset_loaders();
 
-  Muse *const muse = muse_create();
+  //Muse *const muse = muse_create();
 
-  input_action_callback(&input_action, muse);
+  input_action_callback(&input_action, NULL);
 
   input_init();
 
@@ -86,7 +95,7 @@ int main(int argc, char **argv) {
   picasso_window_mouse_move_callback(&input_mouse_callback);
   picasso_window_mouse_button_callback(&input_mouse_callback);
 
-  MuseFunctionDef action_def = {
+  /*MuseFunctionDef action_def = {
     .name = "action",
     .func = &lua_action,
     .num_arguments = 2,
@@ -96,8 +105,25 @@ int main(int argc, char **argv) {
     },
     .userdata = NULL,
   };
+  MuseFunctionDef test_module_def[] = {
+    {
+      .name = "func1",
+      .func = &mod_func1,
+      .num_arguments = 0,
+      .arguments = NULL,
+      .userdata = NULL,
+    },
+    {
+      .name = "func2",
+      .func = &mod_func2,
+      .num_arguments = 0,
+      .arguments = NULL,
+      .userdata = NULL,
+    },
+  };
   muse_add_func(muse, &action_def);
-  muse_load_file(muse, "main.lua");
+  muse_add_module(muse, "test_mod", 2, test_module_def);
+  muse_load_file(muse, "main.lua");*/
 
   SoundSys *const soundsys = soundsys_create();
 
@@ -158,7 +184,7 @@ int main(int argc, char **argv) {
 
   soundsys_destroy(soundsys);
   tome_kill();
-  muse_destroy(muse);
+  //muse_destroy(muse);
   gossip_destroy();
   picasso_window_kill();
 

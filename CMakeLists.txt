@@ -6,6 +6,7 @@ set (CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 include_directories ("${PROJECT_SOURCE_DIR}/deps")
+include_directories ("${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src")
 
 option (USE_OCCULUS "Use memory debugger" OFF)
 

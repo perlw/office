@@ -53,7 +53,7 @@ MuseResult muse_call_simple(Muse *const muse, const char *name);
 MuseResult muse_call_name(Muse *const muse, const char *name, uintmax_t num_arguments, const MuseArgument *const arguments, uintmax_t num_results, MuseArgument *const results);
 MuseResult muse_call_funcref(Muse *const muse, MuseFunctionRef ref, uintmax_t num_arguments, const MuseArgument *const arguments, uintmax_t num_results, MuseArgument *const results);
 MuseResult muse_load_file(Muse *const muse, const char *filename);
-MuseResult muse_add_module(Muse *const muse, uintmax_t num_funcs, const MuseFunctionDef *const funcs);
+MuseResult muse_add_module(Muse *const muse, const char *name, uintmax_t num_funcs, const MuseFunctionDef *const funcs);
 MuseResult muse_add_func(Muse *const muse, const MuseFunctionDef *const func);
 void muse_push_number(Muse *const muse, double number);
 double muse_pop_number(Muse *const muse);

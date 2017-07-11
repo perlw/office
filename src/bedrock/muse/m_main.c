@@ -1,20 +1,5 @@
 #include "m_internal.h"
 
-/*
- *lua_pushcfunction(lua_state, l_set_message);
- +  lua_setglobal(lua_state, "set_message");
-   const luaL_Reg test_lib[] = {
-   { "set_message", l_set_message },
-   { "set_ascii", l_set_ascii },
-   { "switch_font", l_switch_font },
-   { "add_keyboard_callback", l_add_keyboard_callback },
-   { "quit", l_quit },
-   { NULL, NULL }
-   };
-   lua_newtable(lua_state);
-   luaL_setfuncs(lua_state, test_lib, 0);
-   lua_setglobal(lua_state, "testlib");
-   */
 Muse *instances[256] = { NULL };
 
 Muse *muse_create_lite(void) {
@@ -191,16 +176,7 @@ MuseResult muse_load_file(Muse *const muse, const char *filename) {
   return MUSE_RESULT_OK;
 }
 
-MuseResult muse_add_module(Muse *muse, uintmax_t num_funcs, const MuseFunctionDef *func_defs) {
-  assert(muse);
-  assert(num_funcs > 0);
-  assert(func_defs);
-
-  return MUSE_RESULT_OK;
-}
-
 // FIXME: Finish error checks
-// TODO: Lists, functions?
 static int lua_callback(lua_State *state) {
   uint8_t instance_id = lua_tonumber(state, lua_upvalueindex(1));
   uint8_t func_id = lua_tonumber(state, lua_upvalueindex(2));
@@ -359,6 +335,88 @@ static int lua_callback(lua_State *state) {
   }
 
   return 0;
+}
+
+MuseResult muse_add_module(Muse *const muse, const char *name, uintmax_t num_funcs, const MuseFunctionDef *const func_defs) {
+  assert(muse);
+  assert(num_funcs > 0);
+  assert(func_defs);
+
+  for (int t = 0; t < 256 - num_funcs; t++) {
+    if (!muse->func_defs[t]) {
+      lua_newtable(muse->state);
+      for (int u = t, v = 0; v < num_funcs; u++, v++) {
+        muse->func_defs[u] = calloc(1, sizeof(MuseFunctionDef));
+        uintmax_t size = strlen(func_defs[v].name) + 1;
+        muse->func_defs[u]->name = calloc(size, sizeof(char));
+        memcpy(muse->func_defs[u]->name, func_defs[v].name, size);
+        muse->func_defs[u]->func = func_defs[v].func;
+        muse->func_defs[u]->userdata = func_defs[v].userdata;
+        if (func_defs[v].num_arguments > 0) {
+          muse->func_defs[u]->num_arguments = func_defs[v].num_arguments;
+          muse->func_defs[u]->arguments = calloc(func_defs[v].num_arguments, sizeof(MuseType));
+          memcpy(muse->func_defs[u]->arguments, func_defs[v].arguments, func_defs[v].num_arguments * sizeof(MuseType));
+        } else {
+          muse->func_defs[u]->num_arguments = 0;
+          muse->func_defs[u]->arguments = NULL;
+        }
+
+        lua_pushnumber(muse->state, muse->instance_id);
+        lua_pushnumber(muse->state, u);
+        lua_pushcclosure(muse->state, &lua_callback, 2);
+        lua_setfield(muse->state, 0, name);
+        lua_pop(muse->state, 2);
+      }
+      lua_setglobal(muse->state, name);
+      return MUSE_RESULT_OK;
+    }
+  }
+  /*
+   const luaL_Reg test_lib[] = {
+   { "set_message", l_set_message },
+   { "set_ascii", l_set_ascii },
+   { "switch_font", l_switch_font },
+   { "add_keyboard_callback", l_add_keyboard_callback },
+   { "quit", l_quit },
+   { NULL, NULL }
+   };
+   lua_newtable(lua_state);
+   luaL_setfuncs(lua_state, test_lib, 0);
+   lua_setglobal(lua_state, "testlib");
+   */
+
+  /*
+   lua_pushnumber(muse->state, muse->instance_id);
+      lua_pushnumber(muse->state, t);
+   */
+
+  /*for (int t = 0; t < 256; t++) {
+    if (!muse->func_defs[t]) {
+      muse->func_defs[t] = calloc(1, sizeof(MuseFunctionDef));
+      uintmax_t size = strlen(func_def->name) + 1;
+      muse->func_defs[t]->name = calloc(size, sizeof(char));
+      memcpy(muse->func_defs[t]->name, func_def->name, size);
+      muse->func_defs[t]->func = func_def->func;
+      muse->func_defs[t]->userdata = func_def->userdata;
+      if (func_def->num_arguments > 0) {
+        muse->func_defs[t]->num_arguments = func_def->num_arguments;
+        muse->func_defs[t]->arguments = calloc(func_def->num_arguments, sizeof(MuseType));
+        memcpy(muse->func_defs[t]->arguments, func_def->arguments, func_def->num_arguments * sizeof(MuseType));
+      } else {
+        muse->func_defs[t]->num_arguments = 0;
+        muse->func_defs[t]->arguments = NULL;
+      }
+
+      lua_pushnumber(muse->state, muse->instance_id);
+      lua_pushnumber(muse->state, t);
+      lua_pushcclosure(muse->state, &lua_callback, 2);
+      lua_setglobal(muse->state, muse->func_defs[t]->name);
+
+      return MUSE_RESULT_OK;
+    }
+  }*/
+
+  return MUSE_RESULT_OUT_OF_IDS;
 }
 
 MuseResult muse_add_func(Muse *const muse, const MuseFunctionDef *const func_def) {

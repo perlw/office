@@ -29,7 +29,9 @@ void input_kill() {
   for (uintmax_t t = 0; t < num_bindings; t++) {
     free(input_bindings[t].action);
   }
-  free(input_bindings);
+  if (input_bindings) {
+    free(input_bindings);
+  }
 }
 
 void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
@@ -66,11 +68,11 @@ void input_action(InputActionBinding *binding, void *userdata) {
     return;
   }
 
-  for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
+  /*for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
     if (strcmp(action_refs[t].action, binding->action) == 0) {
       muse_call_funcref((Muse *)userdata, action_refs[t].ref, 0, NULL, 0, NULL);
     }
-  }
+  }*/
 }
 
 void lua_action(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {

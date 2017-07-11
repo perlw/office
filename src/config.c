@@ -3,41 +3,543 @@
 
 #include "bedrock/bedrock.h"
 
+#include "lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
+
 #include "config.h"
 #include "input.h"
 
-void set_resolution(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
-  Config *config = (Config *)userdata;
-  config->res_width = (uint32_t) * (double *)arguments[0].argument;
-  config->res_height = (uint32_t) * (double *)arguments[1].argument;
+struct {
+  char *name;
+  uint32_t val;
+} key_names[] = {
+  {
+    .name = "KEY_SPACE",
+    .val = PICASSO_KEY_SPACE,
+  },
+  {
+    .name = "KEY_APOSTROPHE",
+    .val = PICASSO_KEY_APOSTROPHE,
+  },
+  {
+    .name = "KEY_COMMA",
+    .val = PICASSO_KEY_COMMA,
+  },
+  {
+    .name = "KEY_MINUS",
+    .val = PICASSO_KEY_MINUS,
+  },
+  {
+    .name = "KEY_PERIOD",
+    .val = PICASSO_KEY_PERIOD,
+  },
+  {
+    .name = "KEY_SLASH",
+    .val = PICASSO_KEY_SLASH,
+  },
+  {
+    .name = "KEY_0",
+    .val = PICASSO_KEY_0,
+  },
+  {
+    .name = "KEY_1",
+    .val = PICASSO_KEY_1,
+  },
+  {
+    .name = "KEY_2",
+    .val = PICASSO_KEY_2,
+  },
+  {
+    .name = "KEY_3",
+    .val = PICASSO_KEY_3,
+  },
+  {
+    .name = "KEY_4",
+    .val = PICASSO_KEY_4,
+  },
+  {
+    .name = "KEY_5",
+    .val = PICASSO_KEY_5,
+  },
+  {
+    .name = "KEY_6",
+    .val = PICASSO_KEY_6,
+  },
+  {
+    .name = "KEY_7",
+    .val = PICASSO_KEY_7,
+  },
+  {
+    .name = "KEY_8",
+    .val = PICASSO_KEY_8,
+  },
+  {
+    .name = "KEY_9",
+    .val = PICASSO_KEY_9,
+  },
+  {
+    .name = "KEY_SEMICOLON",
+    .val = PICASSO_KEY_SEMICOLON,
+  },
+  {
+    .name = "KEY_EQUAL",
+    .val = PICASSO_KEY_EQUAL,
+  },
+  {
+    .name = "KEY_A",
+    .val = PICASSO_KEY_A,
+  },
+  {
+    .name = "KEY_B",
+    .val = PICASSO_KEY_B,
+  },
+  {
+    .name = "KEY_C",
+    .val = PICASSO_KEY_C,
+  },
+  {
+    .name = "KEY_D",
+    .val = PICASSO_KEY_D,
+  },
+  {
+    .name = "KEY_E",
+    .val = PICASSO_KEY_E,
+  },
+  {
+    .name = "KEY_F",
+    .val = PICASSO_KEY_F,
+  },
+  {
+    .name = "KEY_G",
+    .val = PICASSO_KEY_G,
+  },
+  {
+    .name = "KEY_H",
+    .val = PICASSO_KEY_H,
+  },
+  {
+    .name = "KEY_I",
+    .val = PICASSO_KEY_I,
+  },
+  {
+    .name = "KEY_J",
+    .val = PICASSO_KEY_J,
+  },
+  {
+    .name = "KEY_K",
+    .val = PICASSO_KEY_K,
+  },
+  {
+    .name = "KEY_L",
+    .val = PICASSO_KEY_L,
+  },
+  {
+    .name = "KEY_M",
+    .val = PICASSO_KEY_M,
+  },
+  {
+    .name = "KEY_N",
+    .val = PICASSO_KEY_N,
+  },
+  {
+    .name = "KEY_O",
+    .val = PICASSO_KEY_O,
+  },
+  {
+    .name = "KEY_P",
+    .val = PICASSO_KEY_P,
+  },
+  {
+    .name = "KEY_Q",
+    .val = PICASSO_KEY_Q,
+  },
+  {
+    .name = "KEY_R",
+    .val = PICASSO_KEY_R,
+  },
+  {
+    .name = "KEY_S",
+    .val = PICASSO_KEY_S,
+  },
+  {
+    .name = "KEY_T",
+    .val = PICASSO_KEY_T,
+  },
+  {
+    .name = "KEY_U",
+    .val = PICASSO_KEY_U,
+  },
+  {
+    .name = "KEY_V",
+    .val = PICASSO_KEY_V,
+  },
+  {
+    .name = "KEY_W",
+    .val = PICASSO_KEY_W,
+  },
+  {
+    .name = "KEY_X",
+    .val = PICASSO_KEY_X,
+  },
+  {
+    .name = "KEY_Y",
+    .val = PICASSO_KEY_Y,
+  },
+  {
+    .name = "KEY_Z",
+    .val = PICASSO_KEY_Z,
+  },
+  {
+    .name = "KEY_LEFT_BRACKET",
+    .val = PICASSO_KEY_LEFT_BRACKET,
+  },
+  {
+    .name = "KEY_BACKSLASH",
+    .val = PICASSO_KEY_BACKSLASH,
+  },
+  {
+    .name = "KEY_RIGHT_BRACKET",
+    .val = PICASSO_KEY_RIGHT_BRACKET,
+  },
+  {
+    .name = "KEY_GRAVE_ACCENT",
+    .val = PICASSO_KEY_GRAVE_ACCENT,
+  },
+  {
+    .name = "KEY_WORLD_1",
+    .val = PICASSO_KEY_WORLD_1,
+  },
+  {
+    .name = "KEY_WORLD_2",
+    .val = PICASSO_KEY_WORLD_2,
+  },
+
+  {
+    .name = "KEY_ESCAPE",
+    .val = PICASSO_KEY_ESCAPE,
+  },
+  {
+    .name = "KEY_ENTER",
+    .val = PICASSO_KEY_ENTER,
+  },
+  {
+    .name = "KEY_TAB",
+    .val = PICASSO_KEY_TAB,
+  },
+  {
+    .name = "KEY_BACKSPACE",
+    .val = PICASSO_KEY_BACKSPACE,
+  },
+  {
+    .name = "KEY_INSERT",
+    .val = PICASSO_KEY_INSERT,
+  },
+  {
+    .name = "KEY_DELETE",
+    .val = PICASSO_KEY_DELETE,
+  },
+  {
+    .name = "KEY_RIGHT",
+    .val = PICASSO_KEY_RIGHT,
+  },
+  {
+    .name = "KEY_LEFT",
+    .val = PICASSO_KEY_LEFT,
+  },
+  {
+    .name = "KEY_DOWN",
+    .val = PICASSO_KEY_DOWN,
+  },
+  {
+    .name = "KEY_UP",
+    .val = PICASSO_KEY_UP,
+  },
+  {
+    .name = "KEY_PAGE_UP",
+    .val = PICASSO_KEY_PAGE_UP,
+  },
+  {
+    .name = "KEY_PAGE_DOWN",
+    .val = PICASSO_KEY_PAGE_DOWN,
+  },
+  {
+    .name = "KEY_HOME",
+    .val = PICASSO_KEY_HOME,
+  },
+  {
+    .name = "KEY_END",
+    .val = PICASSO_KEY_END,
+  },
+  {
+    .name = "KEY_CAPS_LOCK",
+    .val = PICASSO_KEY_CAPS_LOCK,
+  },
+  {
+    .name = "KEY_SCROLL_LOCK",
+    .val = PICASSO_KEY_SCROLL_LOCK,
+  },
+  {
+    .name = "KEY_NUM_LOCK",
+    .val = PICASSO_KEY_NUM_LOCK,
+  },
+  {
+    .name = "KEY_PRINT_SCREEN",
+    .val = PICASSO_KEY_PRINT_SCREEN,
+  },
+  {
+    .name = "KEY_PAUSE",
+    .val = PICASSO_KEY_PAUSE,
+  },
+  {
+    .name = "KEY_F1",
+    .val = PICASSO_KEY_F1,
+  },
+  {
+    .name = "KEY_F2",
+    .val = PICASSO_KEY_F2,
+  },
+  {
+    .name = "KEY_F3",
+    .val = PICASSO_KEY_F3,
+  },
+  {
+    .name = "KEY_F4",
+    .val = PICASSO_KEY_F4,
+  },
+  {
+    .name = "KEY_F5",
+    .val = PICASSO_KEY_F5,
+  },
+  {
+    .name = "KEY_F6",
+    .val = PICASSO_KEY_F6,
+  },
+  {
+    .name = "KEY_F7",
+    .val = PICASSO_KEY_F7,
+  },
+  {
+    .name = "KEY_F8",
+    .val = PICASSO_KEY_F8,
+  },
+  {
+    .name = "KEY_F9",
+    .val = PICASSO_KEY_F9,
+  },
+  {
+    .name = "KEY_F10",
+    .val = PICASSO_KEY_F10,
+  },
+  {
+    .name = "KEY_F11",
+    .val = PICASSO_KEY_F11,
+  },
+  {
+    .name = "KEY_F12",
+    .val = PICASSO_KEY_F12,
+  },
+  {
+    .name = "KEY_F13",
+    .val = PICASSO_KEY_F13,
+  },
+  {
+    .name = "KEY_F14",
+    .val = PICASSO_KEY_F14,
+  },
+  {
+    .name = "KEY_F15",
+    .val = PICASSO_KEY_F15,
+  },
+  {
+    .name = "KEY_F16",
+    .val = PICASSO_KEY_F16,
+  },
+  {
+    .name = "KEY_F17",
+    .val = PICASSO_KEY_F17,
+  },
+  {
+    .name = "KEY_F18",
+    .val = PICASSO_KEY_F18,
+  },
+  {
+    .name = "KEY_F19",
+    .val = PICASSO_KEY_F19,
+  },
+  {
+    .name = "KEY_F20",
+    .val = PICASSO_KEY_F20,
+  },
+  {
+    .name = "KEY_F21",
+    .val = PICASSO_KEY_F21,
+  },
+  {
+    .name = "KEY_F22",
+    .val = PICASSO_KEY_F22,
+  },
+  {
+    .name = "KEY_F23",
+    .val = PICASSO_KEY_F23,
+  },
+  {
+    .name = "KEY_F24",
+    .val = PICASSO_KEY_F24,
+  },
+  {
+    .name = "KEY_F25",
+    .val = PICASSO_KEY_F25,
+  },
+  {
+    .name = "KEY_KP_0",
+    .val = PICASSO_KEY_KP_0,
+  },
+  {
+    .name = "KEY_KP_1",
+    .val = PICASSO_KEY_KP_1,
+  },
+  {
+    .name = "KEY_KP_2",
+    .val = PICASSO_KEY_KP_2,
+  },
+  {
+    .name = "KEY_KP_3",
+    .val = PICASSO_KEY_KP_3,
+  },
+  {
+    .name = "KEY_KP_4",
+    .val = PICASSO_KEY_KP_4,
+  },
+  {
+    .name = "KEY_KP_5",
+    .val = PICASSO_KEY_KP_5,
+  },
+  {
+    .name = "KEY_KP_6",
+    .val = PICASSO_KEY_KP_6,
+  },
+  {
+    .name = "KEY_KP_7",
+    .val = PICASSO_KEY_KP_7,
+  },
+  {
+    .name = "KEY_KP_8",
+    .val = PICASSO_KEY_KP_8,
+  },
+  {
+    .name = "KEY_KP_9",
+    .val = PICASSO_KEY_KP_9,
+  },
+  {
+    .name = "KEY_KP_DECIMAL",
+    .val = PICASSO_KEY_KP_DECIMAL,
+  },
+  {
+    .name = "KEY_KP_DIVIDE",
+    .val = PICASSO_KEY_KP_DIVIDE,
+  },
+  {
+    .name = "KEY_KP_MULTIPLY",
+    .val = PICASSO_KEY_KP_MULTIPLY,
+  },
+  {
+    .name = "KEY_KP_SUBTRACT",
+    .val = PICASSO_KEY_KP_SUBTRACT,
+  },
+  {
+    .name = "KEY_KP_ADD",
+    .val = PICASSO_KEY_KP_ADD,
+  },
+  {
+    .name = "KEY_KP_ENTER",
+    .val = PICASSO_KEY_KP_ENTER,
+  },
+  {
+    .name = "KEY_KP_EQUAL",
+    .val = PICASSO_KEY_KP_EQUAL,
+  },
+  {
+    .name = "KEY_LEFT_SHIFT",
+    .val = PICASSO_KEY_LEFT_SHIFT,
+  },
+  {
+    .name = "KEY_LEFT_CONTROL",
+    .val = PICASSO_KEY_LEFT_CONTROL,
+  },
+  {
+    .name = "KEY_LEFT_ALT",
+    .val = PICASSO_KEY_LEFT_ALT,
+  },
+  {
+    .name = "KEY_LEFT_SUPER",
+    .val = PICASSO_KEY_LEFT_SUPER,
+  },
+  {
+    .name = "KEY_RIGHT_SHIFT",
+    .val = PICASSO_KEY_RIGHT_SHIFT,
+  },
+  {
+    .name = "KEY_RIGHT_CONTROL",
+    .val = PICASSO_KEY_RIGHT_CONTROL,
+  },
+  {
+    .name = "KEY_RIGHT_ALT",
+    .val = PICASSO_KEY_RIGHT_ALT,
+  },
+  {
+    .name = "KEY_RIGHT_SUPER",
+    .val = PICASSO_KEY_RIGHT_SUPER,
+  },
+  {
+    .name = "KEY_MENU",
+    .val = PICASSO_KEY_MENU,
+  },
+  {
+    .name = NULL,
+    .val = 0,
+  },
+};
+
+int config_internal_resolution(lua_State *state) {
+  Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
+  config->res_width = (uint32_t)lua_tonumber(state, 1);
+  config->res_height = (uint32_t)lua_tonumber(state, 2);
+  printf("Config: Resolution set to %dx%d\n", config->res_width, config->res_height);
 }
 
-void set_gl_debug(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
-  Config *config = (Config *)userdata;
-  config->gl_debug = *(bool *)arguments[0].argument;
+int config_internal_gl_debug(lua_State *state) {
+  Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
+  config->gl_debug = (uint32_t)lua_toboolean(state, 1);
+  printf("Config: Debugging turned %s\n", (config->gl_debug ? "on" : "off"));
 }
 
-void set_frame_lock(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
-  Config *config = (Config *)userdata;
-  config->frame_lock = (uint32_t) * (double *)arguments[0].argument;
+int config_internal_frame_lock(lua_State *state) {
+  Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
+  config->frame_lock = (uint32_t)lua_tonumber(state, 1);
+  printf("Config: Frame limit set to %d fps\n", config->frame_lock);
 }
 
-void set_key_bind(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
-  char *action = (char *)arguments[0].argument;
-  int32_t key = (int32_t) * (double *)arguments[1].argument;
+int config_internal_ascii_resolution(lua_State *state) {
+  Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
+  config->ascii_width = (uint32_t)lua_tonumber(state, 1);
+  config->ascii_height = (uint32_t)lua_tonumber(state, 2);
+  printf("Config: Ascii resolution set to %dx%d\n", config->ascii_width, config->ascii_height);
+}
 
+int config_internal_bind(lua_State *state) {
   InputActionBinding binding = (InputActionBinding){
-    .action = action,
-    .key = key,
+    .action = (char *)lua_tolstring(state, 1, NULL),
+    .key = (int32_t)lua_tonumber(state, 2),
   };
-
   input_action_add_binding(&binding);
-}
 
-void set_ascii_resolution(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
-  Config *config = (Config *)userdata;
-  config->ascii_width = (uint32_t) * (double *)arguments[0].argument;
-  config->ascii_height = (uint32_t) * (double *)arguments[1].argument;
+  for (uint32_t t = 0; key_names[t].name; t++) {
+    if (key_names[t].val == binding.key) {
+      printf("Config: Bound %s to %s\n", key_names[t].name, binding.action);
+      break;
+    }
+  }
 }
 
 Config read_config(void) {
@@ -50,187 +552,45 @@ Config read_config(void) {
     .ascii_height = 60,
   };
 
-  MuseFunctionDef resolution_def = {
-    .name = "resolution",
-    .func = &set_resolution,
-    .num_arguments = 2,
-    .arguments = (MuseType[]){
-      MUSE_TYPE_NUMBER,
-      MUSE_TYPE_NUMBER,
-    },
-    .userdata = &config,
-  };
-  MuseFunctionDef gl_debug_def = {
-    .name = "gl_debug",
-    .func = &set_gl_debug,
-    .num_arguments = 1,
-    .arguments = (MuseType[]){
-      MUSE_TYPE_BOOLEAN,
-    },
-    .userdata = &config,
-  };
-  MuseFunctionDef frame_lock_def = {
-    .name = "frame_lock",
-    .func = &set_frame_lock,
-    .num_arguments = 1,
-    .arguments = (MuseType[]){
-      MUSE_TYPE_NUMBER,
-    },
-    .userdata = &config,
-  };
-  MuseFunctionDef bind_def = {
-    .name = "bind",
-    .func = &set_key_bind,
-    .num_arguments = 2,
-    .arguments = (MuseType[]){
-      MUSE_TYPE_STRING,
-      MUSE_TYPE_NUMBER,
-    },
-    .userdata = &config,
-  };
-  MuseFunctionDef ascii_resolution_def = {
-    .name = "ascii_resolution",
-    .func = &set_ascii_resolution,
-    .num_arguments = 2,
-    .arguments = (MuseType[]){
-      MUSE_TYPE_NUMBER,
-      MUSE_TYPE_NUMBER,
-    },
-    .userdata = &config,
-  };
+  lua_State *state = luaL_newstate();
 
-  Muse *muse = muse_create_lite();
+  lua_pushnumber(state, (uintptr_t)&config);
+  lua_pushcclosure(state, &config_internal_resolution, 1);
+  lua_setglobal(state, "resolution");
 
-  muse_add_func(muse, &resolution_def);
-  muse_add_func(muse, &gl_debug_def);
-  muse_add_func(muse, &frame_lock_def);
-  muse_add_func(muse, &bind_def);
-  muse_add_func(muse, &ascii_resolution_def);
+  lua_pushnumber(state, (uintptr_t)&config);
+  lua_pushcclosure(state, &config_internal_gl_debug, 1);
+  lua_setglobal(state, "gl_debug");
 
-  muse_set_global_number(muse, "KEY_SPACE", PICASSO_KEY_SPACE);
-  muse_set_global_number(muse, "KEY_APOSTROPHE", PICASSO_KEY_APOSTROPHE);
-  muse_set_global_number(muse, "KEY_COMMA", PICASSO_KEY_COMMA);
-  muse_set_global_number(muse, "KEY_MINUS", PICASSO_KEY_MINUS);
-  muse_set_global_number(muse, "KEY_PERIOD", PICASSO_KEY_PERIOD);
-  muse_set_global_number(muse, "KEY_SLASH", PICASSO_KEY_SLASH);
-  muse_set_global_number(muse, "KEY_0", PICASSO_KEY_0);
-  muse_set_global_number(muse, "KEY_1", PICASSO_KEY_1);
-  muse_set_global_number(muse, "KEY_2", PICASSO_KEY_2);
-  muse_set_global_number(muse, "KEY_3", PICASSO_KEY_3);
-  muse_set_global_number(muse, "KEY_4", PICASSO_KEY_4);
-  muse_set_global_number(muse, "KEY_5", PICASSO_KEY_5);
-  muse_set_global_number(muse, "KEY_6", PICASSO_KEY_6);
-  muse_set_global_number(muse, "KEY_7", PICASSO_KEY_7);
-  muse_set_global_number(muse, "KEY_8", PICASSO_KEY_8);
-  muse_set_global_number(muse, "KEY_9", PICASSO_KEY_9);
-  muse_set_global_number(muse, "KEY_SEMICOLON", PICASSO_KEY_SEMICOLON);
-  muse_set_global_number(muse, "KEY_EQUAL", PICASSO_KEY_EQUAL);
-  muse_set_global_number(muse, "KEY_A", PICASSO_KEY_A);
-  muse_set_global_number(muse, "KEY_B", PICASSO_KEY_B);
-  muse_set_global_number(muse, "KEY_C", PICASSO_KEY_C);
-  muse_set_global_number(muse, "KEY_D", PICASSO_KEY_D);
-  muse_set_global_number(muse, "KEY_E", PICASSO_KEY_E);
-  muse_set_global_number(muse, "KEY_F", PICASSO_KEY_F);
-  muse_set_global_number(muse, "KEY_G", PICASSO_KEY_G);
-  muse_set_global_number(muse, "KEY_H", PICASSO_KEY_H);
-  muse_set_global_number(muse, "KEY_I", PICASSO_KEY_I);
-  muse_set_global_number(muse, "KEY_J", PICASSO_KEY_J);
-  muse_set_global_number(muse, "KEY_K", PICASSO_KEY_K);
-  muse_set_global_number(muse, "KEY_L", PICASSO_KEY_L);
-  muse_set_global_number(muse, "KEY_M", PICASSO_KEY_M);
-  muse_set_global_number(muse, "KEY_N", PICASSO_KEY_N);
-  muse_set_global_number(muse, "KEY_O", PICASSO_KEY_O);
-  muse_set_global_number(muse, "KEY_P", PICASSO_KEY_P);
-  muse_set_global_number(muse, "KEY_Q", PICASSO_KEY_Q);
-  muse_set_global_number(muse, "KEY_R", PICASSO_KEY_R);
-  muse_set_global_number(muse, "KEY_S", PICASSO_KEY_S);
-  muse_set_global_number(muse, "KEY_T", PICASSO_KEY_T);
-  muse_set_global_number(muse, "KEY_U", PICASSO_KEY_U);
-  muse_set_global_number(muse, "KEY_V", PICASSO_KEY_V);
-  muse_set_global_number(muse, "KEY_W", PICASSO_KEY_W);
-  muse_set_global_number(muse, "KEY_X", PICASSO_KEY_X);
-  muse_set_global_number(muse, "KEY_Y", PICASSO_KEY_Y);
-  muse_set_global_number(muse, "KEY_Z", PICASSO_KEY_Z);
-  muse_set_global_number(muse, "KEY_LEFT_BRACKET", PICASSO_KEY_LEFT_BRACKET);
-  muse_set_global_number(muse, "KEY_BACKSLASH", PICASSO_KEY_BACKSLASH);
-  muse_set_global_number(muse, "KEY_RIGHT_BRACKET", PICASSO_KEY_RIGHT_BRACKET);
-  muse_set_global_number(muse, "KEY_GRAVE_ACCENT", PICASSO_KEY_GRAVE_ACCENT);
-  muse_set_global_number(muse, "KEY_WORLD_1", PICASSO_KEY_WORLD_1);
-  muse_set_global_number(muse, "KEY_WORLD_2", PICASSO_KEY_WORLD_2);
+  lua_pushnumber(state, (uintptr_t)&config);
+  lua_pushcclosure(state, &config_internal_frame_lock, 1);
+  lua_setglobal(state, "frame_lock");
 
-  muse_set_global_number(muse, "KEY_ESCAPE", PICASSO_KEY_ESCAPE);
-  muse_set_global_number(muse, "KEY_ENTER", PICASSO_KEY_ENTER);
-  muse_set_global_number(muse, "KEY_TAB", PICASSO_KEY_TAB);
-  muse_set_global_number(muse, "KEY_BACKSPACE", PICASSO_KEY_BACKSPACE);
-  muse_set_global_number(muse, "KEY_INSERT", PICASSO_KEY_INSERT);
-  muse_set_global_number(muse, "KEY_DELETE", PICASSO_KEY_DELETE);
-  muse_set_global_number(muse, "KEY_RIGHT", PICASSO_KEY_RIGHT);
-  muse_set_global_number(muse, "KEY_LEFT", PICASSO_KEY_LEFT);
-  muse_set_global_number(muse, "KEY_DOWN", PICASSO_KEY_DOWN);
-  muse_set_global_number(muse, "KEY_UP", PICASSO_KEY_UP);
-  muse_set_global_number(muse, "KEY_PAGE_UP", PICASSO_KEY_PAGE_UP);
-  muse_set_global_number(muse, "KEY_PAGE_DOWN", PICASSO_KEY_PAGE_DOWN);
-  muse_set_global_number(muse, "KEY_HOME", PICASSO_KEY_HOME);
-  muse_set_global_number(muse, "KEY_END", PICASSO_KEY_END);
-  muse_set_global_number(muse, "KEY_CAPS_LOCK", PICASSO_KEY_CAPS_LOCK);
-  muse_set_global_number(muse, "KEY_SCROLL_LOCK", PICASSO_KEY_SCROLL_LOCK);
-  muse_set_global_number(muse, "KEY_NUM_LOCK", PICASSO_KEY_NUM_LOCK);
-  muse_set_global_number(muse, "KEY_PRINT_SCREEN", PICASSO_KEY_PRINT_SCREEN);
-  muse_set_global_number(muse, "KEY_PAUSE", PICASSO_KEY_PAUSE);
-  muse_set_global_number(muse, "KEY_F1", PICASSO_KEY_F1);
-  muse_set_global_number(muse, "KEY_F2", PICASSO_KEY_F2);
-  muse_set_global_number(muse, "KEY_F3", PICASSO_KEY_F3);
-  muse_set_global_number(muse, "KEY_F4", PICASSO_KEY_F4);
-  muse_set_global_number(muse, "KEY_F5", PICASSO_KEY_F5);
-  muse_set_global_number(muse, "KEY_F6", PICASSO_KEY_F6);
-  muse_set_global_number(muse, "KEY_F7", PICASSO_KEY_F7);
-  muse_set_global_number(muse, "KEY_F8", PICASSO_KEY_F8);
-  muse_set_global_number(muse, "KEY_F9", PICASSO_KEY_F9);
-  muse_set_global_number(muse, "KEY_F10", PICASSO_KEY_F10);
-  muse_set_global_number(muse, "KEY_F11", PICASSO_KEY_F11);
-  muse_set_global_number(muse, "KEY_F12", PICASSO_KEY_F12);
-  muse_set_global_number(muse, "KEY_F13", PICASSO_KEY_F13);
-  muse_set_global_number(muse, "KEY_F14", PICASSO_KEY_F14);
-  muse_set_global_number(muse, "KEY_F15", PICASSO_KEY_F15);
-  muse_set_global_number(muse, "KEY_F16", PICASSO_KEY_F16);
-  muse_set_global_number(muse, "KEY_F17", PICASSO_KEY_F17);
-  muse_set_global_number(muse, "KEY_F18", PICASSO_KEY_F18);
-  muse_set_global_number(muse, "KEY_F19", PICASSO_KEY_F19);
-  muse_set_global_number(muse, "KEY_F20", PICASSO_KEY_F20);
-  muse_set_global_number(muse, "KEY_F21", PICASSO_KEY_F21);
-  muse_set_global_number(muse, "KEY_F22", PICASSO_KEY_F22);
-  muse_set_global_number(muse, "KEY_F23", PICASSO_KEY_F23);
-  muse_set_global_number(muse, "KEY_F24", PICASSO_KEY_F24);
-  muse_set_global_number(muse, "KEY_F25", PICASSO_KEY_F25);
-  muse_set_global_number(muse, "KEY_KP_0", PICASSO_KEY_KP_0);
-  muse_set_global_number(muse, "KEY_KP_1", PICASSO_KEY_KP_1);
-  muse_set_global_number(muse, "KEY_KP_2", PICASSO_KEY_KP_2);
-  muse_set_global_number(muse, "KEY_KP_3", PICASSO_KEY_KP_3);
-  muse_set_global_number(muse, "KEY_KP_4", PICASSO_KEY_KP_4);
-  muse_set_global_number(muse, "KEY_KP_5", PICASSO_KEY_KP_5);
-  muse_set_global_number(muse, "KEY_KP_6", PICASSO_KEY_KP_6);
-  muse_set_global_number(muse, "KEY_KP_7", PICASSO_KEY_KP_7);
-  muse_set_global_number(muse, "KEY_KP_8", PICASSO_KEY_KP_8);
-  muse_set_global_number(muse, "KEY_KP_9", PICASSO_KEY_KP_9);
-  muse_set_global_number(muse, "KEY_KP_DECIMAL", PICASSO_KEY_KP_DECIMAL);
-  muse_set_global_number(muse, "KEY_KP_DIVIDE", PICASSO_KEY_KP_DIVIDE);
-  muse_set_global_number(muse, "KEY_KP_MULTIPLY", PICASSO_KEY_KP_MULTIPLY);
-  muse_set_global_number(muse, "KEY_KP_SUBTRACT", PICASSO_KEY_KP_SUBTRACT);
-  muse_set_global_number(muse, "KEY_KP_ADD", PICASSO_KEY_KP_ADD);
-  muse_set_global_number(muse, "KEY_KP_ENTER", PICASSO_KEY_KP_ENTER);
-  muse_set_global_number(muse, "KEY_KP_EQUAL", PICASSO_KEY_KP_EQUAL);
-  muse_set_global_number(muse, "KEY_LEFT_SHIFT", PICASSO_KEY_LEFT_SHIFT);
-  muse_set_global_number(muse, "KEY_LEFT_CONTROL", PICASSO_KEY_LEFT_CONTROL);
-  muse_set_global_number(muse, "KEY_LEFT_ALT", PICASSO_KEY_LEFT_ALT);
-  muse_set_global_number(muse, "KEY_LEFT_SUPER", PICASSO_KEY_LEFT_SUPER);
-  muse_set_global_number(muse, "KEY_RIGHT_SHIFT", PICASSO_KEY_RIGHT_SHIFT);
-  muse_set_global_number(muse, "KEY_RIGHT_CONTROL", PICASSO_KEY_RIGHT_CONTROL);
-  muse_set_global_number(muse, "KEY_RIGHT_ALT", PICASSO_KEY_RIGHT_ALT);
-  muse_set_global_number(muse, "KEY_RIGHT_SUPER", PICASSO_KEY_RIGHT_SUPER);
-  muse_set_global_number(muse, "KEY_MENU", PICASSO_KEY_MENU);
+  lua_pushnumber(state, (uintptr_t)&config);
+  lua_pushcclosure(state, &config_internal_ascii_resolution, 1);
+  lua_setglobal(state, "ascii_resolution");
 
-  muse_load_file(muse, "config.lua");
-  muse_destroy(muse);
+  lua_pushnumber(state, (uintptr_t)&config);
+  lua_pushcclosure(state, &config_internal_bind, 1);
+  lua_setglobal(state, "bind");
+
+  for (uint32_t t = 0; key_names[t].name; t++) {
+    lua_pushnumber(state, key_names[t].val);
+    lua_setglobal(state, key_names[t].name);
+  }
+
+  luaL_loadfile(state, "config.lua");
+
+  {
+    int result = lua_pcall(state, 0, LUA_MULTRET, 0);
+    if (result != LUA_OK) {
+      const char *message = lua_tostring(state, -1);
+      printf("LUA: %s: %s\n", __func__, message);
+      lua_pop(state, 1);
+    }
+  }
+
+  lua_close(state);
 
   return config;
 }
