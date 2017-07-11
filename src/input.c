@@ -3,35 +3,32 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "lua.h"
+
 #include "config.h"
 #include "input.h"
 #include "messages.h"
 
-//ActionRef *action_refs;
-
-uintmax_t num_bindings = 0;
 InputActionBinding *input_bindings = NULL;
+InputActionRef *input_action_refs = NULL;
 InputActionCallback main_callback = NULL;
 void *main_callback_userdata = NULL;
 
 void input_init() {
-  //action_refs = rectify_array_alloc(10, sizeof(ActionRef));
+  input_bindings = rectify_array_alloc(10, sizeof(InputActionBinding));
+  input_action_refs = rectify_array_alloc(10, sizeof(InputActionRef));
 }
 
 void input_kill() {
-  /*for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
-    if (action_refs[t].action) {
-      free(action_refs[t].action);
-    }
-  }
-  rectify_array_free(action_refs);*/
-
-  for (uintmax_t t = 0; t < num_bindings; t++) {
+  for (uint32_t t = 0; t < rectify_array_size(input_bindings); t++) {
     free(input_bindings[t].action);
   }
-  if (input_bindings) {
-    free(input_bindings);
+  rectify_array_free(input_bindings);
+
+  for (uint32_t t = 0; t < rectify_array_size(input_action_refs); t++) {
+    free(input_action_refs[t].action);
   }
+  rectify_array_free(input_action_refs);
 }
 
 void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
@@ -41,7 +38,7 @@ void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
     return;
   }
 
-  for (uintmax_t t = 0; t < num_bindings; t++) {
+  for (uint32_t t = 0; t < rectify_array_size(input_bindings); t++) {
     if (input_bindings[t].key == event->key) {
       main_callback(&input_bindings[t], main_callback_userdata);
     }
@@ -55,36 +52,32 @@ void input_mouse_callback(const PicassoWindowMouseEvent *event) {
 void input_action(InputActionBinding *binding, void *userdata) {
   printf("INPUT: %s\n", binding->action);
 
-  if (strcmp(binding->action, "close") == 0) {
+  if (strncmp(binding->action, "close", 128) == 0) {
     gossip_emit(MSG_GAME, MSG_GAME_KILL, NULL, NULL);
     return;
   }
-  if (strcmp(binding->action, "prev_scene") == 0) {
+  if (strncmp(binding->action, "prev_scene", 128) == 0) {
     gossip_emit(MSG_SCENE, MSG_SCENE_PREV, NULL, NULL);
     return;
   }
-  if (strcmp(binding->action, "next_scene") == 0) {
+  if (strncmp(binding->action, "next_scene", 128) == 0) {
     gossip_emit(MSG_SCENE, MSG_SCENE_NEXT, NULL, NULL);
     return;
   }
 
-  /*for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
-    if (strcmp(action_refs[t].action, binding->action) == 0) {
-      muse_call_funcref((Muse *)userdata, action_refs[t].ref, 0, NULL, 0, NULL);
+  for (uint32_t t = 0; t < rectify_array_size(input_action_refs); t++) {
+    if (strncmp(input_action_refs[t].action, binding->action, 128) == 0) {
+      lua_State *state = (lua_State *)userdata;
+      lua_rawgeti(state, LUA_REGISTRYINDEX, input_action_refs[t].ref);
+      int result = lua_pcall(state, 0, 0, 0);
+      if (result != LUA_OK) {
+        const char *message = lua_tostring(state, -1);
+        printf("LUA: %s: %s\n", __func__, message);
+        lua_pop(state, 1);
+      }
     }
-  }*/
+  }
 }
-
-/*void lua_action(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
-  char *action = (char *)arguments[0].argument;
-  MuseFunctionRef ref = *(MuseFunctionRef *)arguments[1].argument;
-
-  ActionRef action_ref = {
-    .action = rectify_memory_alloc_copy(action, sizeof(char) * (strlen(action) + 1)),
-    .ref = ref,
-  };
-  action_refs = rectify_array_push(action_refs, &action_ref);
-}*/
 
 void input_action_callback(InputActionCallback callback, void *userdata) {
   assert(callback);
@@ -95,15 +88,18 @@ void input_action_callback(InputActionCallback callback, void *userdata) {
 
 void input_action_add_binding(InputActionBinding *binding) {
   assert(binding);
-  if (!input_bindings) {
-    input_bindings = calloc(1, sizeof(InputActionBinding));
-  }
 
-  uintmax_t length = strlen(binding->action) + 1;
-  num_bindings++;
-  input_bindings = realloc(input_bindings, num_bindings * sizeof(InputActionBinding));
-  input_bindings[num_bindings - 1] = (InputActionBinding){
-    .action = rectify_memory_alloc_copy(binding->action, sizeof(char) * length),
-    .key = binding->key,
-  };
+  uint32_t length = strlen(binding->action) + 1;
+  input_bindings = rectify_array_push(input_bindings, &(InputActionBinding){
+                                                        .action = rectify_memory_alloc_copy(binding->action, sizeof(char) * length), .key = binding->key,
+                                                      });
+}
+
+void input_action_add_action(InputActionRef *action_ref) {
+  assert(action_ref);
+
+  uint32_t length = strlen(action_ref->action) + 1;
+  input_action_refs = rectify_array_push(input_action_refs, &(InputActionRef){
+                                                              .action = rectify_memory_alloc_copy(action_ref->action, sizeof(char) * length), .ref = action_ref->ref,
+                                                            });
 }

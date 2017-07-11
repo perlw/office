@@ -1,4 +1,5 @@
 action("custom_close", function ()
+  io.write("EEK\n")
 end)
 
 testlib.func1()

@@ -53,6 +53,11 @@ void navigate_scene(uint32_t id, void *const subscriberdata, void *const userdat
 }
 
 int internal_action(lua_State *state) {
+  InputActionRef action_ref = (InputActionRef){
+    .action = (char *)lua_tolstring(state, 1, NULL),
+    .ref = (int32_t)luaL_ref(state, LUA_REGISTRYINDEX),
+  };
+  input_action_add_action(&action_ref);
 }
 
 int internal_mod_func1(lua_State *state) {
@@ -85,7 +90,10 @@ int main(int argc, char **argv) {
   tome_init();
   setup_asset_loaders();
 
-  input_action_callback(&input_action, NULL);
+  lua_State *state = luaL_newstate();
+  luaL_openlibs(state);
+
+  input_action_callback(&input_action, state);
 
   input_init();
 
@@ -99,7 +107,6 @@ int main(int argc, char **argv) {
   picasso_window_mouse_move_callback(&input_mouse_callback);
   picasso_window_mouse_button_callback(&input_mouse_callback);
 
-  lua_State *state = luaL_newstate();
   {
     lua_pushcclosure(state, &internal_action, 0);
     lua_setglobal(state, "action");
