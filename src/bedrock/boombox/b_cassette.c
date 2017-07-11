@@ -106,12 +106,12 @@ BoomboxResult boombox_cassette_get_spectrum(BoomboxCassette *const cassette, flo
   FMOD_DSP_GetParameterData(cassette->parent->fmod.dsp, FMOD_DSP_FFT_SPECTRUMDATA, (void **)&fft, NULL, NULL, 0);
 
   if (left && fft->numchannels == 1) {
-    for (uint32_t t = 0; t < fft->length; t++) {
+    for (int32_t t = 0; t < fft->length; t++) {
       left[t] = fft->spectrum[0][t];
       right[t] = 0.0f;
     }
   } else if (left && right) {
-    for (uint32_t t = 0; t < fft->length; t++) {
+    for (int32_t t = 0; t < fft->length; t++) {
       left[t] = fft->spectrum[0][t];
       right[t] = fft->spectrum[1][t];
     }

@@ -98,8 +98,8 @@ void ui_window_mouse_event(uint32_t id, void *const subscriberdata, void *const 
   UIWindow *window = (UIWindow *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
 
-  uint32_t m_x = (event->x / 8.0);
-  uint32_t m_y = (event->y / 8.0);
+  uint32_t m_x = (uint32_t)(event->x / 8.0);
+  uint32_t m_y = (uint32_t)(event->y / 8.0);
 
   if (m_x > window->x && m_x < window->x + window->width - 1
       && m_y > window->y && m_y < window->y + window->width - 1) {

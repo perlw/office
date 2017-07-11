@@ -52,19 +52,6 @@ void input_mouse_callback(const PicassoWindowMouseEvent *event) {
 void input_action(InputActionBinding *binding, void *userdata) {
   printf("INPUT: %s\n", binding->action);
 
-  if (strncmp(binding->action, "close", 128) == 0) {
-    gossip_emit(MSG_GAME, MSG_GAME_KILL, NULL, NULL);
-    return;
-  }
-  if (strncmp(binding->action, "prev_scene", 128) == 0) {
-    gossip_emit(MSG_SCENE, MSG_SCENE_PREV, NULL, NULL);
-    return;
-  }
-  if (strncmp(binding->action, "next_scene", 128) == 0) {
-    gossip_emit(MSG_SCENE, MSG_SCENE_NEXT, NULL, NULL);
-    return;
-  }
-
   for (uint32_t t = 0; t < rectify_array_size(input_action_refs); t++) {
     if (strncmp(input_action_refs[t].action, binding->action, 128) == 0) {
       lua_State *state = (lua_State *)userdata;
@@ -89,7 +76,7 @@ void input_action_callback(InputActionCallback callback, void *userdata) {
 void input_action_add_binding(InputActionBinding *binding) {
   assert(binding);
 
-  uint32_t length = strlen(binding->action) + 1;
+  uint32_t length = (uint32_t)strlen(binding->action) + 1;
   input_bindings = rectify_array_push(input_bindings, &(InputActionBinding){
                                                         .action = rectify_memory_alloc_copy(binding->action, sizeof(char) * length), .key = binding->key,
                                                       });
@@ -98,7 +85,7 @@ void input_action_add_binding(InputActionBinding *binding) {
 void input_action_add_action(InputActionRef *action_ref) {
   assert(action_ref);
 
-  uint32_t length = strlen(action_ref->action) + 1;
+  uint32_t length = (uint32_t)strlen(action_ref->action) + 1;
   input_action_refs = rectify_array_push(input_action_refs, &(InputActionRef){
                                                               .action = rectify_memory_alloc_copy(action_ref->action, sizeof(char) * length), .ref = action_ref->ref,
                                                             });

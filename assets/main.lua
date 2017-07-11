@@ -1,8 +1,14 @@
 local gossip = require("gossip")
 local testlib = require("testlib")
 
-action("custom_close", function ()
+action("close", function ()
   gossip.emit("game:kill")
+end)
+action("prev_scene", function ()
+  gossip.emit("scene:prev")
+end)
+action("next_scene", function ()
+  gossip.emit("scene:next")
 end)
 
 testlib.func1()

@@ -62,6 +62,6 @@ typedef enum {
 uint32_t get_state(PicassoState state);
 void set_state(PicassoState state, uint32_t value);
 
-void buffergroup_bind(PicassoBufferGroup *buffergroup);
-void buffer_destroy(PicassoBuffer *buffer);
-void buffer_bind(PicassoBuffer *buffer);
+void buffergroup_bind(PicassoBufferGroup *const buffergroup);
+void buffer_destroy(PicassoBuffer *const buffer);
+void buffer_bind(PicassoBuffer *const buffer);

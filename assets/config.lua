@@ -6,5 +6,4 @@ ascii_resolution(80, 60);
 bind("close", KEY_ESCAPE)
 bind("prev_scene", KEY_LEFT)
 bind("next_scene", KEY_RIGHT)
-bind("custom_close", KEY_F1)
 

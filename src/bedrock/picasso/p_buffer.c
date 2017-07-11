@@ -97,7 +97,7 @@ void picasso_buffer_set_data(PicassoBuffer *const buffer, uintmax_t num_fields, 
   buffer->gl.data_type = BufferDataTypeToGL[type];
 }
 
-void picasso_buffer_shader_attrib(PicassoBuffer *buffer, int32_t attr_pos) {
+void picasso_buffer_shader_attrib(PicassoBuffer *const buffer, int32_t attr_pos) {
   assert(buffer);
 
   buffergroup_bind(buffer->group);

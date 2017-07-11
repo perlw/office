@@ -58,14 +58,17 @@ int internal_action(lua_State *state) {
     .ref = (int32_t)luaL_ref(state, LUA_REGISTRYINDEX),
   };
   input_action_add_action(&action_ref);
+  return 0;
 }
 
 int internal_mod_func1(lua_State *state) {
   printf("LUA FUNC 1\n");
+  return 0;
 }
 
 int internal_mod_func2(lua_State *state) {
   printf("LUA FUNC 2\n");
+  return 0;
 }
 
 struct {
@@ -83,6 +86,24 @@ struct {
       {
         .name = "kill",
         .key = MSG_GAME_KILL,
+      },
+      {
+        .name = NULL,
+        .key = 0,
+      },
+    },
+  },
+  {
+    .name = "scene",
+    .key = MSG_SCENE,
+    .children = {
+      {
+        .name = "prev",
+        .key = MSG_SCENE_PREV,
+      },
+      {
+        .name = "next",
+        .key = MSG_SCENE_NEXT,
       },
       {
         .name = NULL,
@@ -155,6 +176,7 @@ int internal_lua_gossip_subscribe(lua_State *state) {
     .func_ref = func_ref,
   };
   gossip_subscribe(group, id, &internal_lua_gossip_call, pkg, NULL);
+  return 0;
 }
 
 int internal_lua_gossip_emit(lua_State *state) {
@@ -193,6 +215,7 @@ int internal_lua_gossip_emit(lua_State *state) {
   }
 
   gossip_emit(group, id, NULL, NULL);
+  return 0;
 }
 
 void register_lua_module(lua_State *state, const char *name, int (*load_func)(lua_State *)) {
