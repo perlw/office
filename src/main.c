@@ -95,6 +95,19 @@ int main(int argc, char **argv) {
   picasso_window_mouse_move_callback(&input_mouse_callback);
   picasso_window_mouse_button_callback(&input_mouse_callback);
 
+  /*
+  const luaL_Reg test_lib[] = {
+   { "set_message", l_set_message },
+   { "set_ascii", l_set_ascii },
+   { "switch_font", l_switch_font },
+   { "add_keyboard_callback", l_add_keyboard_callback },
+   { "quit", l_quit },
+   { NULL, NULL }
+   };
+   lua_newtable(lua_state);
+   luaL_setfuncs(lua_state, test_lib, 0);
+   lua_setglobal(lua_state, "testlib");
+   */
   /*MuseFunctionDef action_def = {
     .name = "action",
     .func = &lua_action,

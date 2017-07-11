@@ -30,7 +30,7 @@ Allocation *allocations = NULL;
 
 void occulus_assert(void *ptr, const char *filepath, uintmax_t line, const char *function) {
   if (!ptr) {
-    printf("%s:%" PRIuMAX "/%s> assert failed on 0x%" PRIuPTR ".\n", filepath, line, function, ptr);
+    printf("%s:%" PRIuMAX "/%s> assert failed on 0x%" PRIuPTR ".\n", filepath, line, function, (uintptr_t)ptr);
     exit(-1);
   }
 }

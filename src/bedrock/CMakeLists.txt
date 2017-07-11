@@ -1,7 +1,6 @@
 include_directories (${CMAKE_CURRENT_LIST_DIR})
 include_directories ("${PROJECT_SOURCE_DIR}/deps")
 include_directories ("${PROJECT_SOURCE_DIR}/deps/glad")
-include_directories ("${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src")
 
 # GLFW
 option (BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -17,8 +16,6 @@ add_subdirectory ("${PROJECT_SOURCE_DIR}/deps/glfw" "${PROJECT_SOURCE_DIR}/deps/
 #GLFW
 
 add_library (glad STATIC "${PROJECT_SOURCE_DIR}/deps/glad/glad.c")
-file(GLOB LUA_SRCS "${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src/*.c")
-add_library (lua STATIC ${LUA_SRCS})
 if (UNIX)
   add_library (fmod SHARED IMPORTED)
   set_target_properties (fmod PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/deps/fmod/linux/libfmod.so.9)
@@ -34,18 +31,17 @@ add_library (bedrock STATIC bedrock.c)
 add_subdirectory (rectify)
 add_subdirectory (archivist)
 add_subdirectory (gossip)
-add_subdirectory (muse)
 add_subdirectory (occulus)
 add_subdirectory (picasso)
 add_subdirectory (boombox)
 add_subdirectory (tome)
-add_dependencies (bedrock glad lua glfw)
+add_dependencies (bedrock glad glfw)
 
 if (USE_OCCULUS)
   target_compile_definitions (bedrock PRIVATE MEM_DEBUG)
 endif (USE_OCCULUS)
 
-list (APPEND DEPS_LIBS glad lua glfw fmod)
+list (APPEND DEPS_LIBS glad glfw fmod)
 if (UNIX)
   if (APPLE)
     # Dummy

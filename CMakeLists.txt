@@ -8,6 +8,9 @@ include_directories ("${PROJECT_SOURCE_DIR}/src")
 include_directories ("${PROJECT_SOURCE_DIR}/deps")
 include_directories ("${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src")
 
+file(GLOB LUA_SRCS "${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src/*.c")
+add_library (lua STATIC ${LUA_SRCS})
+
 option (USE_OCCULUS "Use memory debugger" OFF)
 
 add_subdirectory (src/bedrock)
@@ -44,7 +47,7 @@ if (USE_OCCULUS)
   target_compile_definitions (office PRIVATE MEM_DEBUG)
 endif (USE_OCCULUS)
 
-target_link_libraries (office bedrock)
+target_link_libraries (office bedrock lua)
 add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets "${CMAKE_BINARY_DIR}/bin")
 if (UNIX)
   add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/deps/fmod/linux/libfmod.so.9 "${CMAKE_BINARY_DIR}/bin")

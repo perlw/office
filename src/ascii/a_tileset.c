@@ -21,7 +21,7 @@ void tileset_destroy(TileSet *const tileset) {
   free(tileset);
 }
 
-void tileset_lua_func(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
+/*void tileset_lua_func(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
   TileSet *tileset = (TileSet *)userdata;
   char buffer[256];
 
@@ -47,12 +47,12 @@ void tileprops_lua_func(Muse *const muse, uintmax_t num_arguments, const MuseArg
 
     curr++;
   }
-}
+}*/
 
 void tileset_load_defs(TileSet *const tileset, const char *filepath) {
   assert(tileset);
 
-  MuseFunctionDef tileset_func_def = {
+  /*MuseFunctionDef tileset_func_def = {
     .name = "tileset",
     .func = &tileset_lua_func,
     .num_arguments = 1,
@@ -78,5 +78,5 @@ void tileset_load_defs(TileSet *const tileset, const char *filepath) {
   muse_add_func(muse, &tileprops_func_def);
 
   muse_load_file(muse, filepath);
-  muse_destroy(muse);
+  muse_destroy(muse);*/
 }

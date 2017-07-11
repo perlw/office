@@ -7,7 +7,7 @@
 #include "input.h"
 #include "messages.h"
 
-ActionRef *action_refs;
+//ActionRef *action_refs;
 
 uintmax_t num_bindings = 0;
 InputActionBinding *input_bindings = NULL;
@@ -15,16 +15,16 @@ InputActionCallback main_callback = NULL;
 void *main_callback_userdata = NULL;
 
 void input_init() {
-  action_refs = rectify_array_alloc(10, sizeof(ActionRef));
+  //action_refs = rectify_array_alloc(10, sizeof(ActionRef));
 }
 
 void input_kill() {
-  for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
+  /*for (uintmax_t t = 0; t < rectify_array_size(action_refs); t++) {
     if (action_refs[t].action) {
       free(action_refs[t].action);
     }
   }
-  rectify_array_free(action_refs);
+  rectify_array_free(action_refs);*/
 
   for (uintmax_t t = 0; t < num_bindings; t++) {
     free(input_bindings[t].action);
@@ -75,7 +75,7 @@ void input_action(InputActionBinding *binding, void *userdata) {
   }*/
 }
 
-void lua_action(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
+/*void lua_action(Muse *const muse, uintmax_t num_arguments, const MuseArgument *const arguments, const void *const userdata) {
   char *action = (char *)arguments[0].argument;
   MuseFunctionRef ref = *(MuseFunctionRef *)arguments[1].argument;
 
@@ -84,7 +84,7 @@ void lua_action(Muse *const muse, uintmax_t num_arguments, const MuseArgument *c
     .ref = ref,
   };
   action_refs = rectify_array_push(action_refs, &action_ref);
-}
+}*/
 
 void input_action_callback(InputActionCallback callback, void *userdata) {
   assert(callback);
