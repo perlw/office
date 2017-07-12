@@ -292,9 +292,9 @@ int internal_lua_ui(lua_State *state) {
   lua_newtable(state);
 
   lua_pushcfunction(state, &internal_lua_ui_create_window);
-  lua_setfield(state, -2, "create_window");
+  lua_setfield(state, -2, "window_create");
   lua_pushcfunction(state, &internal_lua_ui_destroy_window);
-  lua_setfield(state, -2, "destroy_window");
+  lua_setfield(state, -2, "window_destroy");
 
   return 1;
 }
