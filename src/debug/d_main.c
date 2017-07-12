@@ -25,7 +25,7 @@ typedef struct {
 
 void debugoverlay_internal_update(DebugOverlay *overlay, double dt);
 
-void debugoverlay_internal_scene_changed(uint32_t id, void *const subscriberdata, void *const userdata) {
+void debugoverlay_internal_scene_changed(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
   Scene *scene = (Scene *)userdata;
 
@@ -34,7 +34,7 @@ void debugoverlay_internal_scene_changed(uint32_t id, void *const subscriberdata
   surface_text(overlay->surface, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 }
 
-void debugoverlay_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+void debugoverlay_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
 
   switch (id) {

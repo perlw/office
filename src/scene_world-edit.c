@@ -33,7 +33,7 @@ typedef struct {
   uint32_t o_x, o_y;
 } SceneWorldEdit;
 
-void scene_world_edit_mouse_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+void scene_world_edit_mouse_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
   const Config *const config = config_get();
@@ -66,7 +66,7 @@ void scene_world_edit_mouse_event(uint32_t id, void *const subscriberdata, void 
   }
 }
 
-void scene_world_edit_rune_selected(uint32_t id, void *const subscriberdata, void *const userdata) {
+void scene_world_edit_rune_selected(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
   scene->chosen_rune = *(uint32_t *)userdata;
 }

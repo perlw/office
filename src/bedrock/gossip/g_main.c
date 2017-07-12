@@ -1,7 +1,7 @@
 #include <assert.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <inttypes.h>
 
 #include "occulus/occulus.h"
 
@@ -133,11 +133,7 @@ void gossip_emit(uint32_t group_id, uint32_t id, void *const self, void *const u
       }
 
       GossipCallback callback = listener->callback;
-      callback(id, listener->subscriberdata, userdata);
-    }
-
-    if (group_id != GOSSIP_GROUP_ALL) {
-      break;
+      callback(group_id, id, listener->subscriberdata, userdata);
     }
   }
   //printf("emitted.\n");

@@ -8,8 +8,8 @@
 #define UI_INTERNAL
 #include "ui.h"
 
-void ui_window_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata);
-void ui_window_mouse_event(uint32_t id, void *const subscriberdata, void *const userdata);
+void ui_window_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
+void ui_window_mouse_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
 
 UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
   UIWindow *window = calloc(1, sizeof(UIWindow));
@@ -79,7 +79,7 @@ void ui_window_internal_update(UIWindow *const window, double delta) {
   }
 }
 
-void ui_window_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+void ui_window_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   UIWindow *window = (UIWindow *)subscriberdata;
 
   switch (id) {
@@ -95,7 +95,7 @@ void ui_window_internal_system_event(uint32_t id, void *const subscriberdata, vo
   }
 }
 
-void ui_window_mouse_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+void ui_window_mouse_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   UIWindow *window = (UIWindow *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
 

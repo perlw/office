@@ -20,6 +20,7 @@
 #include "config.h"
 #include "debug/debug.h"
 #include "input.h"
+#include "lua_bridge.h"
 #include "messages.h"
 #include "scenes.h"
 #include "sound.h"
@@ -31,11 +32,11 @@
 #include "scene_world-edit.h"
 
 bool quit_game = false;
-void game_kill_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+void game_kill_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   quit_game = true;
 }
 
-void navigate_scene(uint32_t id, void *const subscriberdata, void *const userdata) {
+void navigate_scene(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   Scenes *scenes = (Scenes *)subscriberdata;
 
   switch (id) {
@@ -129,20 +130,17 @@ struct {
 typedef struct {
   lua_State *state;
   int32_t func_ref;
-
-  uint32_t group;
-  uint32_t id;
 } GossipLuaPackage;
 
-void internal_lua_gossip_call(uint32_t id, void *const subscriberdata, void *const userdata) {
+void internal_lua_gossip_call(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   GossipLuaPackage *pkg = (GossipLuaPackage *)subscriberdata;
 
   lua_rawgeti(pkg->state, LUA_REGISTRYINDEX, pkg->func_ref);
 
   uint32_t num_args = 0;
-  switch (pkg->group) {
+  switch (group_id) {
     case MSG_SCENE:
-      switch (pkg->id) {
+      switch (id) {
         case MSG_SCENE_CHANGED: {
           Scene *scene = (Scene *)userdata;
           lua_pushstring(pkg->state, scene->name);
@@ -199,8 +197,6 @@ int internal_lua_gossip_subscribe(lua_State *state) {
   *pkg = (GossipLuaPackage){
     .state = state,
     .func_ref = func_ref,
-    .group = group,
-    .id = id,
   };
   gossip_subscribe(group, id, &internal_lua_gossip_call, pkg, NULL);
   return 0;
@@ -345,6 +341,7 @@ int main(int argc, char **argv) {
 
   lua_State *state = luaL_newstate();
   luaL_openlibs(state);
+  LuaBridge *const lua_bridge = lua_bridge_create(state);
 
   input_action_callback(&input_action, state);
 
@@ -437,6 +434,7 @@ int main(int argc, char **argv) {
   soundsys_destroy(soundsys);
   tome_kill();
 
+  lua_bridge_destroy(lua_bridge);
   lua_close(state);
 
   gossip_destroy();

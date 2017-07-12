@@ -19,8 +19,8 @@ struct SoundSys {
   GossipHandle system_handle;
 };
 
-void soundsys_internal_sound_event(uint32_t id, void *const subscriberdata, void *const userdata);
-void soundsys_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata);
+void soundsys_internal_sound_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
+void soundsys_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
 
 SoundSys *soundsys_create(void) {
   SoundSys *soundsys = calloc(1, sizeof(SoundSys));
@@ -105,7 +105,7 @@ void soundsys_internal_update(SoundSys *soundsys, double delta) {
   }
 }
 
-void soundsys_internal_sound_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+void soundsys_internal_sound_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   SoundSys *soundsys = (SoundSys *)subscriberdata;
 
   switch (id) {
@@ -142,7 +142,7 @@ void soundsys_internal_sound_event(uint32_t id, void *const subscriberdata, void
   }
 }
 
-void soundsys_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+void soundsys_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   SoundSys *soundsys = (SoundSys *)subscriberdata;
 
   switch (id) {

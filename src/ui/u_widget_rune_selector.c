@@ -4,7 +4,7 @@
 #define UI_INTERNAL
 #include "ui.h"
 
-void ui_widget_rune_selector_internal_mouse_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+void ui_widget_rune_selector_internal_mouse_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   UIWidgetRuneSelector *widget = (UIWidgetRuneSelector *)subscriberdata;
   UIEventClick *event = (UIEventClick *)userdata;
 
@@ -13,7 +13,7 @@ void ui_widget_rune_selector_internal_mouse_event(uint32_t id, void *const subsc
   gossip_emit(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, NULL, &rune);
 }
 
-void ui_widget_rune_selector_internal_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+void ui_widget_rune_selector_internal_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   UIWidgetRuneSelector *widget = (UIWidgetRuneSelector *)subscriberdata;
   UIWindow *window = (UIWindow *)userdata;
 

@@ -38,7 +38,7 @@ Scene scene_dummy = {
   .draw = &scenes_dummy_draw,
 };
 
-void scenes_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata);
+void scenes_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
 
 Scenes *scenes_create(void) {
   Scenes *scenes = calloc(1, sizeof(Scenes));
@@ -141,7 +141,7 @@ Scene *scenes_next(Scenes *scenes) {
   return scenes->current_scene;
 }
 
-void scenes_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata) {
+void scenes_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   Scenes *scenes = (Scenes *)subscriberdata;
 
   switch (id) {

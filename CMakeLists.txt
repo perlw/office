@@ -18,6 +18,7 @@ add_subdirectory (src/bedrock)
 set (
   SOURCES
   "src/main.c"
+  "src/lua_bridge.c"
   "src/assets.c"
   "src/config.c"
   "src/input.c"
