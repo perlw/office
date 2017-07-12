@@ -65,8 +65,13 @@ struct {
 };
 
 typedef struct {
+  uint32_t func_ref;
+} LuaBridgeHandle;
+
+typedef struct {
   lua_State *state;
   GossipHandle gossip_handle;
+  LuaBridgeHandle *handles;
 } LuaBridge;
 
 void lua_bridge_internal_gossip(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
@@ -81,6 +86,7 @@ LuaBridge *lua_bridge_create(lua_State *state) {
 
   *lua_bridge = (LuaBridge){
     .state = state,
+    .handles = rectify_array_alloc(10, sizeof(LuaBridgeHandle)),
   };
 
   lua_getglobal(state, "package");
@@ -99,6 +105,8 @@ void lua_bridge_destroy(LuaBridge *const lua_bridge) {
   assert(lua_bridge);
 
   gossip_unsubscribe(lua_bridge->gossip_handle);
+
+  rectify_array_free(lua_bridge->handles);
 
   free(lua_bridge);
 }
