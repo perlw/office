@@ -5,14 +5,13 @@
 #include "bedrock/bedrock.h"
 
 #include "ascii/ascii.h"
-#include "config.h"
 
 typedef struct {
   double timing;
   double since_update;
 } SceneGame;
 
-SceneGame *scene_game_create(const Config *config) {
+SceneGame *scene_game_create(void) {
   SceneGame *scene = calloc(1, sizeof(SceneGame));
 
   scene->timing = 1 / 30.0;

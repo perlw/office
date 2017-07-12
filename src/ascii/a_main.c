@@ -54,8 +54,7 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
 
     //mat4_t projection = m4_perspective(45, (float)width / (float)height, 1, 1000);
     //mat4_t model = m4_translation((vec3_t){ -320, -240, -640});
-    //layer->shader.projection_matrix = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
-    layer->shader.projection_matrix = m4_ortho(0, (float)640, 0, (float)480, 1, 0);
+    layer->shader.projection_matrix = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
     mat4_t model = m4_identity();
 
     layer->shader.pmatrix_uniform = picasso_program_uniform_location(layer->program, "pMatrix");

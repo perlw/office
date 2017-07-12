@@ -4,7 +4,7 @@
 
 typedef void SceneWorldEdit;
 
-SceneWorldEdit *scene_world_edit_create(const Config *config);
+SceneWorldEdit *scene_world_edit_create(void);
 void scene_world_edit_destroy(SceneWorldEdit *const scene);
 void scene_world_edit_update(SceneWorldEdit *const scene, double delta);
 void scene_world_edit_draw(SceneWorldEdit *const scene, AsciiBuffer *const screen);

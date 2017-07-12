@@ -4,7 +4,7 @@
 
 typedef void SceneSoundTest;
 
-SceneSoundTest *scene_sound_test_create(const Config *config);
+SceneSoundTest *scene_sound_test_create(void);
 void scene_sound_test_destroy(SceneSoundTest *const scene);
 void scene_sound_test_update(SceneSoundTest *const scene, double delta);
 void scene_sound_test_draw(SceneSoundTest *const scene, AsciiBuffer *const screen);

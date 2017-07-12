@@ -328,9 +328,9 @@ int main(int argc, char **argv) {
 
   input_init();
 
-  Config config = read_config();
+  const Config *const config = config_init();
 
-  if (picasso_window_init("Office", config.res_width, config.res_height, config.gl_debug) != PICASSO_WINDOW_OK) {
+  if (picasso_window_init("Office", config->res_width, config->res_height, config->gl_debug) != PICASSO_WINDOW_OK) {
     printf("Window: failed to init\n");
     return -1;
   }
@@ -359,9 +359,9 @@ int main(int argc, char **argv) {
 
   SoundSys *const soundsys = soundsys_create();
 
-  DebugOverlay *const debug_overlay = debugoverlay_create(&config);
+  DebugOverlay *const debug_overlay = debugoverlay_create();
 
-  Scenes *const scenes = scenes_create(&config);
+  Scenes *const scenes = scenes_create();
   scenes_register(scenes, &scene_test);
   scenes_register(scenes, &scene_game);
   scenes_register(scenes, &scene_sound_test);
@@ -374,12 +374,12 @@ int main(int argc, char **argv) {
     gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, NULL, scene);
   }
 
-  AsciiBuffer *ascii_screen = ascii_buffer_create(config.res_width, config.res_height, config.ascii_width, config.ascii_height);
+  AsciiBuffer *ascii_screen = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
 
   gossip_subscribe(MSG_GAME, MSG_GAME_KILL, &game_kill_event, NULL, NULL);
   gossip_emit(MSG_GAME, MSG_GAME_INIT, NULL, NULL);
 
-  const double frame_timing = (config.frame_lock > 0 ? 1.0 / (double)config.frame_lock : 0);
+  const double frame_timing = (config->frame_lock > 0 ? 1.0 / (double)config->frame_lock : 0);
   double next_frame = frame_timing;
   double last_tick = bedrock_time();
   while (!picasso_window_should_close() && !quit_game) {

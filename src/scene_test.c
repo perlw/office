@@ -144,8 +144,10 @@ typedef struct {
   TextInput *input;
 } SceneTest;
 
-SceneTest *scene_test_create(const Config *config) {
+SceneTest *scene_test_create(void) {
   SceneTest *scene = calloc(1, sizeof(SceneTest));
+
+  const Config *const config = config_get();
 
   scene->offset = 0.0;
   scene->timing = 1 / 30.0;

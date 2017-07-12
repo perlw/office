@@ -51,8 +51,10 @@ void debugoverlay_internal_system_event(uint32_t id, void *const subscriberdata,
   }
 }
 
-DebugOverlay *debugoverlay_create(const Config *config) {
+DebugOverlay *debugoverlay_create(void) {
   DebugOverlay *overlay = calloc(1, sizeof(DebugOverlay));
+
+  const Config *const config = config_get();
 
   overlay->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
 

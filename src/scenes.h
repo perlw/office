@@ -1,9 +1,8 @@
 #pragma once
 
 #include "ascii/ascii.h"
-#include "config.h"
 
-typedef void *(*ScenesCreate)(const Config *config);
+typedef void *(*ScenesCreate)(void);
 typedef void (*ScenesDestroy)(void *const scene);
 typedef void (*ScenesUpdate)(void *const scene, double delta);
 typedef void (*ScenesDraw)(void *const scene, AsciiBuffer *const screen);
@@ -18,7 +17,7 @@ typedef struct {
 
 typedef struct Scenes Scenes;
 
-Scenes *scenes_create(Config *config);
+Scenes *scenes_create(void);
 void scenes_destroy(Scenes *scenes);
 
 void scenes_register(Scenes *scenes, Scene *scene);

@@ -65,8 +65,10 @@ void scene_sound_test_keyboard(uint32_t id, void *const subscriberdata, void *co
   }
 }
 
-SceneSoundTest *scene_sound_test_create(const Config *config) {
+SceneSoundTest *scene_sound_test_create(void) {
   SceneSoundTest *scene = calloc(1, sizeof(SceneSoundTest));
+
+  const Config *const config = config_get();
 
   scene->timing = 1 / 30.0;
   scene->since_update = scene->timing;

@@ -4,7 +4,7 @@
 
 typedef void SceneTest;
 
-SceneTest *scene_test_create(const Config *config);
+SceneTest *scene_test_create(void);
 void scene_test_destroy(SceneTest *const scene);
 void scene_test_update(SceneTest *const scene, double delta);
 void scene_test_draw(void *const scene, AsciiBuffer *const screen);

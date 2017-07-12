@@ -36,11 +36,12 @@ typedef struct {
 void scene_world_edit_mouse_event(uint32_t id, void *const subscriberdata, void *const userdata) {
   SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
+  const Config *const config = config_get();
 
   scene->o_x = scene->m_x;
   scene->o_y = scene->m_y;
-  scene->m_x = (uint32_t)(event->x / 8.0);
-  scene->m_y = (uint32_t)(event->y / 8.0);
+  scene->m_x = (uint32_t)(event->x / config->grid_size_width);
+  scene->m_y = (uint32_t)(event->y / config->grid_size_height);
 
   if (scene->m_x > 0 && scene->m_y > 0 && scene->m_x < scene->world->width - 1 && scene->m_y < scene->world->height - 1) {
     if (event->pressed) {
@@ -70,8 +71,10 @@ void scene_world_edit_rune_selected(uint32_t id, void *const subscriberdata, voi
   scene->chosen_rune = *(uint32_t *)userdata;
 }
 
-SceneWorldEdit *scene_world_edit_create(const Config *config) {
+SceneWorldEdit *scene_world_edit_create(void) {
   SceneWorldEdit *scene = calloc(1, sizeof(SceneWorldEdit));
+
+  const Config *const config = config_get();
 
   scene->timing = 1 / 30.0;
   scene->since_update = scene->timing;

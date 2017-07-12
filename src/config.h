@@ -10,6 +10,9 @@ typedef struct {
   uint32_t frame_lock;
   uint32_t ascii_width;
   uint32_t ascii_height;
+  double grid_size_width;
+  double grid_size_height;
 } Config;
 
-Config read_config(void);
+const Config *const config_init(void);
+const Config *const config_get(void);

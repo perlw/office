@@ -1,8 +1,6 @@
 #pragma once
 
-#include "config.h"
-
 typedef struct DebugOverlay DebugOverlay;
 
-DebugOverlay *debugoverlay_create(const Config *config);
+DebugOverlay *debugoverlay_create(void);
 void debugoverlay_destroy(DebugOverlay *overlay);

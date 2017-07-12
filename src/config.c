@@ -510,7 +510,10 @@ int config_internal_resolution(lua_State *state) {
   Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
   config->res_width = (uint32_t)lua_tonumber(state, 1);
   config->res_height = (uint32_t)lua_tonumber(state, 2);
-  printf("Config: Resolution set to %dx%d\n", config->res_width, config->res_height);
+  config->grid_size_width = (double)config->res_width / (double)config->ascii_width;
+  config->grid_size_height = (double)config->res_height / (double)config->ascii_height;
+
+  printf("Config: Resolution set to %dx%d, grid size updated to %.1fx%.1f\n", config->res_width, config->res_height, config->grid_size_width, config->grid_size_height);
 
   return 0;
 }
@@ -550,7 +553,10 @@ int config_internal_ascii_resolution(lua_State *state) {
   Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
   config->ascii_width = (uint32_t)lua_tonumber(state, 1);
   config->ascii_height = (uint32_t)lua_tonumber(state, 2);
-  printf("Config: Ascii resolution set to %dx%d\n", config->ascii_width, config->ascii_height);
+  config->grid_size_width = (double)config->res_width / (double)config->ascii_width;
+  config->grid_size_height = (double)config->res_height / (double)config->ascii_height;
+
+  printf("Config: Ascii resolution set to %dx%d, grid size updated to %.1fx%.1f\n", config->ascii_width, config->ascii_height, config->grid_size_width, config->grid_size_height);
 
   return 0;
 }
@@ -577,35 +583,37 @@ int config_internal_bind(lua_State *state) {
   return 0;
 }
 
-Config read_config(void) {
-  Config config = {
-    .res_width = 640,
-    .res_height = 480,
-    .gl_debug = false,
-    .frame_lock = 0,
-    .ascii_width = 80,
-    .ascii_height = 60,
-  };
+Config config_internal = {
+  .res_width = 640,
+  .res_height = 480,
+  .gl_debug = false,
+  .frame_lock = 0,
+  .ascii_width = 80,
+  .ascii_height = 60,
+  .grid_size_width = 8.0,
+  .grid_size_height = 8.0,
+};
 
+const Config *const config_init(void) {
   lua_State *state = luaL_newstate();
 
-  lua_pushnumber(state, (lua_Number)(uintptr_t)&config);
+  lua_pushnumber(state, (lua_Number)(uintptr_t)&config_internal);
   lua_pushcclosure(state, &config_internal_resolution, 1);
   lua_setglobal(state, "resolution");
 
-  lua_pushnumber(state, (lua_Number)(uintptr_t)&config);
+  lua_pushnumber(state, (lua_Number)(uintptr_t)&config_internal);
   lua_pushcclosure(state, &config_internal_gl_debug, 1);
   lua_setglobal(state, "gl_debug");
 
-  lua_pushnumber(state, (lua_Number)(uintptr_t)&config);
+  lua_pushnumber(state, (lua_Number)(uintptr_t)&config_internal);
   lua_pushcclosure(state, &config_internal_frame_lock, 1);
   lua_setglobal(state, "frame_lock");
 
-  lua_pushnumber(state, (lua_Number)(uintptr_t)&config);
+  lua_pushnumber(state, (lua_Number)(uintptr_t)&config_internal);
   lua_pushcclosure(state, &config_internal_ascii_resolution, 1);
   lua_setglobal(state, "ascii_resolution");
 
-  lua_pushnumber(state, (lua_Number)(uintptr_t)&config);
+  lua_pushnumber(state, (lua_Number)(uintptr_t)&config_internal);
   lua_pushcclosure(state, &config_internal_bind, 1);
   lua_setglobal(state, "bind");
 
@@ -626,5 +634,9 @@ Config read_config(void) {
 
   lua_close(state);
 
-  return config;
+  return &config_internal;
+}
+
+const Config *const config_get(void) {
+  return &config_internal;
 }

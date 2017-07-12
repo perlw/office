@@ -10,7 +10,6 @@
 
 struct Scenes {
   Scene *scenes;
-  Config *config;
 
   Scene *current_scene;
   void *current_scene_data;
@@ -18,7 +17,7 @@ struct Scenes {
   GossipHandle system_handle;
 };
 
-void *scenes_dummy_create(const Config *config) {
+void *scenes_dummy_create(void) {
   return NULL;
 }
 
@@ -41,11 +40,10 @@ Scene scene_dummy = {
 
 void scenes_internal_system_event(uint32_t id, void *const subscriberdata, void *const userdata);
 
-Scenes *scenes_create(Config *config) {
+Scenes *scenes_create(void) {
   Scenes *scenes = calloc(1, sizeof(Scenes));
 
   scenes->scenes = rectify_array_alloc(10, sizeof(Scene));
-  scenes->config = config;
   scenes->current_scene = &scene_dummy;
   scenes->current_scene_data = NULL;
 
@@ -102,7 +100,7 @@ Scene *scenes_goto(Scenes *scenes, const char *name) {
     scenes->current_scene_data = NULL;
   }
 
-  scenes->current_scene_data = scenes->current_scene->create(scenes->config);
+  scenes->current_scene_data = scenes->current_scene->create();
 
   printf("SCENES: Switched to scene \"%s\"\n", name);
 
@@ -123,7 +121,7 @@ void scenes_go(Scenes *scenes, int32_t move) {
         scenes->current_scene = NULL;
 
         scenes->current_scene = &scenes->scenes[t + move];
-        scenes->current_scene_data = scenes->current_scene->create(scenes->config);
+        scenes->current_scene_data = scenes->current_scene->create();
 
         printf("SCENES: Switched to scene \"%s\"\n", scenes->current_scene->name);
       }
