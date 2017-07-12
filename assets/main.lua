@@ -17,18 +17,25 @@ testlib.func2()
 testlib.func1()
 
 local window = nil
+
 gossip.subscribe("game:init", function ()
   io.write("Welcome!\n")
-
-  window = Window(0, 0, 10, 10)
 end)
 
 gossip.subscribe("game:kill", function ()
   io.write("Goodbye...\n")
 
-  window:destroy()
+  if window then
+    window:destroy()
+  end
 end)
 
-function update(dt)
-  --io.write(dt .. "\n")
-end
+gossip.subscribe("scene:changed", function (scene)
+  if scene == "world-edit" then
+    window = Window(0, 0, 10, 10)
+  else
+    if window then
+      window:destroy()
+    end
+  end
+end)

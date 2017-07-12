@@ -111,6 +111,10 @@ struct {
         .key = MSG_SCENE_NEXT,
       },
       {
+        .name = "changed",
+        .key = MSG_SCENE_CHANGED,
+      },
+      {
         .name = NULL,
         .key = 0,
       },
@@ -125,18 +129,34 @@ struct {
 typedef struct {
   lua_State *state;
   int32_t func_ref;
+
+  uint32_t group;
+  uint32_t id;
 } GossipLuaPackage;
 
 void internal_lua_gossip_call(uint32_t id, void *const subscriberdata, void *const userdata) {
   GossipLuaPackage *pkg = (GossipLuaPackage *)subscriberdata;
+
   lua_rawgeti(pkg->state, LUA_REGISTRYINDEX, pkg->func_ref);
-  int result = lua_pcall(pkg->state, 0, 0, 0);
+
+  uint32_t num_args = 0;
+  switch (pkg->group) {
+    case MSG_SCENE:
+      switch (pkg->id) {
+        case MSG_SCENE_CHANGED: {
+          Scene *scene = (Scene *)userdata;
+          lua_pushstring(pkg->state, scene->name);
+          num_args++;
+        }
+      }
+  }
+
+  int result = lua_pcall(pkg->state, num_args, 0, 0);
   if (result != LUA_OK) {
     const char *message = lua_tostring(pkg->state, -1);
     printf("LUA: %s: %s\n", __func__, message);
     lua_pop(pkg->state, 1);
   }
-  free(subscriberdata);
 }
 
 int internal_lua_gossip_subscribe(lua_State *state) {
@@ -179,6 +199,8 @@ int internal_lua_gossip_subscribe(lua_State *state) {
   *pkg = (GossipLuaPackage){
     .state = state,
     .func_ref = func_ref,
+    .group = group,
+    .id = id,
   };
   gossip_subscribe(group, id, &internal_lua_gossip_call, pkg, NULL);
   return 0;
