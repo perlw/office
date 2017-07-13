@@ -507,7 +507,7 @@ int config_internal_resolution(lua_State *state) {
     return 0;
   }
 
-  Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
+  Config *config = (Config *)lua_topointer(state, lua_upvalueindex(1));
   config->res_width = (uint32_t)lua_tonumber(state, 1);
   config->res_height = (uint32_t)lua_tonumber(state, 2);
   config->grid_size_width = (double)config->res_width / (double)config->ascii_width;
@@ -524,7 +524,7 @@ int config_internal_gl_debug(lua_State *state) {
     return 0;
   }
 
-  Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
+  Config *config = (Config *)lua_topointer(state, lua_upvalueindex(1));
   config->gl_debug = (uint32_t)lua_toboolean(state, 1);
   printf("Config: Debugging turned %s\n", (config->gl_debug ? "on" : "off"));
 
@@ -537,7 +537,7 @@ int config_internal_frame_lock(lua_State *state) {
     return 0;
   }
 
-  Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
+  Config *config = (Config *)lua_topointer(state, lua_upvalueindex(1));
   config->frame_lock = (uint32_t)lua_tonumber(state, 1);
   printf("Config: Frame limit set to %d fps\n", config->frame_lock);
 
@@ -550,7 +550,7 @@ int config_internal_ascii_resolution(lua_State *state) {
     return 0;
   }
 
-  Config *config = (Config *)(uintptr_t)lua_tonumber(state, lua_upvalueindex(1));
+  Config *config = (Config *)lua_topointer(state, lua_upvalueindex(1));
   config->ascii_width = (uint32_t)lua_tonumber(state, 1);
   config->ascii_height = (uint32_t)lua_tonumber(state, 2);
   config->grid_size_width = (double)config->res_width / (double)config->ascii_width;
@@ -597,23 +597,23 @@ Config config_internal = {
 const Config *const config_init(void) {
   lua_State *state = luaL_newstate();
 
-  lua_pushnumber(state, (lua_Number)(uintptr_t)&config_internal);
+  lua_pushlightuserdata(state, &config_internal);
   lua_pushcclosure(state, &config_internal_resolution, 1);
   lua_setglobal(state, "resolution");
 
-  lua_pushnumber(state, (lua_Number)(uintptr_t)&config_internal);
+  lua_pushlightuserdata(state, &config_internal);
   lua_pushcclosure(state, &config_internal_gl_debug, 1);
   lua_setglobal(state, "gl_debug");
 
-  lua_pushnumber(state, (lua_Number)(uintptr_t)&config_internal);
+  lua_pushlightuserdata(state, &config_internal);
   lua_pushcclosure(state, &config_internal_frame_lock, 1);
   lua_setglobal(state, "frame_lock");
 
-  lua_pushnumber(state, (lua_Number)(uintptr_t)&config_internal);
+  lua_pushlightuserdata(state, &config_internal);
   lua_pushcclosure(state, &config_internal_ascii_resolution, 1);
   lua_setglobal(state, "ascii_resolution");
 
-  lua_pushnumber(state, (lua_Number)(uintptr_t)&config_internal);
+  lua_pushlightuserdata(state, &config_internal);
   lua_pushcclosure(state, &config_internal_bind, 1);
   lua_setglobal(state, "bind");
 
