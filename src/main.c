@@ -36,24 +36,6 @@ void game_kill_event(uint32_t group_id, uint32_t id, void *const subscriberdata,
   quit_game = true;
 }
 
-void navigate_scene(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
-  Scenes *scenes = (Scenes *)subscriberdata;
-
-  switch (id) {
-    case MSG_SCENE_PREV: {
-      Scene *scene = scenes_prev(scenes);
-      gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, NULL, scene);
-      break;
-    }
-
-    case MSG_SCENE_NEXT: {
-      Scene *scene = scenes_next(scenes);
-      gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, NULL, scene);
-      break;
-    }
-  }
-}
-
 int internal_action(lua_State *state) {
   InputActionRef action_ref = (InputActionRef){
     .action = (char *)lua_tolstring(state, 1, NULL),
@@ -200,13 +182,7 @@ int main(int argc, char **argv) {
   scenes_register(scenes, &scene_game);
   scenes_register(scenes, &scene_sound_test);
   scenes_register(scenes, &scene_world_edit);
-  gossip_subscribe(MSG_SCENE, MSG_SCENE_PREV, &navigate_scene, (void *)scenes, NULL);
-  gossip_subscribe(MSG_SCENE, MSG_SCENE_NEXT, &navigate_scene, (void *)scenes, NULL);
-
-  {
-    Scene *const scene = scenes_goto(scenes, init_scene);
-    gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, NULL, scene);
-  }
+  scenes_goto(scenes, init_scene);
 
   AsciiBuffer *ascii_screen = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
 

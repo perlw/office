@@ -14,6 +14,7 @@ struct Scenes {
   Scene *current_scene;
   void *current_scene_data;
 
+  GossipHandle scene_handle;
   GossipHandle system_handle;
 };
 
@@ -38,6 +39,7 @@ Scene scene_dummy = {
   .draw = &scenes_dummy_draw,
 };
 
+void scenes_internal_scene_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
 void scenes_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
 
 Scenes *scenes_create(void) {
@@ -47,6 +49,7 @@ Scenes *scenes_create(void) {
   scenes->current_scene = &scene_dummy;
   scenes->current_scene_data = NULL;
 
+  scenes->scene_handle = gossip_subscribe(MSG_SCENE, GOSSIP_ID_ALL, &scenes_internal_scene_event, scenes, NULL);
   scenes->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &scenes_internal_system_event, scenes, NULL);
 
   return scenes;
@@ -56,8 +59,10 @@ void scenes_destroy(Scenes *scenes) {
   assert(scenes);
 
   gossip_unsubscribe(scenes->system_handle);
+  gossip_unsubscribe(scenes->scene_handle);
 
   if (scenes->current_scene) {
+    gossip_emit(MSG_SCENE, MSG_SCENE_TEARDOWN, NULL, scenes->current_scene);
     scenes->current_scene->destroy(scenes->current_scene_data);
   }
 
@@ -81,64 +86,61 @@ void scenes_register(Scenes *scenes, Scene *scene) {
   scenes->scenes = rectify_array_push(scenes->scenes, &scene_cpy);
 }
 
-Scene *scenes_goto(Scenes *scenes, const char *name) {
-  assert(scenes);
+void scenes_internal_go(Scenes *scenes, uint32_t index) {
+  gossip_emit(MSG_SCENE, MSG_SCENE_TEARDOWN, NULL, scenes->current_scene);
+  scenes->current_scene->destroy(scenes->current_scene_data);
+  scenes->current_scene = NULL;
 
-  if (scenes->current_scene) {
-    scenes->current_scene->destroy(scenes->current_scene_data);
-    scenes->current_scene = NULL;
-  }
-  for (uintmax_t t = 0; t < rectify_array_size(scenes->scenes); t++) {
-    if (strncmp(scenes->scenes[t].name, name, 128) == 0) {
-      scenes->current_scene = &scenes->scenes[t];
-    }
-  }
-
-  if (!scenes->current_scene) {
-    printf("SCENES: No such scene, \"%s\"\n", name);
-    scenes->current_scene = &scene_dummy;
-    scenes->current_scene_data = NULL;
-  }
-
+  scenes->current_scene = &scenes->scenes[index];
   scenes->current_scene_data = scenes->current_scene->create();
+  gossip_emit(MSG_SCENE, MSG_SCENE_SETUP, NULL, scenes->current_scene);
 
-  printf("SCENES: Switched to scene \"%s\"\n", name);
-
-  return scenes->current_scene;
+  printf("SCENES: Switched to scene \"%s\"\n", scenes->current_scene->name);
+  gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, NULL, scenes->current_scene);
 }
 
-void scenes_go(Scenes *scenes, int32_t move) {
+void scenes_internal_move(Scenes *scenes, int32_t move) {
   assert(scenes);
-
-  if (!scenes->current_scene) {
-    return;
-  }
 
   for (uintmax_t t = 0; t < rectify_array_size(scenes->scenes); t++) {
     if (&scenes->scenes[t] == scenes->current_scene) {
       if ((t > 0 && move < 0) || (t < rectify_array_size(scenes->scenes) - 1 && move > 0)) {
-        scenes->current_scene->destroy(scenes->current_scene_data);
-        scenes->current_scene = NULL;
-
-        scenes->current_scene = &scenes->scenes[t + move];
-        scenes->current_scene_data = scenes->current_scene->create();
-
-        printf("SCENES: Switched to scene \"%s\"\n", scenes->current_scene->name);
+        scenes_internal_go(scenes, t + move);
       }
-
       break;
     }
   }
 }
 
-Scene *scenes_prev(Scenes *scenes) {
-  scenes_go(scenes, -1);
-  return scenes->current_scene;
+void scenes_goto(Scenes *scenes, const char *name) {
+  assert(scenes);
+
+  for (uintmax_t t = 0; t < rectify_array_size(scenes->scenes); t++) {
+    if (strncmp(scenes->scenes[t].name, name, 128) == 0) {
+      scenes_internal_go(scenes, t);
+      return;
+    }
+  }
+
+  printf("SCENES: No such scene, \"%s\"\n", name);
+  scenes->current_scene = &scene_dummy;
+  scenes->current_scene_data = NULL;
 }
 
-Scene *scenes_next(Scenes *scenes) {
-  scenes_go(scenes, 1);
-  return scenes->current_scene;
+void scenes_internal_scene_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+  Scenes *scenes = (Scenes *)subscriberdata;
+
+  switch (id) {
+    case MSG_SCENE_PREV: {
+      scenes_internal_move(scenes, -1);
+      break;
+    }
+
+    case MSG_SCENE_NEXT: {
+      scenes_internal_move(scenes, 1);
+      break;
+    }
+  }
 }
 
 void scenes_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {

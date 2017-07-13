@@ -51,6 +51,14 @@ struct {
         .key = MSG_SCENE_NEXT,
       },
       {
+        .name = "setup",
+        .key = MSG_SCENE_SETUP,
+      },
+      {
+        .name = "teardown",
+        .key = MSG_SCENE_TEARDOWN,
+      },
+      {
         .name = "changed",
         .key = MSG_SCENE_CHANGED,
       },
@@ -135,6 +143,8 @@ void lua_bridge_internal_gossip_event(uint32_t group_id, uint32_t id, void *cons
       switch (group_id) {
         case MSG_SCENE:
           switch (id) {
+            case MSG_SCENE_SETUP:
+            case MSG_SCENE_TEARDOWN:
             case MSG_SCENE_CHANGED: {
               Scene *scene = (Scene *)userdata;
               lua_pushstring(lua_bridge->state, scene->name);
@@ -152,30 +162,6 @@ void lua_bridge_internal_gossip_event(uint32_t group_id, uint32_t id, void *cons
     }
   }
 }
-/*void internal_lua_gossip_call(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
-  GossipLuaPackage *pkg = (GossipLuaPackage *)subscriberdata;
-
-  lua_rawgeti(pkg->state, LUA_REGISTRYINDEX, pkg->func_ref);
-
-  uint32_t num_args = 0;
-  switch (group_id) {
-    case MSG_SCENE:
-      switch (id) {
-        case MSG_SCENE_CHANGED: {
-          Scene *scene = (Scene *)userdata;
-          lua_pushstring(pkg->state, scene->name);
-          num_args++;
-        }
-      }
-  }
-
-  int result = lua_pcall(pkg->state, num_args, 0, 0);
-  if (result != LUA_OK) {
-    const char *message = lua_tostring(pkg->state, -1);
-    printf("LUA: %s: %s\n", __func__, message);
-    lua_pop(pkg->state, 1);
-  }
-}*/
 
 int lua_bridge_internal_load(lua_State *state) {
   LuaBridge *lua_bridge = (LuaBridge *)lua_topointer(state, lua_upvalueindex(1));

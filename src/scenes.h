@@ -21,6 +21,4 @@ Scenes *scenes_create(void);
 void scenes_destroy(Scenes *scenes);
 
 void scenes_register(Scenes *scenes, Scene *scene);
-Scene *scenes_goto(Scenes *scenes, const char *name);
-Scene *scenes_prev(Scenes *scenes);
-Scene *scenes_next(Scenes *scenes);
+void scenes_goto(Scenes *scenes, const char *name);
