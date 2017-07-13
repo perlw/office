@@ -12,7 +12,7 @@ file(GLOB LUA_SRCS "${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src/*.c")
 add_library (lua STATIC ${LUA_SRCS})
 
 option (USE_OCCULUS "Use memory debugger" OFF)
-option (GOSSIP_DEBUG "Use gossip debug output" OFF)
+option (DEBUG_GOSSIP "Use gossip debug output" OFF)
 
 add_subdirectory (src/bedrock)
 
