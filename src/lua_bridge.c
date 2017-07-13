@@ -347,8 +347,6 @@ int lua_bridge_internal_gossip_subscribe(lua_State *state) {
     return 0;
   }
 
-  printf("SUB %s:%d %d:%d\n", msg_name, func_ref, keys.group_id, keys.id);
-
   lua_bridge->handles = rectify_array_push(lua_bridge->handles, &(LuaBridgeHandle){
                                                                   .func_ref = func_ref, .keys = keys,
                                                                 });
