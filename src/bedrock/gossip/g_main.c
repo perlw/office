@@ -2,10 +2,12 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "occulus/occulus.h"
 
 #include "g_types.h"
+#include "g_words.h"
 #include "rectify/rectify.h"
 
 typedef struct {
@@ -130,14 +132,29 @@ void gossip_emit(uint32_t group_id, uint32_t id, void *const self, void *const u
   }
 }
 
+void handle_to_word(GossipHandle handle, uintmax_t max_len, char *buffer) {
+  uint8_t a = (handle >> 24) & 0xff;
+  uint8_t b = (handle >> 16) & 0xff;
+  uint8_t c = (handle >> 8) & 0xff;
+  uint8_t d = handle & 0xff;
+  snprintf(buffer, max_len, "[%s %s %s %s]", WORDS[a % NUM_WORDS], WORDS[b % NUM_WORDS], WORDS[c % NUM_WORDS], WORDS[d % NUM_WORDS]);
+}
+
 GossipHandle gossip_subscribe_debug(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata, void *const filter, const char *filepath, uintmax_t line, const char *function) {
   GossipHandle handle = gossip_subscribe(group_id, id, callback, subscriberdata, filter);
-  printf("Gossip:(%s:%" PRIuMAX "/%s) Subscribing to %d:%d, handle is 0x%" PRIuMAX "\n", filepath, line, function, group_id, id, handle);
+
+  char buffer[256];
+  handle_to_word(handle, 256, buffer);
+  printf("Gossip:(%s:%" PRIuPTR "/%s) Subscribing to %d:%d, handle is %s(0x%" PRIuPTR ")\n", filepath, line, function, group_id, id, buffer, handle);
+
   return handle;
 }
 
 bool gossip_unsubscribe_debug(GossipHandle handle, const char *filepath, uintmax_t line, const char *function) {
-  printf("Gossip:(%s:%" PRIuMAX "/%s) Unsubscribing 0x%" PRIuMAX "... ", filepath, line, function, handle);
+  char buffer[256];
+  handle_to_word(handle, 256, buffer);
+  printf("Gossip:(%s:%" PRIuPTR "/%s) Unsubscribing %s(0x%" PRIuPTR ")... ", filepath, line, function, buffer, handle);
+
   bool result = gossip_unsubscribe(handle);
   if (result) {
     printf("unsubscribed.\n");
