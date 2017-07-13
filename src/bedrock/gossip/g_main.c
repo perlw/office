@@ -5,7 +5,7 @@
 
 #include "occulus/occulus.h"
 
-#include "gossip.h"
+#include "g_types.h"
 #include "rectify/rectify.h"
 
 typedef struct {
@@ -57,9 +57,6 @@ GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback cal
     .callback = callback,
     .filter = filter,
   };
-  listener.handle = (uintptr_t)&listener;
-
-  printf("Gossip: Subscribing to %d:%d... ", group_id, id);
 
   Group *group = NULL;
   for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
@@ -85,15 +82,16 @@ GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback cal
   }
 
   group->listeners = rectify_array_push(group->listeners, &listener);
-  printf("subscribed, 0x%" PRIuPTR ".\n", listener.handle);
 
-  return listener.handle;
+  Listener *pushed_listener = &group->listeners[rectify_array_size(group->listeners) - 1];
+  pushed_listener->handle = (uintptr_t)pushed_listener;
+
+  return pushed_listener->handle;
 }
 
-void gossip_unsubscribe(GossipHandle handle) {
+bool gossip_unsubscribe(GossipHandle handle) {
   assert(gossip);
 
-  printf("Gossip: Unsubscribing 0x%" PRIuPTR "... ", handle);
   for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
     Group *const group = &gossip->groups[t];
 
@@ -102,18 +100,16 @@ void gossip_unsubscribe(GossipHandle handle) {
 
       if (listener->handle == handle) {
         group->listeners = rectify_array_delete(group->listeners, u);
-        printf("unsubscribed.\n");
-        return;
+        return true;
       }
     }
   }
-  printf("handle not found.\n");
+  return false;
 }
 
 void gossip_emit(uint32_t group_id, uint32_t id, void *const self, void *const userdata) {
   assert(gossip);
 
-  //printf("Gossip: Emitting to %d:%d... ", group_id, id);
   for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
     Group *const group = &gossip->groups[t];
 
@@ -136,5 +132,21 @@ void gossip_emit(uint32_t group_id, uint32_t id, void *const self, void *const u
       callback(group_id, id, listener->subscriberdata, userdata);
     }
   }
-  //printf("emitted.\n");
+}
+
+GossipHandle gossip_subscribe_debug(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata, void *const filter, const char *filepath, uintmax_t line, const char *function) {
+  GossipHandle handle = gossip_subscribe(group_id, id, callback, subscriberdata, filter);
+  printf("Gossip:(%s:%" PRIuMAX "/%s) Subscribing to %d:%d, handle is 0x%" PRIuMAX "\n", filepath, line, function, group_id, id, handle);
+  return handle;
+}
+
+bool gossip_unsubscribe_debug(GossipHandle handle, const char *filepath, uintmax_t line, const char *function) {
+  printf("Gossip:(%s:%" PRIuMAX "/%s) Unsubscribing 0x%" PRIuMAX "... ", filepath, line, function, handle);
+  bool result = gossip_unsubscribe(handle);
+  if (result) {
+    printf("unsubscribed.\n");
+  } else {
+    printf("handle not found.\n");
+  }
+  return result;
 }

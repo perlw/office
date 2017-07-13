@@ -12,6 +12,7 @@ file(GLOB LUA_SRCS "${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src/*.c")
 add_library (lua STATIC ${LUA_SRCS})
 
 option (USE_OCCULUS "Use memory debugger" OFF)
+option (GOSSIP_DEBUG "Use gossip debug output" OFF)
 
 add_subdirectory (src/bedrock)
 
@@ -47,6 +48,9 @@ endif (WIN32)
 if (USE_OCCULUS)
   target_compile_definitions (office PRIVATE MEM_DEBUG)
 endif (USE_OCCULUS)
+if (DEBUG_GOSSIP)
+  target_compile_definitions (office PRIVATE GOSSIP_DEBUG)
+endif (DEBUG_GOSSIP)
 
 target_link_libraries (office bedrock lua)
 add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets "${CMAKE_BINARY_DIR}/bin")

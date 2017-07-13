@@ -86,7 +86,6 @@ typedef struct {
 
 typedef struct {
   lua_State *state;
-  GossipHandle load_handle;
   GossipHandle gossip_handle;
   LuaBridgeHandle *handles;
 } LuaBridge;
@@ -124,7 +123,6 @@ void lua_bridge_destroy(LuaBridge *const lua_bridge) {
   assert(lua_bridge);
 
   gossip_unsubscribe(lua_bridge->gossip_handle);
-  gossip_unsubscribe(lua_bridge->load_handle);
 
   rectify_array_free(lua_bridge->handles);
 

@@ -1,9 +1,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "ascii/ascii.h"
 #include "config.h"
-#include "messages.h"
 
 #define UI_INTERNAL
 #include "ui.h"
@@ -107,11 +105,11 @@ void ui_window_mouse_event(uint32_t group_id, uint32_t id, void *const subscribe
   if (m_x > window->x && m_x < window->x + window->width - 1
       && m_y > window->y && m_y < window->y + window->width - 1) {
     gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_MOUSEMOVE, window, &(UIEventMouseMove){
-                                                                    .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                                                    .x = m_x - window->x - 1, .y = m_y - window->y - 1,
                                                                   });
     if (event->pressed) {
       gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_CLICK, window, &(UIEventClick){
-                                                                  .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                                                  .x = m_x - window->x - 1, .y = m_y - window->y - 1,
                                                                 });
     }
   }
