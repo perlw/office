@@ -622,7 +622,7 @@ const Config *const config_init(void) {
     lua_setglobal(state, key_names[t].name);
   }
 
-  luaL_loadfile(state, "config.lua");
+  luaL_loadfile(state, "./config.lua");
   {
     int result = lua_pcall(state, 0, LUA_MULTRET, 0);
     if (result != LUA_OK) {

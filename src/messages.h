@@ -9,10 +9,12 @@ typedef enum {
   MSG_INPUT,
   MSG_UI_WINDOW,
   MSG_UI_WIDGET,
+  MSG_LUA_BRIDGE,
 } MessageGroups;
 
 typedef enum {
   MSG_GAME_INIT = 0x001,
+  MSG_GAME_KILL_REQUEST,
   MSG_GAME_KILL,
 
   MSG_SYSTEM_UPDATE,

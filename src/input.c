@@ -3,16 +3,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "lua.h"
-
 #include "config.h"
 #include "input.h"
+#include "lua_bridge.h"
 #include "messages.h"
 
 InputActionBinding *input_bindings = NULL;
 InputActionRef *input_action_refs = NULL;
-InputActionCallback main_callback = NULL;
-void *main_callback_userdata = NULL;
 
 void input_init() {
   input_bindings = rectify_array_alloc(10, sizeof(InputActionBinding));
@@ -38,39 +35,28 @@ void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
     return;
   }
 
-  for (uint32_t t = 0; t < rectify_array_size(input_bindings); t++) {
-    if (input_bindings[t].key == event->key) {
-      main_callback(&input_bindings[t], main_callback_userdata);
+  {
+    InputActionBinding *key_bind = NULL;
+    for (uint32_t t = 0; t < rectify_array_size(input_bindings); t++) {
+      if (input_bindings[t].key == event->key) {
+        key_bind = &input_bindings[t];
+      }
+    }
+    if (!key_bind) {
+      return;
+    }
+
+    printf("INPUT: %s\n", key_bind->action);
+    for (uint32_t t = 0; t < rectify_array_size(input_action_refs); t++) {
+      if (strncmp(input_action_refs[t].action, key_bind->action, 128) == 0) {
+        gossip_emit(MSG_LUA_BRIDGE, LUA_ACTION, NULL, &input_action_refs[t]);
+      }
     }
   }
 }
 
 void input_mouse_callback(const PicassoWindowMouseEvent *event) {
   gossip_emit(MSG_INPUT, MSG_INPUT_MOUSE, NULL, (void *)event);
-}
-
-void input_action(InputActionBinding *binding, void *userdata) {
-  printf("INPUT: %s\n", binding->action);
-
-  for (uint32_t t = 0; t < rectify_array_size(input_action_refs); t++) {
-    if (strncmp(input_action_refs[t].action, binding->action, 128) == 0) {
-      lua_State *state = (lua_State *)userdata;
-      lua_rawgeti(state, LUA_REGISTRYINDEX, input_action_refs[t].ref);
-      int result = lua_pcall(state, 0, 0, 0);
-      if (result != LUA_OK) {
-        const char *message = lua_tostring(state, -1);
-        printf("LUA: %s: %s\n", __func__, message);
-        lua_pop(state, 1);
-      }
-    }
-  }
-}
-
-void input_action_callback(InputActionCallback callback, void *userdata) {
-  assert(callback);
-
-  main_callback = callback;
-  main_callback_userdata = userdata;
 }
 
 void input_action_add_binding(InputActionBinding *binding) {

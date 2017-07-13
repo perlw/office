@@ -62,15 +62,11 @@ GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback cal
   for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
     Group *const g = &gossip->groups[t];
 
-    if (group_id != GOSSIP_GROUP_ALL && g->id != group_id) {
+    if (g->id != group_id) {
       continue;
     }
 
     group = g;
-
-    if (group_id != GOSSIP_GROUP_ALL) {
-      break;
-    }
   }
 
   if (!group) {
