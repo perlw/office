@@ -303,11 +303,23 @@ void lua_bridge_internal_gossip_event(uint32_t group_id, uint32_t id, void *cons
 
         case MSG_UI_WIDGET:
           switch (id) {
-            case UI_WIDGET_RUNE_SELECTOR_SELECTED:
+            case UI_WIDGET_RUNE_SELECTOR_SELECTED: {
               uint32_t rune = *(uint32_t *)userdata;
               lua_pushnumber(lua_bridge->state, rune);
               num_args++;
               break;
+            }
+
+            case UI_WIDGET_EVENT_PAINT: {
+              UIWindow *window = (UIWindow *)userdata;
+              lua_newtable(lua_bridge->state);
+
+              lua_pushnumber(lua_bridge->state, (lua_Number)(uintptr_t)window);
+              lua_setfield(lua_bridge->state, -2, "target");
+
+              num_args++;
+              break;
+            }
           }
           break;
       }

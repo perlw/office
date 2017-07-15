@@ -6,7 +6,7 @@
 UIDialogRuneSelector *ui_dialog_rune_selector_create(uint32_t x, uint32_t y) {
   UIDialogRuneSelector *dialog = calloc(1, sizeof(UIDialogRuneSelector));
 
-  dialog->window = ui_window_create("C FontSel", x, y, 18, 18);
+  dialog->window = ui_window_create("C RuneSel", x, y, 18, 18);
   dialog->rune_selector = ui_widget_rune_selector_create(dialog->window);
 
   return dialog;
