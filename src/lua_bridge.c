@@ -143,125 +143,29 @@ struct LuaBridge {
   LuaBridgeHandle *handles;
 };
 
+int lua_bridge_internal_input_action(lua_State *state);
 void lua_bridge_internal_action_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
 void lua_bridge_internal_gossip_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
-int lua_bridge_internal_load(lua_State *state);
+
+int lua_bridge_internal_gossip_load(lua_State *state);
 int lua_bridge_internal_gossip_subscribe(lua_State *state);
 int lua_bridge_internal_gossip_unsubscribe(lua_State *state);
 int lua_bridge_internal_gossip_emit(lua_State *state);
 void lua_bridge_internal_gossip_ids_to_string(uint32_t group_id, uint32_t id, uintmax_t length, char *buffer);
 
-int internal_action(lua_State *state) {
-  InputActionRef action_ref = (InputActionRef){
-    .action = (char *)lua_tostring(state, 1),
-    .ref = (int32_t)luaL_ref(state, LUA_REGISTRYINDEX),
-  };
-  input_action_add_action(&action_ref);
-  return 0;
-}
+int lua_bridge_internal_ui_window_load(lua_State *state);
+int lua_bridge_internal_ui_window_create(lua_State *state);
+int lua_bridge_internal_ui_window_destroy(lua_State *state);
+int lua_bridge_internal_ui_window_glyph(lua_State *state);
 
-int internal_mod_func1(lua_State *state) {
-  printf("LUA FUNC 1\n");
-  return 0;
-}
-
-int internal_mod_func2(lua_State *state) {
-  printf("LUA FUNC 2\n");
-  return 0;
-}
-
-int internal_lua_ui_window_create(lua_State *state) {
-  if (lua_gettop(state) < 5) {
-    printf("Main: Too few arguments to function \"ui.window_create\".\n");
-    lua_pushnil(state);
-    return 1;
-  }
-
-  const char *title = lua_tostring(state, 1);
-  uint32_t x = (uint32_t)lua_tonumber(state, 2);
-  uint32_t y = (uint32_t)lua_tonumber(state, 3);
-  uint32_t width = (uint32_t)lua_tonumber(state, 4);
-  uint32_t height = (uint32_t)lua_tonumber(state, 5);
-
-  UIWindow *window = ui_window_create(title, x, y, width, height);
-  lua_pushnumber(state, (lua_Number)(uintptr_t)window);
-
-  return 1;
-}
-
-int internal_lua_ui_window_destroy(lua_State *state) {
-  if (lua_gettop(state) < 1) {
-    printf("Main: Too few arguments to function \"ui.window_destroy\".\n");
-    return 0;
-  }
-
-  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
-  if (!window) {
-    return 0;
-  }
-
-  ui_window_destroy(window);
-
-  return 0;
-}
-
-int internal_lua_ui_window_glyph(lua_State *state) {
-  if (lua_gettop(state) < 5) {
-    printf("Main: Too few arguments to function \"ui.window_glyph\".\n");
-    return 0;
-  }
-
-  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
-  if (!window) {
-    return 0;
-  }
-
-  uint8_t rune = (uint8_t)lua_tonumber(state, 2);
-  int32_t x = (int32_t)lua_tonumber(state, 3);
-  int32_t y = (int32_t)lua_tonumber(state, 4);
-  uint32_t fore_color = (uint32_t)lua_tonumber(state, 5);
-  uint32_t back_color = (uint32_t)lua_tonumber(state, 6);
-
-  ui_window_glyph(window, x, y, (Glyph){
-                                  .rune = rune,
-                                  .fore = glyphcolor_from_int(fore_color),
-                                  .back = glyphcolor_from_int(back_color),
-                                });
-
-  return 0;
-}
-
-void register_lua_module(lua_State *state, const char *name, int (*load_func)(lua_State *)) {
-  lua_getglobal(state, "package");
-  lua_pushstring(state, "preload");
-  lua_gettable(state, -2);
-  lua_pushcclosure(state, load_func, 0);
-  lua_setfield(state, -2, name);
-  lua_settop(state, 0);
-}
-
-int internal_lua_testlib(lua_State *state) {
-  lua_newtable(state);
-
-  lua_pushcfunction(state, &internal_mod_func1);
-  lua_setfield(state, -2, "func1");
-  lua_pushcfunction(state, &internal_mod_func2);
-  lua_setfield(state, -2, "func2");
-
-  return 1;
-}
-
-int internal_lua_ui(lua_State *state) {
-  lua_newtable(state);
-
-  lua_pushcfunction(state, &internal_lua_ui_window_create);
-  lua_setfield(state, -2, "window_create");
-  lua_pushcfunction(state, &internal_lua_ui_window_destroy);
-  lua_setfield(state, -2, "window_destroy");
-  lua_pushcfunction(state, &internal_lua_ui_window_glyph);
-  lua_setfield(state, -2, "window_glyph");
-
-  return 1;
+void lua_bridge_internal_register_lua_module(LuaBridge *lua_bridge, const char *name, int (*load_func)(lua_State *)) {
+  lua_getglobal(lua_bridge->state, "package");
+  lua_pushstring(lua_bridge->state, "preload");
+  lua_gettable(lua_bridge->state, -2);
+  lua_pushlightuserdata(lua_bridge->state, lua_bridge);
+  lua_pushcclosure(lua_bridge->state, load_func, 1);
+  lua_setfield(lua_bridge->state, -2, name);
+  lua_settop(lua_bridge->state, 0);
 }
 
 LuaBridge *lua_bridge_create(void) {
@@ -281,23 +185,15 @@ LuaBridge *lua_bridge_create(void) {
     .handles = rectify_array_alloc(10, sizeof(LuaBridgeHandle)),
   };
 
-  lua_getglobal(state, "package");
-  lua_pushstring(state, "preload");
-  lua_gettable(state, -2);
-  lua_pushlightuserdata(state, lua_bridge);
-  lua_pushcclosure(state, lua_bridge_internal_load, 1);
-  lua_setfield(state, -2, "gossip");
-  lua_settop(state, 0);
+  lua_bridge_internal_register_lua_module(lua_bridge, "lua_bridge/gossip", &lua_bridge_internal_gossip_load);
+  lua_bridge_internal_register_lua_module(lua_bridge, "lua_bridge/ui", &lua_bridge_internal_ui_window_load);
 
   lua_bridge->action_handle = gossip_subscribe(MSG_LUA_BRIDGE, LUA_ACTION, &lua_bridge_internal_action_event, lua_bridge);
   lua_bridge->gossip_handle = gossip_subscribe(GOSSIP_GROUP_ALL, GOSSIP_ID_ALL, &lua_bridge_internal_gossip_event, lua_bridge);
 
   {
-    lua_pushcclosure(state, &internal_action, 0);
+    lua_pushcclosure(state, &lua_bridge_internal_input_action, 0);
     lua_setglobal(state, "action");
-
-    register_lua_module(state, "testlib", internal_lua_testlib);
-    register_lua_module(state, "ui", internal_lua_ui);
 
     luaL_loadfile(state, "./lua/main.lua");
     {
@@ -426,7 +322,90 @@ void lua_bridge_internal_gossip_event(uint32_t group_id, uint32_t id, void *cons
   }
 }
 
-int lua_bridge_internal_load(lua_State *state) {
+int lua_bridge_internal_input_action(lua_State *state) {
+  InputActionRef action_ref = (InputActionRef){
+    .action = (char *)lua_tostring(state, 1),
+    .ref = (int32_t)luaL_ref(state, LUA_REGISTRYINDEX),
+  };
+  input_action_add_action(&action_ref);
+  return 0;
+}
+
+int lua_bridge_internal_ui_window_load(lua_State *state) {
+  lua_newtable(state);
+
+  lua_pushcfunction(state, &lua_bridge_internal_ui_window_create);
+  lua_setfield(state, -2, "window_create");
+  lua_pushcfunction(state, &lua_bridge_internal_ui_window_destroy);
+  lua_setfield(state, -2, "window_destroy");
+  lua_pushcfunction(state, &lua_bridge_internal_ui_window_glyph);
+  lua_setfield(state, -2, "window_glyph");
+
+  return 1;
+}
+
+int lua_bridge_internal_ui_window_create(lua_State *state) {
+  if (lua_gettop(state) < 5) {
+    printf("Main: Too few arguments to function \"ui.window_create\".\n");
+    lua_pushnil(state);
+    return 1;
+  }
+
+  const char *title = lua_tostring(state, 1);
+  uint32_t x = (uint32_t)lua_tonumber(state, 2);
+  uint32_t y = (uint32_t)lua_tonumber(state, 3);
+  uint32_t width = (uint32_t)lua_tonumber(state, 4);
+  uint32_t height = (uint32_t)lua_tonumber(state, 5);
+
+  UIWindow *window = ui_window_create(title, x, y, width, height);
+  lua_pushnumber(state, (lua_Number)(uintptr_t)window);
+
+  return 1;
+}
+
+int lua_bridge_internal_ui_window_destroy(lua_State *state) {
+  if (lua_gettop(state) < 1) {
+    printf("Main: Too few arguments to function \"ui.window_destroy\".\n");
+    return 0;
+  }
+
+  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  if (!window) {
+    return 0;
+  }
+
+  ui_window_destroy(window);
+
+  return 0;
+}
+
+int lua_bridge_internal_ui_window_glyph(lua_State *state) {
+  if (lua_gettop(state) < 5) {
+    printf("Main: Too few arguments to function \"ui.window_glyph\".\n");
+    return 0;
+  }
+
+  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  if (!window) {
+    return 0;
+  }
+
+  uint8_t rune = (uint8_t)lua_tonumber(state, 2);
+  int32_t x = (int32_t)lua_tonumber(state, 3);
+  int32_t y = (int32_t)lua_tonumber(state, 4);
+  uint32_t fore_color = (uint32_t)lua_tonumber(state, 5);
+  uint32_t back_color = (uint32_t)lua_tonumber(state, 6);
+
+  ui_window_glyph(window, x, y, (Glyph){
+                                  .rune = rune,
+                                  .fore = glyphcolor_from_int(fore_color),
+                                  .back = glyphcolor_from_int(back_color),
+                                });
+
+  return 0;
+}
+
+int lua_bridge_internal_gossip_load(lua_State *state) {
   LuaBridge *lua_bridge = (LuaBridge *)lua_topointer(state, lua_upvalueindex(1));
 
   lua_newtable(state);

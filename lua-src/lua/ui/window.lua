@@ -1,5 +1,5 @@
-local gossip = require('gossip')
-local ui = require('ui')
+local gossip = require('lua_bridge/gossip')
+local ui = require('lua_bridge/ui')
 
 local Window = {}
 Window.__index = Window

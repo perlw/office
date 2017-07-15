@@ -1,6 +1,5 @@
-local gossip = require("gossip")
-local testlib = require("testlib")
-local Window = require("window")
+local gossip = require("lua_bridge/gossip")
+local Window = require("ui/window")
 
 action("close", function ()
   gossip.emit("game:kill")
@@ -11,10 +10,6 @@ end)
 action("next_scene", function ()
   gossip.emit("scene:next")
 end)
-
-testlib.func1()
-testlib.func2()
-testlib.func1()
 
 local window = nil
 
