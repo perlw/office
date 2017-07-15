@@ -41,6 +41,7 @@ GlyphColor glyphcolor_adds(GlyphColor c, float s);
 GlyphColor glyphcolor_subs(GlyphColor c, float s);
 GlyphColor glyphcolor_muls(GlyphColor c, float s);
 GlyphColor glyphcolor_divs(GlyphColor c, float s);
+GlyphColor glyphcolor_from_int(uint32_t hex);
 
 typedef struct {
   PicassoBufferGroup *quad;

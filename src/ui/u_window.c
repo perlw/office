@@ -56,7 +56,7 @@ void ui_window_destroy(UIWindow *const window) {
 void ui_window_glyph(UIWindow *const window, uint32_t x, uint32_t y, Glyph glyph) {
   assert(window);
 
-  if (x > window->width - 2 || y > window->height - 2) {
+  if (x > window->width - 3 || y > window->height - 3) {
     return;
   }
 
@@ -73,7 +73,7 @@ void ui_window_internal_update(UIWindow *const window, double delta) {
   while (window->since_update >= window->timing) {
     window->since_update -= window->timing;
 
-    gossip_emit(MSG_UI_WIDGET, UI_WIDGET_EVENT_PAINT, window, window);
+    gossip_emit(MSG_UI_WIDGET, UI_WIDGET_EVENT_PAINT, NULL, window);
   }
 }
 
@@ -105,11 +105,11 @@ void ui_window_mouse_event(uint32_t group_id, uint32_t id, void *const subscribe
   if (m_x > window->x && m_x < window->x + window->width - 1
       && m_y > window->y && m_y < window->y + window->width - 1) {
     gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_MOUSEMOVE, window, &(UIEventMouseMove){
-                                                                    .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                                                    .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
                                                                   });
     if (event->pressed) {
       gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_CLICK, window, &(UIEventClick){
-                                                                  .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                                                  .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
                                                                 });
     }
   }

@@ -5,6 +5,10 @@ The actual game
 * Logging
   - Log to file aswell as log to console
   - Separate files for different systems
+* UI
+  - Move all UI to lua besides the basics (window creation f.ex)
+* Lua bridge
+  - Allow systems to register own interface?
 
 ### System management
 For handling global systems, startup, shutdown, etc
@@ -24,12 +28,6 @@ Graphics, pipeline
 ### Archivist module
 File management
 * Opening/reading
-
-### Muse
-Lua wrapper
-* Cleanups
-* Go over error management
-* Creation of modules
 
 ### Sound/Music
 Boombox/Cassette

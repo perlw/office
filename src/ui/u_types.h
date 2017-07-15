@@ -16,11 +16,13 @@ typedef enum {
 } UIWindowEvent;
 
 typedef struct {
+  UIWindow *target;
   uint32_t x;
   uint32_t y;
 } UIEventMouseMove;
 
 typedef struct {
+  UIWindow *target;
   uint32_t x;
   uint32_t y;
 } UIEventClick;

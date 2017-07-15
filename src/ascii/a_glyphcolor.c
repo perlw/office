@@ -123,3 +123,13 @@ GlyphColor glyphcolor_divs(GlyphColor c, float s) {
 
   return r;
 }
+
+GlyphColor glyphcolor_from_int(uint32_t hex) {
+  GlyphColor g;
+
+  g.r = (hex >> 16) & 0xff;
+  g.g = (hex >> 8) & 0xff;
+  g.b = hex & 0xff;
+
+  return g;
+}

@@ -25,7 +25,6 @@ typedef struct {
 
   uint8_t chosen_rune;
   UIDialogRuneSelector *rune_selector;
-  UIDialogRuneSelector *rune_selector2;
 
   GossipHandle mouse_handle;
   GossipHandle rune_handle;
@@ -104,8 +103,6 @@ SceneWorldEdit *scene_world_edit_create(void) {
   {
     scene->chosen_rune = 1;
     scene->rune_selector = ui_dialog_rune_selector_create(config->ascii_width - 20, 20);
-
-    scene->rune_selector2 = ui_dialog_rune_selector_create(config->ascii_width - 20, 40);
   }
 
   return scene;
@@ -117,7 +114,6 @@ void scene_world_edit_destroy(SceneWorldEdit *const scene) {
   gossip_unsubscribe(scene->rune_handle);
   gossip_unsubscribe(scene->mouse_handle);
 
-  ui_dialog_rune_selector_destroy(scene->rune_selector2);
   ui_dialog_rune_selector_destroy(scene->rune_selector);
 
   surface_destroy(scene->overlay);
