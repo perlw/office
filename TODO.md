@@ -2,11 +2,9 @@ TODO
 ===
 ## Game
 The actual game
-* Rebuild scene management as a system
-* Rebuild ui management as a system
-* Global config/settings/parameters module?
 * Logging
   - Log to file aswell as log to console
+  - Separate files for different systems
 
 ### System management
 For handling global systems, startup, shutdown, etc
