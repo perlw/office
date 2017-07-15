@@ -71,8 +71,8 @@ DebugOverlay *debugoverlay_create(void) {
   snprintf(overlay->scene_buffer, 32, "SCENE: na");
   surface_text(overlay->surface, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
-  overlay->scene_handle = gossip_subscribe(MSG_SCENE, MSG_SCENE_CHANGED, &debugoverlay_internal_scene_changed, overlay, NULL);
-  overlay->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &debugoverlay_internal_system_event, overlay, NULL);
+  overlay->scene_handle = gossip_subscribe(MSG_SCENE, MSG_SCENE_CHANGED, &debugoverlay_internal_scene_changed, overlay);
+  overlay->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &debugoverlay_internal_system_event, overlay);
 
   return overlay;
 }

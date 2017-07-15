@@ -13,7 +13,6 @@
 typedef struct {
   uint32_t id;
   GossipHandle handle;
-  void *filter;
   void *subscriberdata;
   GossipCallback callback;
 } Listener;
@@ -50,14 +49,13 @@ void gossip_destroy(void) {
   free(gossip);
 }
 
-GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata, void *const filter) {
+GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata) {
   assert(gossip);
 
   Listener listener = (Listener){
     .id = id,
     .subscriberdata = subscriberdata,
     .callback = callback,
-    .filter = filter,
   };
 
   Group *group = NULL;
@@ -105,7 +103,7 @@ bool gossip_unsubscribe(GossipHandle handle) {
   return false;
 }
 
-void gossip_emit(uint32_t group_id, uint32_t id, void *const self, void *const userdata) {
+void gossip_emit(uint32_t group_id, uint32_t id, void *const userdata) {
   assert(gossip);
 
   for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
@@ -119,10 +117,6 @@ void gossip_emit(uint32_t group_id, uint32_t id, void *const self, void *const u
       Listener *const listener = &group->listeners[u];
 
       if (id != GOSSIP_ID_ALL && listener->id != GOSSIP_ID_ALL && listener->id != id) {
-        continue;
-      }
-
-      if (listener->filter && (!self || listener->filter != self)) {
         continue;
       }
 
@@ -140,8 +134,8 @@ void handle_to_word(GossipHandle handle, uintmax_t max_len, char *buffer) {
   snprintf(buffer, max_len, "%d %s %s %s", a, COLORS[b % NUM_COLORS], ADJECTIVES[c % NUM_ADJECTIVES], SUBJECTS[d % NUM_SUBJECTS]);
 }
 
-GossipHandle gossip_subscribe_debug(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata, void *const filter, const char *filepath, uintmax_t line, const char *function) {
-  GossipHandle handle = gossip_subscribe(group_id, id, callback, subscriberdata, filter);
+GossipHandle gossip_subscribe_debug(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata, const char *filepath, uintmax_t line, const char *function) {
+  GossipHandle handle = gossip_subscribe(group_id, id, callback, subscriberdata);
 
   char buffer[256];
   handle_to_word(handle, 256, buffer);

@@ -14,7 +14,7 @@ void ui_widget_rune_selector_internal_mouse_event(uint32_t group_id, uint32_t id
 
   uint32_t rune = (event->y * 16) + event->x;
   widget->chosen_rune = rune;
-  gossip_emit(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, NULL, &rune);
+  gossip_emit(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, &rune);
 }
 
 void ui_widget_rune_selector_internal_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
@@ -59,8 +59,8 @@ UIWidgetRuneSelector *ui_widget_rune_selector_create(UIWindow *const parent) {
     .chosen_rune = 1,
   };
 
-  widget->event_handle = gossip_subscribe(MSG_UI_WIDGET, GOSSIP_ID_ALL, &ui_widget_rune_selector_internal_event, widget, NULL);
-  widget->mouse_event_handle = gossip_subscribe(MSG_UI_WINDOW, UI_WINDOW_EVENT_CLICK, &ui_widget_rune_selector_internal_mouse_event, widget, NULL);
+  widget->event_handle = gossip_subscribe(MSG_UI_WIDGET, GOSSIP_ID_ALL, &ui_widget_rune_selector_internal_event, widget);
+  widget->mouse_event_handle = gossip_subscribe(MSG_UI_WINDOW, UI_WINDOW_EVENT_CLICK, &ui_widget_rune_selector_internal_mouse_event, widget);
 
   return widget;
 }

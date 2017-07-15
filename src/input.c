@@ -29,7 +29,7 @@ void input_kill() {
 }
 
 void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
-  gossip_emit(MSG_INPUT, MSG_INPUT_KEYBOARD, NULL, (void *)event);
+  gossip_emit(MSG_INPUT, MSG_INPUT_KEYBOARD, (void *)event);
 
   if (event->released) {
     return;
@@ -49,14 +49,14 @@ void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
     printf("INPUT: %s\n", key_bind->action);
     for (uint32_t t = 0; t < rectify_array_size(input_action_refs); t++) {
       if (strncmp(input_action_refs[t].action, key_bind->action, 128) == 0) {
-        gossip_emit(MSG_LUA_BRIDGE, LUA_ACTION, NULL, &input_action_refs[t]);
+        gossip_emit(MSG_LUA_BRIDGE, LUA_ACTION, &input_action_refs[t]);
       }
     }
   }
 }
 
 void input_mouse_callback(const PicassoWindowMouseEvent *event) {
-  gossip_emit(MSG_INPUT, MSG_INPUT_MOUSE, NULL, (void *)event);
+  gossip_emit(MSG_INPUT, MSG_INPUT_MOUSE, (void *)event);
 }
 
 void input_action_add_binding(InputActionBinding *binding) {

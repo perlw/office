@@ -279,8 +279,8 @@ LuaBridge *lua_bridge_create(void) {
   lua_setfield(state, -2, "gossip");
   lua_settop(state, 0);
 
-  lua_bridge->action_handle = gossip_subscribe(MSG_LUA_BRIDGE, LUA_ACTION, &lua_bridge_internal_action_event, lua_bridge, NULL);
-  lua_bridge->gossip_handle = gossip_subscribe(GOSSIP_GROUP_ALL, GOSSIP_ID_ALL, &lua_bridge_internal_gossip_event, lua_bridge, NULL);
+  lua_bridge->action_handle = gossip_subscribe(MSG_LUA_BRIDGE, LUA_ACTION, &lua_bridge_internal_action_event, lua_bridge);
+  lua_bridge->gossip_handle = gossip_subscribe(GOSSIP_GROUP_ALL, GOSSIP_ID_ALL, &lua_bridge_internal_gossip_event, lua_bridge);
 
   {
     lua_pushcclosure(state, &internal_action, 0);
@@ -551,20 +551,18 @@ int lua_bridge_internal_gossip_emit(lua_State *state) {
     case MSG_UI_WIDGET:
       switch (keys.id) {
         case UI_WIDGET_RUNE_SELECTOR_SELECTED:
-          printf("rune ? ");
           uint32_t rune = (uint32_t)lua_tonumber(state, 2);
-          printf("%d\n", rune);
-          gossip_emit(keys.group_id, keys.id, NULL, &rune);
+          gossip_emit(keys.group_id, keys.id, &rune);
           break;
 
         default:
-          gossip_emit(keys.group_id, keys.id, NULL, NULL);
+          gossip_emit(keys.group_id, keys.id, NULL);
           break;
       }
       break;
 
     default:
-      gossip_emit(keys.group_id, keys.id, NULL, NULL);
+      gossip_emit(keys.group_id, keys.id, NULL);
       break;
   }
 

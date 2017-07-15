@@ -63,9 +63,9 @@ SoundSys *soundsys_create(void) {
     return NULL;
   }
 
-  //gossip_subscribe(MSG_GAME, MSG_GAME_INIT, &soundsys_event, soundsys, NULL);
-  soundsys->sound_handle = gossip_subscribe(MSG_SOUND, GOSSIP_ID_ALL, &soundsys_internal_sound_event, soundsys, NULL);
-  soundsys->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &soundsys_internal_system_event, soundsys, NULL);
+  //gossip_subscribe(MSG_GAME, MSG_GAME_INIT, &soundsys_event, soundsys);
+  soundsys->sound_handle = gossip_subscribe(MSG_SOUND, GOSSIP_ID_ALL, &soundsys_internal_sound_event, soundsys);
+  soundsys->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &soundsys_internal_system_event, soundsys);
 
   return soundsys;
 }
@@ -101,7 +101,7 @@ void soundsys_internal_update(SoundSys *soundsys, double delta) {
       spectrum.song_id = 1;
       boombox_cassette_get_spectrum(soundsys->song2, spectrum.left, spectrum.right);
     }
-    gossip_emit(MSG_SOUND, MSG_SOUND_SPECTRUM, NULL, &spectrum);
+    gossip_emit(MSG_SOUND, MSG_SOUND_SPECTRUM, &spectrum);
   }
 }
 

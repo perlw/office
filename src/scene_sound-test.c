@@ -50,17 +50,17 @@ void scene_sound_test_keyboard(uint32_t group_id, uint32_t id, void *const subsc
 
   if (event->pressed) {
     if (event->key == PICASSO_KEY_P) {
-      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_SONG, NULL, &scene->song);
+      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_SONG, &scene->song);
     } else if (event->key == PICASSO_KEY_S) {
-      gossip_emit(MSG_SOUND, MSG_SOUND_STOP_SONG, NULL, NULL);
+      gossip_emit(MSG_SOUND, MSG_SOUND_STOP_SONG, NULL);
       for (uint32_t t = 0; t < 78; t++) {
         scene->spectrum_left[t] = 0.0f;
         scene->spectrum_right[t] = 0.0f;
       }
     } else if (event->key == PICASSO_KEY_N) {
       scene->song = (scene->song == 0 ? 1 : 0);
-      gossip_emit(MSG_SOUND, MSG_SOUND_STOP_SONG, NULL, NULL);
-      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_SONG, NULL, &scene->song);
+      gossip_emit(MSG_SOUND, MSG_SOUND_STOP_SONG, NULL);
+      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_SONG, &scene->song);
     }
   }
 }
@@ -88,8 +88,8 @@ SceneSoundTest *scene_sound_test_create(void) {
   scene->spectrum->buffer[base + 14].fore = (GlyphColor){ 255, 255, 255 };
   // -Spectrum UI
 
-  scene->spectrum_handle = gossip_subscribe(MSG_SOUND, MSG_SOUND_SPECTRUM, &scene_sound_test_spectrum, scene, NULL);
-  scene->input_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_KEYBOARD, &scene_sound_test_keyboard, scene, NULL);
+  scene->spectrum_handle = gossip_subscribe(MSG_SOUND, MSG_SOUND_SPECTRUM, &scene_sound_test_spectrum, scene);
+  scene->input_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_KEYBOARD, &scene_sound_test_keyboard, scene);
 
   return scene;
 }

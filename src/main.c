@@ -80,8 +80,8 @@ int main(int argc, char **argv) {
 
   AsciiBuffer *ascii_screen = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
 
-  gossip_subscribe(MSG_GAME, MSG_GAME_KILL, &game_kill_event, NULL, NULL);
-  gossip_emit(MSG_GAME, MSG_GAME_INIT, NULL, NULL);
+  gossip_subscribe(MSG_GAME, MSG_GAME_KILL, &game_kill_event, NULL);
+  gossip_emit(MSG_GAME, MSG_GAME_INIT, NULL);
 
   const double frame_timing = (config->frame_lock > 0 ? 1.0 / (double)config->frame_lock : 0);
   double next_frame = frame_timing;
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
     double delta = tick - last_tick;
     last_tick = tick;
 
-    gossip_emit(MSG_SYSTEM, MSG_SYSTEM_UPDATE, NULL, &delta);
+    gossip_emit(MSG_SYSTEM, MSG_SYSTEM_UPDATE, &delta);
 
     next_frame += delta;
     if (next_frame >= frame_timing) {
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
       picasso_window_clear();
 
       for (uint32_t t = MSG_SYSTEM_DRAW; t <= MSG_SYSTEM_DRAW_TOP; t++) {
-        gossip_emit(MSG_SYSTEM, t, NULL, ascii_screen);
+        gossip_emit(MSG_SYSTEM, t, ascii_screen);
       }
 
       ascii_buffer_draw(ascii_screen);

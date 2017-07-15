@@ -44,7 +44,7 @@ void scene_world_edit_mouse_event(uint32_t group_id, uint32_t id, void *const su
 
   if (scene->m_x > 0 && scene->m_y > 0 && scene->m_x < scene->world->width - 1 && scene->m_y < scene->world->height - 1) {
     if (event->pressed) {
-      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_BOOM, NULL, NULL);
+      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_BOOM, NULL);
 
       uint32_t index = (scene->m_y * scene->world->width) + scene->m_x;
       scene->world->buffer[index] = (Glyph){
@@ -97,8 +97,8 @@ SceneWorldEdit *scene_world_edit_create(void) {
   };
   surface_rect(scene->world, 0, 0, scene->world->width, scene->world->height, rect_tiles, false, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
 
-  scene->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_MOUSE, &scene_world_edit_mouse_event, scene, NULL);
-  scene->rune_handle = gossip_subscribe(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, &scene_world_edit_rune_selected, scene, NULL);
+  scene->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_MOUSE, &scene_world_edit_mouse_event, scene);
+  scene->rune_handle = gossip_subscribe(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, &scene_world_edit_rune_selected, scene);
 
   {
     scene->chosen_rune = 1;

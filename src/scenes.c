@@ -49,8 +49,8 @@ Scenes *scenes_create(void) {
   scenes->current_scene = &scene_dummy;
   scenes->current_scene_data = NULL;
 
-  scenes->scene_handle = gossip_subscribe(MSG_SCENE, GOSSIP_ID_ALL, &scenes_internal_scene_event, scenes, NULL);
-  scenes->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &scenes_internal_system_event, scenes, NULL);
+  scenes->scene_handle = gossip_subscribe(MSG_SCENE, GOSSIP_ID_ALL, &scenes_internal_scene_event, scenes);
+  scenes->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &scenes_internal_system_event, scenes);
 
   return scenes;
 }
@@ -62,7 +62,7 @@ void scenes_destroy(Scenes *scenes) {
   gossip_unsubscribe(scenes->scene_handle);
 
   if (scenes->current_scene) {
-    gossip_emit(MSG_SCENE, MSG_SCENE_TEARDOWN, NULL, scenes->current_scene);
+    gossip_emit(MSG_SCENE, MSG_SCENE_TEARDOWN, scenes->current_scene);
     scenes->current_scene->destroy(scenes->current_scene_data);
   }
 
@@ -87,16 +87,16 @@ void scenes_register(Scenes *scenes, Scene *scene) {
 }
 
 void scenes_internal_go(Scenes *scenes, uint32_t index) {
-  gossip_emit(MSG_SCENE, MSG_SCENE_TEARDOWN, NULL, scenes->current_scene);
+  gossip_emit(MSG_SCENE, MSG_SCENE_TEARDOWN, scenes->current_scene);
   scenes->current_scene->destroy(scenes->current_scene_data);
   scenes->current_scene = NULL;
 
   scenes->current_scene = &scenes->scenes[index];
   scenes->current_scene_data = scenes->current_scene->create();
-  gossip_emit(MSG_SCENE, MSG_SCENE_SETUP, NULL, scenes->current_scene);
+  gossip_emit(MSG_SCENE, MSG_SCENE_SETUP, scenes->current_scene);
 
   printf("SCENES: Switched to scene \"%s\"\n", scenes->current_scene->name);
-  gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, NULL, scenes->current_scene);
+  gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, scenes->current_scene);
 }
 
 void scenes_internal_move(Scenes *scenes, int32_t move) {
@@ -105,7 +105,7 @@ void scenes_internal_move(Scenes *scenes, int32_t move) {
   for (uintmax_t t = 0; t < rectify_array_size(scenes->scenes); t++) {
     if (&scenes->scenes[t] == scenes->current_scene) {
       if ((t > 0 && move < 0) || (t < rectify_array_size(scenes->scenes) - 1 && move > 0)) {
-        scenes_internal_go(scenes, t + move);
+        scenes_internal_go(scenes, (uint32_t)t + move);
       }
       break;
     }
@@ -117,7 +117,7 @@ void scenes_goto(Scenes *scenes, const char *name) {
 
   for (uintmax_t t = 0; t < rectify_array_size(scenes->scenes); t++) {
     if (strncmp(scenes->scenes[t].name, name, 128) == 0) {
-      scenes_internal_go(scenes, t);
+      scenes_internal_go(scenes, (uint32_t)t);
       return;
     }
   }

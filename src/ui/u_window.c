@@ -36,8 +36,8 @@ UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t heig
   };
   window->surface->buffer[width - 4].rune = 181;
 
-  window->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &ui_window_internal_system_event, window, NULL);
-  window->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_MOUSE, &ui_window_mouse_event, window, NULL);
+  window->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &ui_window_internal_system_event, window);
+  window->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_MOUSE, &ui_window_mouse_event, window);
 
   return window;
 }
@@ -73,7 +73,7 @@ void ui_window_internal_update(UIWindow *const window, double delta) {
   while (window->since_update >= window->timing) {
     window->since_update -= window->timing;
 
-    gossip_emit(MSG_UI_WIDGET, UI_WIDGET_EVENT_PAINT, NULL, window);
+    gossip_emit(MSG_UI_WIDGET, UI_WIDGET_EVENT_PAINT, window);
   }
 }
 
@@ -104,13 +104,13 @@ void ui_window_mouse_event(uint32_t group_id, uint32_t id, void *const subscribe
 
   if (m_x > window->x && m_x < window->x + window->width - 1
       && m_y > window->y && m_y < window->y + window->width - 1) {
-    gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_MOUSEMOVE, window, &(UIEventMouseMove){
-                                                                    .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
-                                                                  });
+    gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_MOUSEMOVE, &(UIEventMouseMove){
+                                                            .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                                          });
     if (event->pressed) {
-      gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_CLICK, window, &(UIEventClick){
-                                                                  .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
-                                                                });
+      gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_CLICK, &(UIEventClick){
+                                                          .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                                        });
     }
   }
 }
