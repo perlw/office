@@ -171,17 +171,19 @@ int internal_mod_func2(lua_State *state) {
 }
 
 int internal_lua_ui_window_create(lua_State *state) {
-  if (lua_gettop(state) < 4) {
+  if (lua_gettop(state) < 5) {
     printf("Main: Too few arguments to function \"ui.window_create\".\n");
-    return 0;
+    lua_pushnil(state);
+    return 1;
   }
 
-  uint32_t x = (uint32_t)lua_tonumber(state, 1);
-  uint32_t y = (uint32_t)lua_tonumber(state, 2);
-  uint32_t width = (uint32_t)lua_tonumber(state, 3);
-  uint32_t height = (uint32_t)lua_tonumber(state, 4);
+  const char *title = lua_tostring(state, 1);
+  uint32_t x = (uint32_t)lua_tonumber(state, 2);
+  uint32_t y = (uint32_t)lua_tonumber(state, 3);
+  uint32_t width = (uint32_t)lua_tonumber(state, 4);
+  uint32_t height = (uint32_t)lua_tonumber(state, 5);
 
-  UIWindow *window = ui_window_create(x, y, width, height);
+  UIWindow *window = ui_window_create(title, x, y, width, height);
   lua_pushnumber(state, (lua_Number)(uintptr_t)window);
 
   return 1;
@@ -194,6 +196,10 @@ int internal_lua_ui_window_destroy(lua_State *state) {
   }
 
   UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  if (!window) {
+    return 0;
+  }
+
   ui_window_destroy(window);
 
   return 0;
@@ -206,6 +212,10 @@ int internal_lua_ui_window_glyph(lua_State *state) {
   }
 
   UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  if (!window) {
+    return 0;
+  }
+
   uint8_t rune = (uint8_t)lua_tonumber(state, 2);
   int32_t x = (int32_t)lua_tonumber(state, 3);
   int32_t y = (int32_t)lua_tonumber(state, 4);

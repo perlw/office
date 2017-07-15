@@ -13,7 +13,11 @@ setmetatable(Window, {
 })
 
 function Window:create(x, y, width, height)
-  self.handle = ui.window_create(x, y, width, height)
+  self.handle = ui.window_create("LUA FontSel", x, y, width, height)
+  if self.handle == nil then
+    io.write("UI:Window> failed to create window...\n")
+    self.handle = 0
+  end
   self.click_callback = function()end
 
   local gossip_events = {

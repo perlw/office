@@ -8,7 +8,7 @@
 #include "u_widgets.h"
 
 // +UIWindow
-UIWindow *ui_window_create(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 void ui_window_destroy(UIWindow *const window);
 
 void ui_window_glyph(UIWindow *const window, uint32_t x, uint32_t y, Glyph glyph);
