@@ -5,7 +5,6 @@
 #include "bedrock/bedrock.h"
 
 #include "ascii/ascii.h"
-#include "messages.h"
 #include "scenes.h"
 
 struct Scenes {
@@ -39,8 +38,8 @@ Scene scene_dummy = {
   .draw = &scenes_dummy_draw,
 };
 
-void scenes_internal_scene_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
-void scenes_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
+void scenes_internal_scene_event(const char *message, void *const subscriberdata, void *const userdata);
+void scenes_internal_system_event(const char *message, void *const subscriberdata, void *const userdata);
 
 Scenes *scenes_create(void) {
   Scenes *scenes = calloc(1, sizeof(Scenes));
@@ -49,8 +48,8 @@ Scenes *scenes_create(void) {
   scenes->current_scene = &scene_dummy;
   scenes->current_scene_data = NULL;
 
-  scenes->scene_handle = gossip_subscribe(MSG_SCENE, GOSSIP_ID_ALL, &scenes_internal_scene_event, scenes);
-  scenes->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &scenes_internal_system_event, scenes);
+  scenes->scene_handle = gossip_subscribe("scene:*", &scenes_internal_scene_event, scenes);
+  scenes->system_handle = gossip_subscribe("system:*", &scenes_internal_system_event, scenes);
 
   return scenes;
 }
@@ -62,7 +61,7 @@ void scenes_destroy(Scenes *scenes) {
   gossip_unsubscribe(scenes->scene_handle);
 
   if (scenes->current_scene) {
-    gossip_emit(MSG_SCENE, MSG_SCENE_TEARDOWN, scenes->current_scene);
+    gossip_emit("scene:teardown", scenes->current_scene);
     scenes->current_scene->destroy(scenes->current_scene_data);
   }
 
@@ -87,16 +86,16 @@ void scenes_register(Scenes *scenes, Scene *scene) {
 }
 
 void scenes_internal_go(Scenes *scenes, uint32_t index) {
-  gossip_emit(MSG_SCENE, MSG_SCENE_TEARDOWN, scenes->current_scene);
+  gossip_emit("scene:teardown", scenes->current_scene);
   scenes->current_scene->destroy(scenes->current_scene_data);
   scenes->current_scene = NULL;
 
   scenes->current_scene = &scenes->scenes[index];
   scenes->current_scene_data = scenes->current_scene->create();
-  gossip_emit(MSG_SCENE, MSG_SCENE_SETUP, scenes->current_scene);
+  gossip_emit("scene:setup", scenes->current_scene);
 
   printf("SCENES: Switched to scene \"%s\"\n", scenes->current_scene->name);
-  gossip_emit(MSG_SCENE, MSG_SCENE_CHANGED, scenes->current_scene);
+  gossip_emit("scene:changed", scenes->current_scene);
 }
 
 void scenes_internal_move(Scenes *scenes, int32_t move) {
@@ -127,34 +126,23 @@ void scenes_goto(Scenes *scenes, const char *name) {
   scenes->current_scene_data = NULL;
 }
 
-void scenes_internal_scene_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void scenes_internal_scene_event(const char *message, void *const subscriberdata, void *const userdata) {
   Scenes *scenes = (Scenes *)subscriberdata;
 
-  switch (id) {
-    case MSG_SCENE_PREV: {
-      scenes_internal_move(scenes, -1);
-      break;
-    }
-
-    case MSG_SCENE_NEXT: {
-      scenes_internal_move(scenes, 1);
-      break;
-    }
+  if (strncmp(message, "prev", 128) == 0) {
+    scenes_internal_move(scenes, -1);
+  } else if (strncmp(message, "next", 128) == 0) {
+    scenes_internal_move(scenes, 1);
   }
 }
 
-void scenes_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void scenes_internal_system_event(const char *message, void *const subscriberdata, void *const userdata) {
   Scenes *scenes = (Scenes *)subscriberdata;
 
-  switch (id) {
-    case MSG_SYSTEM_UPDATE:
-      scenes->current_scene->update(scenes->current_scene_data, *(double *)userdata);
-      break;
-
-    case MSG_SYSTEM_DRAW: {
-      AsciiBuffer *screen = (AsciiBuffer *)userdata;
-      scenes->current_scene->draw(scenes->current_scene_data, screen);
-      break;
-    }
+  if (strncmp(message, "update", 128) == 0) {
+    //scenes->current_scene->update(scenes->current_scene_data, *(double *)userdata);
+  } else if (strncmp(message, "draw", 128) == 0) {
+    AsciiBuffer *screen = (AsciiBuffer *)userdata;
+    //scenes->current_scene->draw(scenes->current_scene_data, screen);
   }
 }

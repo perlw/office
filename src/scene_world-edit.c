@@ -6,7 +6,6 @@
 
 #include "ascii/ascii.h"
 #include "config.h"
-#include "messages.h"
 #include "ui/ui.h"
 
 typedef struct {
@@ -29,8 +28,8 @@ typedef struct {
   uint32_t o_x, o_y;
 } SceneWorldEdit;
 
-void scene_world_edit_mouse_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
-  if (id != MSG_INPUT_MOUSEMOVE && id != MSG_INPUT_CLICK) {
+void scene_world_edit_mouse_event(const char *message, void *const subscriberdata, void *const userdata) {
+  /*if (id != MSG_INPUT_MOUSEMOVE && id != MSG_INPUT_CLICK) {
     return;
   }
 
@@ -45,15 +44,15 @@ void scene_world_edit_mouse_event(uint32_t group_id, uint32_t id, void *const su
 
   if (id == MSG_INPUT_CLICK && scene->m_x > 0 && scene->m_y > 0 && scene->m_x < scene->world->width - 1 && scene->m_y < scene->world->height - 1) {
     scene->painting = event->pressed;
-  }
+  }*/
 }
 
-void scene_world_edit_rune_selected(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void scene_world_edit_rune_selected(const char *message, void *const subscriberdata, void *const userdata) {
   SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
   scene->chosen_rune = *(uint32_t *)userdata;
 }
 
-void scene_world_edit_color_selected(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void scene_world_edit_color_selected(const char *message, void *const subscriberdata, void *const userdata) {
   SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
   scene->chosen_color = *(uint32_t *)userdata;
 }
@@ -84,9 +83,9 @@ SceneWorldEdit *scene_world_edit_create(void) {
   };
   surface_rect(scene->world, 0, 0, scene->world->width, scene->world->height, rect_tiles, false, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
 
-  scene->mouse_handle = gossip_subscribe(MSG_INPUT, GOSSIP_ID_ALL, &scene_world_edit_mouse_event, scene);
-  scene->rune_handle = gossip_subscribe(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, &scene_world_edit_rune_selected, scene);
-  scene->color_handle = gossip_subscribe(MSG_UI_WIDGET, UI_WIDGET_COLOR_SELECTOR_SELECTED, &scene_world_edit_color_selected, scene);
+  scene->mouse_handle = gossip_subscribe("input:*", &scene_world_edit_mouse_event, scene);
+  scene->rune_handle = gossip_subscribe("widget:rune_selected", &scene_world_edit_rune_selected, scene);
+  scene->color_handle = gossip_subscribe("widget:color_selected", &scene_world_edit_color_selected, scene);
 
   {
     scene->chosen_rune = 1;

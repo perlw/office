@@ -1,9 +1,9 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "bedrock/bedrock.h"
-#include "messages.h"
 #include "sound.h"
 
 struct SoundSys {
@@ -19,8 +19,8 @@ struct SoundSys {
   GossipHandle system_handle;
 };
 
-void soundsys_internal_sound_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
-void soundsys_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
+void soundsys_internal_sound_event(const char *messages, void *const subscriberdata, void *const userdata);
+void soundsys_internal_system_event(const char *messages, void *const subscriberdata, void *const userdata);
 
 SoundSys *soundsys_create(void) {
   SoundSys *soundsys = calloc(1, sizeof(SoundSys));
@@ -64,8 +64,8 @@ SoundSys *soundsys_create(void) {
   }
 
   //gossip_subscribe(MSG_GAME, MSG_GAME_INIT, &soundsys_event, soundsys);
-  soundsys->sound_handle = gossip_subscribe(MSG_SOUND, GOSSIP_ID_ALL, &soundsys_internal_sound_event, soundsys);
-  soundsys->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &soundsys_internal_system_event, soundsys);
+  soundsys->sound_handle = gossip_subscribe("sound:*", &soundsys_internal_sound_event, soundsys);
+  soundsys->system_handle = gossip_subscribe("system:*", &soundsys_internal_system_event, soundsys);
 
   return soundsys;
 }
@@ -101,14 +101,14 @@ void soundsys_internal_update(SoundSys *soundsys, double delta) {
       spectrum.song_id = 1;
       boombox_cassette_get_spectrum(soundsys->song2, spectrum.left, spectrum.right);
     }
-    gossip_emit(MSG_SOUND, MSG_SOUND_SPECTRUM, &spectrum);
+    gossip_emit("sound:spectrum", &spectrum);
   }
 }
 
-void soundsys_internal_sound_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void soundsys_internal_sound_event(const char *message, void *const subscriberdata, void *const userdata) {
   SoundSys *soundsys = (SoundSys *)subscriberdata;
 
-  switch (id) {
+  /*  switch (id) {
     case MSG_GAME_INIT:
       boombox_cassette_play(soundsys->init_sound);
       break;
@@ -139,15 +139,13 @@ void soundsys_internal_sound_event(uint32_t group_id, uint32_t id, void *const s
 
     default:
       break;
-  }
+  }*/
 }
 
-void soundsys_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void soundsys_internal_system_event(const char *message, void *const subscriberdata, void *const userdata) {
   SoundSys *soundsys = (SoundSys *)subscriberdata;
 
-  switch (id) {
-    case MSG_SYSTEM_UPDATE:
-      soundsys_internal_update(soundsys, *(double *)userdata);
-      break;
+  if (strncmp(message, "update", 128) == 0) {
+    soundsys_internal_update(soundsys, *(double *)userdata);
   }
 }

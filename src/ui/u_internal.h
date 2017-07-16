@@ -3,7 +3,6 @@
 #include "bedrock/bedrock.h"
 
 #include "ascii/ascii.h"
-#include "messages.h"
 
 typedef struct UIWindow UIWindow;
 typedef struct UIWidgetRuneSelector UIWidgetRuneSelector;

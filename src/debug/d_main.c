@@ -6,7 +6,6 @@
 
 #include "ascii/ascii.h"
 #include "config.h"
-#include "messages.h"
 #include "scenes.h"
 
 typedef struct {
@@ -25,7 +24,7 @@ typedef struct {
 
 void debugoverlay_internal_update(DebugOverlay *overlay, double dt);
 
-void debugoverlay_internal_scene_changed(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void debugoverlay_internal_scene_changed(const char *message, void *const subscriberdata, void *const userdata) {
   DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
   Scene *scene = (Scene *)userdata;
 
@@ -34,20 +33,16 @@ void debugoverlay_internal_scene_changed(uint32_t group_id, uint32_t id, void *c
   surface_text(overlay->surface, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 }
 
-void debugoverlay_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void debugoverlay_internal_system_event(const char *message, void *const subscriberdata, void *const userdata) {
   DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
 
-  switch (id) {
-    case MSG_SYSTEM_UPDATE:
-      debugoverlay_internal_update(overlay, *(double *)userdata);
-      break;
-
-    case MSG_SYSTEM_DRAW_TOP: {
-      AsciiBuffer *screen = (AsciiBuffer *)userdata;
-      surface_draw(overlay->surface, screen);
-      overlay->frames++;
-      break;
-    }
+  if (strncmp(message, "update", 128) == 0) {
+    debugoverlay_internal_update(overlay, *(double *)userdata);
+  } else if (strncmp(message, "draw", 128) == 0) {
+    //case MSG_SYSTEM_DRAW_TOP: {
+    AsciiBuffer *screen = (AsciiBuffer *)userdata;
+    surface_draw(overlay->surface, screen);
+    overlay->frames++;
   }
 }
 
@@ -71,8 +66,8 @@ DebugOverlay *debugoverlay_create(void) {
   snprintf(overlay->scene_buffer, 32, "SCENE: na");
   surface_text(overlay->surface, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
-  overlay->scene_handle = gossip_subscribe(MSG_SCENE, MSG_SCENE_CHANGED, &debugoverlay_internal_scene_changed, overlay);
-  overlay->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &debugoverlay_internal_system_event, overlay);
+  overlay->scene_handle = gossip_subscribe("scene:changed", &debugoverlay_internal_scene_changed, overlay);
+  overlay->system_handle = gossip_subscribe("system:*", &debugoverlay_internal_system_event, overlay);
 
   return overlay;
 }

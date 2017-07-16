@@ -9,8 +9,8 @@
 
 void ui_window_internal_draw_border(UIWindow *const window);
 void ui_window_internal_update(UIWindow *const window, double delta);
-void ui_window_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
-void ui_window_internal_mouse_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
+void ui_window_internal_system_event(const char *message, void *const subscriberdata, void *const userdata);
+void ui_window_internal_mouse_event(const char *message, void *const subscriberdata, void *const userdata);
 
 UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
   UIWindow *window = calloc(1, sizeof(UIWindow));
@@ -28,8 +28,8 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
 
   ui_window_internal_draw_border(window);
 
-  window->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &ui_window_internal_system_event, window);
-  window->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_CLICK, &ui_window_internal_mouse_event, window);
+  window->system_handle = gossip_subscribe("system:*", &ui_window_internal_system_event, window);
+  window->mouse_handle = gossip_subscribe("input:click", &ui_window_internal_mouse_event, window);
 
   return window;
 }
@@ -68,7 +68,7 @@ void ui_window_internal_draw_border(UIWindow *const window) {
   };
   surface_rect(window->surface, 0, 0, window->width, window->height, rect_tiles, true, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 128, 0, 0 });
 
-  uint32_t text_len = strnlen(window->title, 32) + 1;
+  uint32_t text_len = (uint32_t)strnlen(window->title, 32) + 1;
   window->surface->buffer[1].rune = 181;
   surface_text(window->surface, 2, 0, text_len, window->title, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 0, 0, 0 });
   window->surface->buffer[text_len + 1].rune = 198;
@@ -89,27 +89,22 @@ void ui_window_internal_update(UIWindow *const window, double delta) {
   while (window->since_update >= window->timing) {
     window->since_update -= window->timing;
 
-    gossip_emit(MSG_UI_WIDGET, UI_WIDGET_EVENT_PAINT, window);
+    gossip_emit("widget:paint", window);
   }
 }
 
-void ui_window_internal_system_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void ui_window_internal_system_event(const char *message, void *const subscriberdata, void *const userdata) {
   UIWindow *window = (UIWindow *)subscriberdata;
 
-  switch (id) {
-    case MSG_SYSTEM_UPDATE:
-      ui_window_internal_update(window, *(double *)userdata);
-      break;
-
-    case MSG_SYSTEM_DRAW: {
-      AsciiBuffer *screen = (AsciiBuffer *)userdata;
-      surface_draw(window->surface, screen);
-      break;
-    }
+  if (strncmp(message, "update", 128) == 0) {
+    ui_window_internal_update(window, *(double *)userdata);
+  } else if (strncmp(message, "draw", 128) == 0) {
+    AsciiBuffer *screen = (AsciiBuffer *)userdata;
+    surface_draw(window->surface, screen);
   }
 }
 
-void ui_window_internal_mouse_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void ui_window_internal_mouse_event(const char *message, void *const subscriberdata, void *const userdata) {
   UIWindow *window = (UIWindow *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
 
@@ -120,13 +115,13 @@ void ui_window_internal_mouse_event(uint32_t group_id, uint32_t id, void *const 
 
   if (m_x > window->x && m_x < window->x + window->width - 1
       && m_y > window->y && m_y < window->y + window->width - 1) {
-    gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_MOUSEMOVE, &(UIEventMouseMove){
-                                                            .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
-                                                          });
+    gossip_emit("window:event_mousemove", &(UIEventMouseMove){
+                                            .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                          });
     if (event->pressed) {
-      gossip_emit(MSG_UI_WINDOW, UI_WINDOW_EVENT_CLICK, &(UIEventClick){
-                                                          .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
-                                                        });
+      gossip_emit("window:event_click", &(UIEventClick){
+                                          .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                        });
     }
   }
 }

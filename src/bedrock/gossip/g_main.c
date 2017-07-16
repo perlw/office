@@ -11,19 +11,17 @@
 #include "rectify/rectify.h"
 
 typedef struct {
-  uint32_t id;
+  char *group_id;
+  char *id;
+  bool delete;
   GossipHandle handle;
   void *subscriberdata;
   GossipCallback callback;
 } Listener;
 
 typedef struct {
-  uint32_t id;
   Listener *listeners;
-} Group;
-
-typedef struct {
-  Group *groups;
+  bool dirty;
 } Gossip;
 Gossip *gossip = NULL;
 
@@ -34,52 +32,47 @@ void gossip_init(void) {
 
   gossip = calloc(1, sizeof(Gossip));
   *gossip = (Gossip){
-    .groups = rectify_array_alloc(4, sizeof(Group)),
+    .listeners = rectify_array_alloc(10, sizeof(Listener)),
+    .dirty = false,
   };
 }
 
 void gossip_destroy(void) {
   assert(gossip);
 
-  for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
-    rectify_array_free(gossip->groups[t].listeners);
+  for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
+    Listener *const listener = &gossip->listeners[t];
+    if (listener->group_id) {
+      free(listener->group_id);
+    }
+    if (listener->id) {
+      free(listener->id);
+    }
   }
-  rectify_array_free(gossip->groups);
+  rectify_array_free(gossip->listeners);
 
   free(gossip);
 }
 
-GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata) {
+GossipHandle gossip_subscribe(const char *message, GossipCallback callback, void *const subscriberdata) {
   assert(gossip);
 
   Listener listener = (Listener){
-    .id = id,
     .subscriberdata = subscriberdata,
     .callback = callback,
+    .delete = false,
   };
 
-  Group *group = NULL;
-  for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
-    Group *const g = &gossip->groups[t];
+  char *message_tokens = rectify_memory_alloc_copy(message, strlen(message) + 1);
+  char *message_token_group = strtok(message_tokens, ":");
+  char *message_token_id = strtok(NULL, ":");
+  listener.group_id = rectify_memory_alloc_copy(message_token_group, strnlen(message_token_group, 128) + 1);
+  listener.id = rectify_memory_alloc_copy(message_token_id, strnlen(message_token_id, 128) + 1);
+  free(message_tokens);
 
-    if (g->id != group_id) {
-      continue;
-    }
+  gossip->listeners = rectify_array_push(gossip->listeners, &listener);
 
-    group = g;
-  }
-
-  if (!group) {
-    group = &(Group){
-      .id = group_id,
-      .listeners = rectify_array_alloc(10, sizeof(Listener)),
-    };
-    gossip->groups = rectify_array_push(gossip->groups, group);
-  }
-
-  group->listeners = rectify_array_push(group->listeners, &listener);
-
-  Listener *pushed_listener = &group->listeners[rectify_array_size(group->listeners) - 1];
+  Listener *pushed_listener = &gossip->listeners[rectify_array_size(gossip->listeners) - 1];
   pushed_listener->handle = (uintptr_t)pushed_listener;
 
   return pushed_listener->handle;
@@ -88,42 +81,78 @@ GossipHandle gossip_subscribe(uint32_t group_id, uint32_t id, GossipCallback cal
 bool gossip_unsubscribe(GossipHandle handle) {
   assert(gossip);
 
-  for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
-    Group *const group = &gossip->groups[t];
+  for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
+    Listener *const listener = &gossip->listeners[t];
 
-    for (uintmax_t u = 0; u < rectify_array_size(group->listeners); u++) {
-      Listener *const listener = &group->listeners[u];
-
-      if (listener->handle == handle) {
-        group->listeners = rectify_array_delete(group->listeners, u);
-        return true;
-      }
+    if (listener->handle == handle) {
+      listener->delete = true;
+      gossip->dirty = true;
+      return true;
     }
   }
   return false;
 }
 
-void gossip_emit(uint32_t group_id, uint32_t id, void *const userdata) {
+void gossip_gc(void) {
   assert(gossip);
 
-  for (uintmax_t t = 0; t < rectify_array_size(gossip->groups); t++) {
-    Group *const group = &gossip->groups[t];
+  if (!gossip->dirty) {
+    return;
+  }
+  gossip->dirty = false;
 
-    if (group_id != GOSSIP_GROUP_ALL && group->id != GOSSIP_GROUP_ALL && group->id != group_id) {
+  uintmax_t count = 0;
+  Listener *listeners = rectify_array_alloc(10, sizeof(Listener));
+  for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
+    Listener *const listener = &gossip->listeners[t];
+
+    if (!listener->delete) {
+      listeners = rectify_array_push(listeners, listener);
+    } else {
+      if (listener->group_id) {
+        free(listener->group_id);
+      }
+      if (listener->id) {
+        free(listener->id);
+      }
+      count++;
+    }
+  }
+  rectify_array_free(gossip->listeners);
+  gossip->listeners = listeners;
+
+  printf("Gossip: GC pass, cleaned out %" PRIuMAX " dead handles\n", count);
+}
+
+void gossip_emit(const char *message, void *const userdata) {
+  assert(gossip);
+
+  char *message_tokens = rectify_memory_alloc_copy(message, strlen(message) + 1);
+  char *message_token_group = strtok(message_tokens, ":");
+  char *message_token_id = strtok(NULL, ":");
+  bool skip_group_check = (strncmp(message_token_group, "*", 2) == 0);
+  bool skip_id_check = (strncmp(message_token_id, "*", 2) == 0);
+
+  // TODO: Wrap in debug, verbosity
+  if (strncmp(message_token_group, "system", 128) != 0) {
+    printf("Gossip: Emitting <%s>:<%s>\n", message_token_group, message_token_id);
+  }
+
+  for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
+    Listener *const listener = &gossip->listeners[t];
+
+    if (listener->delete) {
       continue;
     }
 
-    for (uintmax_t u = 0; u < rectify_array_size(group->listeners); u++) {
-      Listener *const listener = &group->listeners[u];
-
-      if (id != GOSSIP_ID_ALL && listener->id != GOSSIP_ID_ALL && listener->id != id) {
-        continue;
-      }
-
+    if ((skip_group_check || strncmp(listener->group_id, "*", 2) == 0 || strncmp(listener->group_id, message_token_group, 128) == 0)
+        && (skip_id_check || strncmp(listener->id, "*", 2) == 0 || strncmp(listener->id, message_token_id, 128) == 0)) {
       GossipCallback callback = listener->callback;
-      callback(group_id, id, listener->subscriberdata, userdata);
+      callback(message_token_id, listener->subscriberdata, userdata);
     }
   }
+
+  free(message_tokens);
 }
 
 void handle_to_word(GossipHandle handle, uintmax_t max_len, char *buffer) {
@@ -134,12 +163,12 @@ void handle_to_word(GossipHandle handle, uintmax_t max_len, char *buffer) {
   snprintf(buffer, max_len, "%d %s %s %s", a, COLORS[b % NUM_COLORS], ADJECTIVES[c % NUM_ADJECTIVES], SUBJECTS[d % NUM_SUBJECTS]);
 }
 
-GossipHandle gossip_subscribe_debug(uint32_t group_id, uint32_t id, GossipCallback callback, void *const subscriberdata, const char *filepath, uintmax_t line, const char *function) {
-  GossipHandle handle = gossip_subscribe(group_id, id, callback, subscriberdata);
+GossipHandle gossip_subscribe_debug(const char *message, GossipCallback callback, void *const subscriberdata, const char *filepath, uintmax_t line, const char *function) {
+  GossipHandle handle = gossip_subscribe(message, callback, subscriberdata);
 
   char buffer[256];
   handle_to_word(handle, 256, buffer);
-  printf("Gossip:(%s:%" PRIuPTR "/%s) Subscribing to %d:%d, handle is [%s] (%p)\n", filepath, line, function, group_id, id, buffer, (void *)handle);
+  printf("Gossip:(%s:%" PRIuPTR "/%s) Subscribing to %s, handle is [%s] (%p)\n", filepath, line, function, message, buffer, (void *)handle);
 
   return handle;
 }

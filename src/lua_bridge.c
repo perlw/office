@@ -10,11 +10,10 @@
 #include "lua_bridge.h"
 
 #include "input.h"
-#include "messages.h"
 #include "scenes.h"
 #include "ui/ui.h"
 
-struct {
+/*struct {
   char *name;
   uint32_t key;
   struct {
@@ -128,7 +127,7 @@ struct {
     .name = NULL,
     .key = 0,
   },
-};
+};*/
 
 typedef struct {
   int32_t group_id;
@@ -148,8 +147,8 @@ struct LuaBridge {
 };
 
 int lua_bridge_internal_input_action(lua_State *state);
-void lua_bridge_internal_action_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
-void lua_bridge_internal_gossip_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata);
+void lua_bridge_internal_action_event(const char *message, void *const subscriberdata, void *const userdata);
+void lua_bridge_internal_gossip_event(const char *message, void *const subscriberdata, void *const userdata);
 
 int lua_bridge_internal_gossip_load(lua_State *state);
 int lua_bridge_internal_gossip_subscribe(lua_State *state);
@@ -192,8 +191,8 @@ LuaBridge *lua_bridge_create(void) {
   lua_bridge_internal_register_lua_module(lua_bridge, "lua_bridge/gossip", &lua_bridge_internal_gossip_load);
   lua_bridge_internal_register_lua_module(lua_bridge, "lua_bridge/ui", &lua_bridge_internal_ui_window_load);
 
-  lua_bridge->action_handle = gossip_subscribe(MSG_LUA_BRIDGE, LUA_ACTION, &lua_bridge_internal_action_event, lua_bridge);
-  lua_bridge->gossip_handle = gossip_subscribe(GOSSIP_GROUP_ALL, GOSSIP_ID_ALL, &lua_bridge_internal_gossip_event, lua_bridge);
+  lua_bridge->action_handle = gossip_subscribe("lua_bridge:action", &lua_bridge_internal_action_event, lua_bridge);
+  //lua_bridge->gossip_handle = gossip_subscribe("*:*", &lua_bridge_internal_gossip_event, lua_bridge);
 
   {
     lua_pushcclosure(state, &lua_bridge_internal_input_action, 0);
@@ -218,7 +217,7 @@ void lua_bridge_destroy(LuaBridge *const lua_bridge) {
 
   lua_close(lua_bridge->state);
 
-  gossip_unsubscribe(lua_bridge->gossip_handle);
+  //gossip_unsubscribe(lua_bridge->gossip_handle);
   gossip_unsubscribe(lua_bridge->action_handle);
 
   rectify_array_free(lua_bridge->handles);
@@ -226,7 +225,7 @@ void lua_bridge_destroy(LuaBridge *const lua_bridge) {
   free(lua_bridge);
 }
 
-void lua_bridge_internal_action_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void lua_bridge_internal_action_event(const char *message, void *const subscriberdata, void *const userdata) {
   LuaBridge *lua_bridge = (LuaBridge *)subscriberdata;
   InputActionRef *action_ref = (InputActionRef *)userdata;
 
@@ -239,10 +238,10 @@ void lua_bridge_internal_action_event(uint32_t group_id, uint32_t id, void *cons
   }
 }
 
-void lua_bridge_internal_gossip_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+void lua_bridge_internal_gossip_event(const char *message, void *const subscriberdata, void *const userdata) {
   LuaBridge *lua_bridge = (LuaBridge *)subscriberdata;
 
-  for (uint32_t t = 0; t < rectify_array_size(lua_bridge->handles); t++) {
+  /*for (uint32_t t = 0; t < rectify_array_size(lua_bridge->handles); t++) {
     LuaBridgeHandle *handle = &lua_bridge->handles[t];
 
     if ((handle->keys.group_id == group_id || handle->keys.group_id == GOSSIP_GROUP_ALL)
@@ -343,7 +342,7 @@ void lua_bridge_internal_gossip_event(uint32_t group_id, uint32_t id, void *cons
         lua_pop(lua_bridge->state, 1);
       }
     }
-  }
+  }*/
 }
 
 int lua_bridge_internal_input_action(lua_State *state) {
@@ -451,7 +450,7 @@ GossipKeys lua_bridge_internal_find_gossip_keys(const char *lua_keys) {
   int32_t group_id = -1;
   int32_t id = -1;
 
-  char *tokens = rectify_memory_alloc_copy(lua_keys, strlen(lua_keys) + 1);
+  /*char *tokens = rectify_memory_alloc_copy(lua_keys, strlen(lua_keys) + 1);
   char *token_group = strtok(tokens, ":");
   char *token_id = strtok(NULL, ":");
   for (uint32_t t = 0; lua_bridge_keys[t].name; t++) {
@@ -469,7 +468,7 @@ GossipKeys lua_bridge_internal_find_gossip_keys(const char *lua_keys) {
       break;
     }
   }
-  free(tokens);
+  free(tokens);*/
 
   return (GossipKeys){
     .group_id = group_id,
@@ -478,7 +477,7 @@ GossipKeys lua_bridge_internal_find_gossip_keys(const char *lua_keys) {
 }
 
 void lua_bridge_internal_gossip_ids_to_string(uint32_t group_id, uint32_t id, uintmax_t length, char *buffer) {
-  for (uint32_t t = 0; lua_bridge_keys[t].name; t++) {
+  /*for (uint32_t t = 0; lua_bridge_keys[t].name; t++) {
     if (lua_bridge_keys[t].key == group_id) {
       for (uint32_t u = 0; lua_bridge_keys[t].children[u].name; u++) {
         if (lua_bridge_keys[t].children[u].key == id) {
@@ -486,7 +485,7 @@ void lua_bridge_internal_gossip_ids_to_string(uint32_t group_id, uint32_t id, ui
         }
       }
     }
-  }
+  }*/
 }
 
 int lua_bridge_internal_gossip_subscribe(lua_State *state) {
@@ -560,7 +559,7 @@ int lua_bridge_internal_gossip_emit(lua_State *state) {
     return 0;
   }
 
-  switch (keys.group_id) {
+  /*switch (keys.group_id) {
     case MSG_UI_WIDGET:
       switch (keys.id) {
         case UI_WIDGET_RUNE_SELECTOR_SELECTED:
@@ -582,7 +581,7 @@ int lua_bridge_internal_gossip_emit(lua_State *state) {
     default:
       gossip_emit(keys.group_id, keys.id, NULL);
       break;
-  }
+  }*/
 
   return 0;
 }
