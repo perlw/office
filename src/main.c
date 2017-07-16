@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
 
     soundsys_update(soundsys, delta);
     scenes_update(scenes, delta);
-    ui_update(delta);
+    lua_bridge_update(lua_bridge, delta);
     debugoverlay_update(debug_overlay, delta);
 
     next_frame += delta;
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
       picasso_window_clear();
 
       scenes_draw(scenes, ascii_screen);
-      ui_draw(ascii_screen);
+      lua_bridge_draw(lua_bridge, ascii_screen);
       debugoverlay_draw(debug_overlay, ascii_screen);
 
       ascii_buffer_draw(ascii_screen);

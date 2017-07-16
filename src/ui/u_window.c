@@ -8,7 +8,6 @@
 #include "ui.h"
 
 void ui_window_internal_draw_border(UIWindow *const window);
-void ui_window_internal_window_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
 void ui_window_internal_mouse_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
 
 UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
@@ -27,7 +26,6 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
 
   ui_window_internal_draw_border(window);
 
-  window->window_handle = gossip_subscribe("window:*", &ui_window_internal_window_event, window);
   window->mouse_handle = gossip_subscribe("input:click", &ui_window_internal_mouse_event, window);
 
   return window;
@@ -37,7 +35,6 @@ void ui_window_destroy(UIWindow *const window) {
   assert(window);
 
   gossip_unsubscribe(window->mouse_handle);
-  gossip_unsubscribe(window->window_handle);
 
   surface_destroy(window->surface);
 
@@ -57,6 +54,23 @@ void ui_window_glyph(UIWindow *const window, uint32_t x, uint32_t y, Glyph glyph
   uint32_t ty = y + 1;
 
   window->surface->buffer[(ty * window->width) + tx] = glyph;
+}
+
+void ui_window_update(UIWindow *const window, double delta) {
+  assert(window);
+
+  window->since_update += delta;
+  while (window->since_update >= window->timing) {
+    window->since_update -= window->timing;
+
+    gossip_emit("widget:paint", window);
+  }
+}
+
+void ui_window_draw(UIWindow *const window, AsciiBuffer *const screen) {
+  assert(window);
+
+  surface_draw(window->surface, screen);
 }
 
 void ui_window_internal_draw_border(UIWindow *const window) {
@@ -79,17 +93,6 @@ void ui_window_internal_draw_border(UIWindow *const window) {
     .back = (GlyphColor){ 0, 0, 0 },
   };
   window->surface->buffer[window->width - 4].rune = 181;
-}
-
-void ui_window_internal_window_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
-  UIWindow *window = (UIWindow *)subscriberdata;
-
-  if (strncmp(id, "update", 128) == 0) {
-    gossip_emit("widget:paint", window);
-  } else if (strncmp(id, "draw", 128) == 0) {
-    AsciiBuffer *const screen = (AsciiBuffer * const)userdata;
-    surface_draw(window->surface, screen);
-  }
 }
 
 void ui_window_internal_mouse_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {

@@ -9,6 +9,7 @@
 
 #include "lua_bridge.h"
 
+#include "ascii/ascii.h"
 #include "input.h"
 #include "scenes.h"
 #include "ui/ui.h"
@@ -23,6 +24,8 @@ struct LuaBridge {
   lua_State *state;
   GossipHandle action_handle;
   GossipHandle gossip_handle;
+
+  UIWindow **windows;
 
   LuaBridgeHandle *handles;
 };
@@ -66,6 +69,7 @@ LuaBridge *lua_bridge_create(void) {
   *lua_bridge = (LuaBridge){
     .state = state,
     .handles = rectify_array_alloc(10, sizeof(LuaBridgeHandle)),
+    .windows = rectify_array_alloc(10, sizeof(UIWindow *)),
   };
 
   lua_bridge_internal_register_lua_module(lua_bridge, "lua_bridge/gossip", &lua_bridge_internal_gossip_load);
@@ -111,7 +115,25 @@ void lua_bridge_destroy(LuaBridge *const lua_bridge) {
   }
   rectify_array_free(lua_bridge->handles);
 
+  rectify_array_free(lua_bridge->windows);
+
   free(lua_bridge);
+}
+
+void lua_bridge_update(LuaBridge *const lua_bridge, double delta) {
+  assert(lua_bridge);
+
+  for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
+    ui_window_update(lua_bridge->windows[t], delta);
+  }
+}
+
+void lua_bridge_draw(LuaBridge *const lua_bridge, AsciiBuffer *const screen) {
+  assert(lua_bridge);
+
+  for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
+    ui_window_draw(lua_bridge->windows[t], screen);
+  }
 }
 
 void lua_bridge_internal_action_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
@@ -218,13 +240,18 @@ int lua_bridge_internal_input_action(lua_State *state) {
 }
 
 int lua_bridge_internal_ui_window_load(lua_State *state) {
+  LuaBridge *lua_bridge = (LuaBridge *)lua_topointer(state, lua_upvalueindex(1));
+
   lua_newtable(state);
 
-  lua_pushcfunction(state, &lua_bridge_internal_ui_window_create);
+  lua_pushlightuserdata(state, lua_bridge);
+  lua_pushcclosure(state, &lua_bridge_internal_ui_window_create, 1);
   lua_setfield(state, -2, "window_create");
-  lua_pushcfunction(state, &lua_bridge_internal_ui_window_destroy);
+  lua_pushlightuserdata(state, lua_bridge);
+  lua_pushcclosure(state, &lua_bridge_internal_ui_window_destroy, 1);
   lua_setfield(state, -2, "window_destroy");
-  lua_pushcfunction(state, &lua_bridge_internal_ui_window_glyph);
+  lua_pushlightuserdata(state, lua_bridge);
+  lua_pushcclosure(state, &lua_bridge_internal_ui_window_glyph, 1);
   lua_setfield(state, -2, "window_glyph");
 
   return 1;
@@ -237,6 +264,7 @@ int lua_bridge_internal_ui_window_create(lua_State *state) {
     return 1;
   }
 
+  LuaBridge *lua_bridge = (LuaBridge *)lua_topointer(state, lua_upvalueindex(1));
   const char *title = lua_tostring(state, 1);
   uint32_t x = (uint32_t)lua_tonumber(state, 2);
   uint32_t y = (uint32_t)lua_tonumber(state, 3);
@@ -244,6 +272,8 @@ int lua_bridge_internal_ui_window_create(lua_State *state) {
   uint32_t height = (uint32_t)lua_tonumber(state, 5);
 
   UIWindow *window = ui_window_create(title, x, y, width, height);
+  lua_bridge->windows = rectify_array_push(lua_bridge->windows, (void *)&window);
+
   lua_pushnumber(state, (lua_Number)(uintptr_t)window);
 
   return 1;
@@ -255,9 +285,15 @@ int lua_bridge_internal_ui_window_destroy(lua_State *state) {
     return 0;
   }
 
+  LuaBridge *lua_bridge = (LuaBridge *)lua_topointer(state, lua_upvalueindex(1));
   UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
   if (!window) {
     return 0;
+  }
+  for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
+    if (lua_bridge->windows[t] == window) {
+      printf("FOUND ONE!\n");
+    }
   }
 
   ui_window_destroy(window);

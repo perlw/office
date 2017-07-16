@@ -20,7 +20,6 @@ struct UIWindow {
 
   Surface *surface;
 
-  GossipHandle window_handle;
   GossipHandle mouse_handle;
 };
 
