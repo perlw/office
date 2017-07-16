@@ -111,6 +111,10 @@ struct {
         .key = UI_WIDGET_RUNE_SELECTOR_SELECTED,
       },
       {
+        .name = "color_selected",
+        .key = UI_WIDGET_COLOR_SELECTOR_SELECTED,
+      },
+      {
         .name = "paint",
         .key = UI_WIDGET_EVENT_PAINT,
       },
@@ -307,6 +311,13 @@ void lua_bridge_internal_gossip_event(uint32_t group_id, uint32_t id, void *cons
             case UI_WIDGET_RUNE_SELECTOR_SELECTED: {
               uint32_t rune = *(uint32_t *)userdata;
               lua_pushnumber(lua_bridge->state, rune);
+              num_args++;
+              break;
+            }
+
+            case UI_WIDGET_COLOR_SELECTOR_SELECTED: {
+              uint32_t color = *(uint32_t *)userdata;
+              lua_pushnumber(lua_bridge->state, color);
               num_args++;
               break;
             }
@@ -555,6 +566,11 @@ int lua_bridge_internal_gossip_emit(lua_State *state) {
         case UI_WIDGET_RUNE_SELECTOR_SELECTED:
           uint32_t rune = (uint32_t)lua_tonumber(state, 2);
           gossip_emit(keys.group_id, keys.id, &rune);
+          break;
+
+        case UI_WIDGET_COLOR_SELECTOR_SELECTED:
+          uint32_t color = (uint32_t)lua_tonumber(state, 2);
+          gossip_emit(keys.group_id, keys.id, &color);
           break;
 
         default:

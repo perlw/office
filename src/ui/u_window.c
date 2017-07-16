@@ -29,7 +29,7 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
   ui_window_internal_draw_border(window);
 
   window->system_handle = gossip_subscribe(MSG_SYSTEM, GOSSIP_ID_ALL, &ui_window_internal_system_event, window);
-  window->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_MOUSE, &ui_window_internal_mouse_event, window);
+  window->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_CLICK, &ui_window_internal_mouse_event, window);
 
   return window;
 }

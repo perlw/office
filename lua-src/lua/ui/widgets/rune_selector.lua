@@ -20,7 +20,7 @@ function Widget:create(window)
     io.write("UI:RuneSelector> failed to attach to window...\n")
   end
 
-  self.chosen_rune = 1;
+  self.chosen_rune = 1
 
   self.window_events = {
     ["mousemove"] = function (e) end,
@@ -37,36 +37,30 @@ function Widget:create(window)
     self.window_events[id](e)
   end)
 
-  self.widget_events = {
-    ["rune_selected"] = function (id) end,
-    ["paint"] = function (id)
-      for y = 0, 15 do
-        for x = 0, 15 do
-          local rune = (y * 16) + x
-          local fore = 0x808080
-          local back = 0x0
-
-          if math.floor(rune / 16) == math.floor(self.chosen_rune / 16)
-            or math.floor(rune % 16) == math.floor(self.chosen_rune % 16) then
-            fore = 0xc8c8c8
-            back = 0x666666
-          end
-          if rune == self.chosen_rune then
-            fore = 0xffffff
-            back = 0x999999
-          end
-
-          self.window:glyph(rune, x, y, fore, back)
-        end
-      end
-    end,
-  }
-  self.gossip_widget_handle = gossip.subscribe("widget:*", function (id, rune)
+  self.gossip_widget_handle = gossip.subscribe("widget:paint", function (id, e)
     if e ~= nil and e.target ~= self.window.handle then
       return
     end
 
-    self.widget_events[id](e)
+    for y = 0, 15 do
+      for x = 0, 15 do
+        local rune = (y * 16) + x
+        local fore = 0x808080
+        local back = 0x0
+
+        if math.floor(rune / 16) == math.floor(self.chosen_rune / 16)
+          or math.floor(rune % 16) == math.floor(self.chosen_rune % 16) then
+          fore = 0xc8c8c8
+          back = 0x666666
+        end
+        if rune == self.chosen_rune then
+          fore = 0xffffff
+          back = 0x999999
+        end
+
+        self.window:glyph(rune, x, y, fore, back)
+      end
+    end
   end)
 
   self.window:on("close", function ()

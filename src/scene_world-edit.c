@@ -16,23 +16,24 @@ typedef struct {
   Surface *world;
   Surface *overlay;
 
-  struct {
-    uint32_t x, y;
-    float radius;
-    bool rolling;
-  } waves[10];
-  uint32_t next_wave;
-
   uint8_t chosen_rune;
+  uint32_t chosen_color;
   UIDialogRuneSelector *rune_selector;
+
+  bool painting;
 
   GossipHandle mouse_handle;
   GossipHandle rune_handle;
+  GossipHandle color_handle;
   uint32_t m_x, m_y;
   uint32_t o_x, o_y;
 } SceneWorldEdit;
 
 void scene_world_edit_mouse_event(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+  if (id != MSG_INPUT_MOUSEMOVE && id != MSG_INPUT_CLICK) {
+    return;
+  }
+
   SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
   const Config *const config = config_get();
@@ -42,32 +43,19 @@ void scene_world_edit_mouse_event(uint32_t group_id, uint32_t id, void *const su
   scene->m_x = (uint32_t)(event->x / config->grid_size_width);
   scene->m_y = (uint32_t)(event->y / config->grid_size_height);
 
-  if (scene->m_x > 0 && scene->m_y > 0 && scene->m_x < scene->world->width - 1 && scene->m_y < scene->world->height - 1) {
-    if (event->pressed) {
-      gossip_emit(MSG_SOUND, MSG_SOUND_PLAY_BOOM, NULL);
-
-      uint32_t index = (scene->m_y * scene->world->width) + scene->m_x;
-      scene->world->buffer[index] = (Glyph){
-        .rune = scene->chosen_rune,
-        .fore = (GlyphColor){ 255, 255, 255 },
-        .back = (GlyphColor){ 0, 0, 0 },
-      };
-
-      scene->waves[scene->next_wave].rolling = true;
-      scene->waves[scene->next_wave].x = scene->m_x;
-      scene->waves[scene->next_wave].y = scene->m_y;
-      scene->waves[scene->next_wave].radius = 10.0f;
-      scene->next_wave++;
-      if (scene->next_wave >= 10) {
-        scene->next_wave = 0;
-      }
-    }
+  if (id == MSG_INPUT_CLICK && scene->m_x > 0 && scene->m_y > 0 && scene->m_x < scene->world->width - 1 && scene->m_y < scene->world->height - 1) {
+    scene->painting = event->pressed;
   }
 }
 
 void scene_world_edit_rune_selected(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
   SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
   scene->chosen_rune = *(uint32_t *)userdata;
+}
+
+void scene_world_edit_color_selected(uint32_t group_id, uint32_t id, void *const subscriberdata, void *const userdata) {
+  SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
+  scene->chosen_color = *(uint32_t *)userdata;
 }
 
 SceneWorldEdit *scene_world_edit_create(void) {
@@ -79,7 +67,6 @@ SceneWorldEdit *scene_world_edit_create(void) {
   scene->since_update = scene->timing;
   scene->m_x = 0;
   scene->m_y = 0;
-  scene->next_wave = 0;
 
   scene->world = surface_create(0, 0, config->ascii_width - 20, config->ascii_height);
   scene->overlay = surface_clone(scene->world);
@@ -97,12 +84,14 @@ SceneWorldEdit *scene_world_edit_create(void) {
   };
   surface_rect(scene->world, 0, 0, scene->world->width, scene->world->height, rect_tiles, false, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
 
-  scene->mouse_handle = gossip_subscribe(MSG_INPUT, MSG_INPUT_MOUSE, &scene_world_edit_mouse_event, scene);
+  scene->mouse_handle = gossip_subscribe(MSG_INPUT, GOSSIP_ID_ALL, &scene_world_edit_mouse_event, scene);
   scene->rune_handle = gossip_subscribe(MSG_UI_WIDGET, UI_WIDGET_RUNE_SELECTOR_SELECTED, &scene_world_edit_rune_selected, scene);
+  scene->color_handle = gossip_subscribe(MSG_UI_WIDGET, UI_WIDGET_COLOR_SELECTOR_SELECTED, &scene_world_edit_color_selected, scene);
 
   {
     scene->chosen_rune = 1;
-    scene->rune_selector = ui_dialog_rune_selector_create(config->ascii_width - 20, 20);
+    scene->chosen_color = 0xffffff;
+    scene->rune_selector = ui_dialog_rune_selector_create(config->ascii_width - 20, 0);
   }
 
   return scene;
@@ -113,6 +102,7 @@ void scene_world_edit_destroy(SceneWorldEdit *const scene) {
 
   ui_dialog_rune_selector_destroy(scene->rune_selector);
 
+  gossip_unsubscribe(scene->color_handle);
   gossip_unsubscribe(scene->rune_handle);
   gossip_unsubscribe(scene->mouse_handle);
 
@@ -128,69 +118,19 @@ void scene_world_edit_update(SceneWorldEdit *const scene, double delta) {
   scene->since_update += delta;
   while (scene->since_update >= scene->timing) {
     scene->since_update -= scene->timing;
-
-    for (uint32_t t = 0; t < scene->overlay->size; t++) {
-      scene->overlay->buffer[t].fore = glyphcolor_muls(scene->overlay->buffer[t].fore, 0.75);
-      if (scene->overlay->buffer[t].fore.r < 0.9) {
-        scene->overlay->buffer[t].rune = 0;
-      }
-    }
-
-    for (uint32_t t = 0; t < 10; t++) {
-      if (scene->waves[t].rolling) {
-        bool did_paint = false;
-        int32_t x = (int32_t)(scene->waves[t].radius + 0.5f);
-        int32_t y = 0;
-        int32_t err = 0;
-        while (x >= y) {
-          uint32_t ax[] = {
-            scene->waves[t].x + x,
-            scene->waves[t].x + y,
-            scene->waves[t].x - y,
-            scene->waves[t].x - x,
-            scene->waves[t].x - x,
-            scene->waves[t].x - y,
-            scene->waves[t].x + y,
-            scene->waves[t].x + x,
-          };
-          uint32_t ay[] = {
-            scene->waves[t].y + y,
-            scene->waves[t].y + x,
-            scene->waves[t].y + x,
-            scene->waves[t].y + y,
-            scene->waves[t].y - y,
-            scene->waves[t].y - x,
-            scene->waves[t].y - x,
-            scene->waves[t].y - y,
-          };
-          for (uint32_t u = 0; u < 8; u++) {
-            if (ax[u] > 0 && ax[u] < scene->overlay->width - 1
-                && ay[u] > 0 && ay[u] < scene->overlay->height - 1) {
-              uint32_t index = (ay[u] * scene->overlay->width) + ax[u];
-              scene->overlay->buffer[index] = (Glyph){
-                .rune = 2,
-                .fore = (GlyphColor){ 255, 255, 0 },
-                .back = 0,
-              };
-              did_paint = true;
-            }
-          }
-
-          y++;
-          if (err <= 0) {
-            err += (2 * y) + 1;
-          } else {
-            x--;
-            err += (2 * (y - x)) + 1;
-          }
-        }
-
-        scene->waves[t].radius += 1.0f;
-        scene->waves[t].rolling = did_paint;
-      }
-    }
   }
 
+  if (scene->m_x > 0 && scene->m_x < scene->overlay->width - 1
+      && scene->m_y > 0 && scene->m_y < scene->overlay->height - 1) {
+    if (scene->painting) {
+      uint32_t index = (scene->m_y * scene->world->width) + scene->m_x;
+      scene->world->buffer[index] = (Glyph){
+        .rune = scene->chosen_rune,
+        .fore = glyphcolor_from_int(scene->chosen_color),
+        .back = (GlyphColor){ 0, 0, 0 },
+      };
+    }
+  }
   {
     uint32_t index = (scene->o_y * scene->overlay->width) + scene->o_x;
     scene->overlay->buffer[index] = (Glyph){
@@ -204,7 +144,7 @@ void scene_world_edit_update(SceneWorldEdit *const scene, double delta) {
     uint32_t index = (scene->m_y * scene->overlay->width) + scene->m_x;
     scene->overlay->buffer[index] = (Glyph){
       .rune = scene->chosen_rune,
-      .fore = (GlyphColor){ 255, 255, 0 },
+      .fore = glyphcolor_from_int(scene->chosen_color),
       .back = 0,
     };
   }
