@@ -111,10 +111,10 @@ SceneWorldEdit *scene_world_edit_create(void) {
 void scene_world_edit_destroy(SceneWorldEdit *const scene) {
   assert(scene);
 
+  ui_dialog_rune_selector_destroy(scene->rune_selector);
+
   gossip_unsubscribe(scene->rune_handle);
   gossip_unsubscribe(scene->mouse_handle);
-
-  ui_dialog_rune_selector_destroy(scene->rune_selector);
 
   surface_destroy(scene->overlay);
   surface_destroy(scene->world);

@@ -212,11 +212,12 @@ LuaBridge *lua_bridge_create(void) {
 void lua_bridge_destroy(LuaBridge *const lua_bridge) {
   assert(lua_bridge);
 
+  lua_close(lua_bridge->state);
+
   gossip_unsubscribe(lua_bridge->gossip_handle);
   gossip_unsubscribe(lua_bridge->action_handle);
 
   rectify_array_free(lua_bridge->handles);
-  lua_close(lua_bridge->state);
 
   free(lua_bridge);
 }
