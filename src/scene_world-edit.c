@@ -7,7 +7,6 @@
 
 #include "ascii/ascii.h"
 #include "config.h"
-#include "ui/ui.h"
 
 typedef struct {
   double timing;
@@ -18,7 +17,6 @@ typedef struct {
 
   uint8_t chosen_rune;
   uint32_t chosen_color;
-  UIDialogRuneSelector *rune_selector;
 
   bool painting;
 
@@ -87,7 +85,6 @@ SceneWorldEdit *scene_world_edit_create(void) {
   {
     scene->chosen_rune = 1;
     scene->chosen_color = 0xffffff;
-    scene->rune_selector = ui_dialog_rune_selector_create(config->ascii_width - 20, 0);
   }
 
   return scene;
@@ -95,8 +92,6 @@ SceneWorldEdit *scene_world_edit_create(void) {
 
 void scene_world_edit_destroy(SceneWorldEdit *const scene) {
   assert(scene);
-
-  ui_dialog_rune_selector_destroy(scene->rune_selector);
 
   gossip_unsubscribe(scene->color_handle);
   gossip_unsubscribe(scene->rune_handle);
@@ -114,35 +109,35 @@ void scene_world_edit_update(SceneWorldEdit *const scene, double delta) {
   scene->since_update += delta;
   if (scene->since_update >= scene->timing) {
     scene->since_update -= scene->timing;
+  }
 
-    if (scene->m_x > 0 && scene->m_x < scene->overlay->width - 1
-        && scene->m_y > 0 && scene->m_y < scene->overlay->height - 1) {
-      if (scene->painting) {
-        uint32_t index = (scene->m_y * scene->world->width) + scene->m_x;
-        scene->world->buffer[index] = (Glyph){
-          .rune = scene->chosen_rune,
-          .fore = glyphcolor_from_int(scene->chosen_color),
-          .back = (GlyphColor){ 0, 0, 0 },
-        };
-      }
-    }
-    {
-      uint32_t index = (scene->o_y * scene->overlay->width) + scene->o_x;
-      scene->overlay->buffer[index] = (Glyph){
-        .rune = 0,
-        .fore = 0,
-        .back = 0,
-      };
-    }
-    if (scene->m_x > 0 && scene->m_x < scene->overlay->width - 1
-        && scene->m_y > 0 && scene->m_y < scene->overlay->height - 1) {
-      uint32_t index = (scene->m_y * scene->overlay->width) + scene->m_x;
-      scene->overlay->buffer[index] = (Glyph){
+  if (scene->m_x > 0 && scene->m_x < scene->overlay->width - 1
+      && scene->m_y > 0 && scene->m_y < scene->overlay->height - 1) {
+    if (scene->painting) {
+      uint32_t index = (scene->m_y * scene->world->width) + scene->m_x;
+      scene->world->buffer[index] = (Glyph){
         .rune = scene->chosen_rune,
         .fore = glyphcolor_from_int(scene->chosen_color),
-        .back = 0,
+        .back = (GlyphColor){ 0, 0, 0 },
       };
     }
+  }
+  {
+    uint32_t index = (scene->o_y * scene->overlay->width) + scene->o_x;
+    scene->overlay->buffer[index] = (Glyph){
+      .rune = 0,
+      .fore = 0,
+      .back = 0,
+    };
+  }
+  if (scene->m_x > 0 && scene->m_x < scene->overlay->width - 1
+      && scene->m_y > 0 && scene->m_y < scene->overlay->height - 1) {
+    uint32_t index = (scene->m_y * scene->overlay->width) + scene->m_x;
+    scene->overlay->buffer[index] = (Glyph){
+      .rune = scene->chosen_rune,
+      .fore = glyphcolor_from_int(scene->chosen_color),
+      .back = 0,
+    };
   }
 }
 

@@ -292,7 +292,7 @@ int lua_bridge_internal_ui_window_destroy(lua_State *state) {
   }
   for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
     if (lua_bridge->windows[t] == window) {
-      printf("FOUND ONE!\n");
+      lua_bridge->windows = rectify_array_delete(lua_bridge->windows, t);
     }
   }
 

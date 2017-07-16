@@ -3,9 +3,7 @@
 #include <stdint.h>
 
 #include "ascii/ascii.h"
-#include "u_dialogs.h"
 #include "u_types.h"
-#include "u_widgets.h"
 
 // +UIWindow
 UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
