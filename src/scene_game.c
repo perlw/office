@@ -14,8 +14,8 @@ typedef struct {
 SceneGame *scene_game_create(void) {
   SceneGame *scene = calloc(1, sizeof(SceneGame));
 
-  scene->timing = 1 / 30.0;
-  scene->since_update = scene->timing;
+  scene->timing = 1.0 / 30.0;
+  scene->since_update = 1.0 / (double)((rand() % 29) + 1);
 
   return scene;
 }

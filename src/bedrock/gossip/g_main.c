@@ -121,7 +121,7 @@ void gossip_gc(void) {
   rectify_array_free(gossip->listeners);
   gossip->listeners = listeners;
 
-  printf("Gossip: GC pass, cleaned out %" PRIuMAX " dead handles\n", count);
+  printf("Gossip: GC pass, cleaned out %" PRIuMAX " dead handles, new count %" PRIuMAX "/%" PRIuMAX "\n", count, rectify_array_size(gossip->listeners), rectify_array_cap(gossip->listeners));
 }
 
 void gossip_emit(const char *message, void *const userdata) {
@@ -134,10 +134,11 @@ void gossip_emit(const char *message, void *const userdata) {
   bool skip_id_check = (strncmp(message_token_id, "*", 2) == 0);
 
   // TODO: Wrap in debug, verbosity
-  if (strncmp(message_token_group, "system", 128) != 0) {
+  if (strncmp(message_token_id, "paint", 128) != 0 && strncmp(message_token_id, "spectrum", 128) != 0) {
     printf("Gossip: Emitting <%s>:<%s>\n", message_token_group, message_token_id);
   }
 
+  uintmax_t count = 0;
   for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
     Listener *const listener = &gossip->listeners[t];
 
@@ -149,6 +150,7 @@ void gossip_emit(const char *message, void *const userdata) {
         && (skip_id_check || strncmp(listener->id, "*", 2) == 0 || strncmp(listener->id, message_token_id, 128) == 0)) {
       GossipCallback callback = listener->callback;
       callback(message_token_id, listener->subscriberdata, userdata);
+      count++;
     }
   }
 

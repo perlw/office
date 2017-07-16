@@ -19,10 +19,7 @@ typedef struct {
   Surface *surface;
 
   GossipHandle scene_handle;
-  GossipHandle system_handle;
 } DebugOverlay;
-
-void debugoverlay_internal_update(DebugOverlay *overlay, double dt);
 
 void debugoverlay_internal_scene_changed(const char *message, void *const subscriberdata, void *const userdata) {
   DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
@@ -31,19 +28,6 @@ void debugoverlay_internal_scene_changed(const char *message, void *const subscr
   snprintf(overlay->scene_buffer, 32, "SCENE: %s", scene->name);
   printf("%s\n", overlay->scene_buffer);
   surface_text(overlay->surface, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
-}
-
-void debugoverlay_internal_system_event(const char *message, void *const subscriberdata, void *const userdata) {
-  DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
-
-  if (strncmp(message, "update", 128) == 0) {
-    debugoverlay_internal_update(overlay, *(double *)userdata);
-  } else if (strncmp(message, "draw", 128) == 0) {
-    //case MSG_SYSTEM_DRAW_TOP: {
-    AsciiBuffer *screen = (AsciiBuffer *)userdata;
-    surface_draw(overlay->surface, screen);
-    overlay->frames++;
-  }
 }
 
 DebugOverlay *debugoverlay_create(void) {
@@ -67,7 +51,6 @@ DebugOverlay *debugoverlay_create(void) {
   surface_text(overlay->surface, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
   overlay->scene_handle = gossip_subscribe("scene:changed", &debugoverlay_internal_scene_changed, overlay);
-  overlay->system_handle = gossip_subscribe("system:*", &debugoverlay_internal_system_event, overlay);
 
   return overlay;
 }
@@ -75,7 +58,6 @@ DebugOverlay *debugoverlay_create(void) {
 void debugoverlay_destroy(DebugOverlay *overlay) {
   assert(overlay);
 
-  gossip_unsubscribe(overlay->system_handle);
   gossip_unsubscribe(overlay->scene_handle);
 
   surface_destroy(overlay->surface);
@@ -83,7 +65,7 @@ void debugoverlay_destroy(DebugOverlay *overlay) {
   free(overlay);
 }
 
-void debugoverlay_internal_update(DebugOverlay *overlay, double dt) {
+void debugoverlay_update(DebugOverlay *overlay, double dt) {
   assert(overlay);
 
   overlay->current_second += dt;
@@ -111,4 +93,11 @@ void debugoverlay_internal_update(DebugOverlay *overlay, double dt) {
     overlay->current_second = 0;
     overlay->frames = 0;
   }
+}
+
+void debugoverlay_draw(DebugOverlay *overlay, AsciiBuffer *const screen) {
+  assert(overlay);
+
+  surface_draw(overlay->surface, screen);
+  overlay->frames++;
 }

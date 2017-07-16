@@ -73,14 +73,15 @@ int main(int argc, char **argv) {
   scenes_register(scenes, &scene_game);
   scenes_register(scenes, &scene_sound_test);
   scenes_register(scenes, &scene_world_edit);
-  scenes_goto(scenes, init_scene);
 
   DebugOverlay *const debug_overlay = debugoverlay_create();
 
   AsciiBuffer *ascii_screen = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
 
   gossip_subscribe("game:kill", &game_kill_event, NULL);
+
   gossip_emit("game:init", NULL);
+  scenes_goto(scenes, init_scene);
 
   const double frame_timing = (config->frame_lock > 0 ? 1.0 / (double)config->frame_lock : 0);
   double next_frame = frame_timing;
@@ -90,17 +91,19 @@ int main(int argc, char **argv) {
     double delta = tick - last_tick;
     last_tick = tick;
 
-    gossip_emit("system:update", &delta);
+    gossip_gc();
+
+    soundsys_update(soundsys, delta);
+    scenes_update(scenes, delta);
+    debugoverlay_update(debug_overlay, delta);
 
     next_frame += delta;
     if (next_frame >= frame_timing) {
       next_frame = 0.0;
       picasso_window_clear();
 
-      /*for (uint32_t t = MSG_SYSTEM_DRAW; t <= MSG_SYSTEM_DRAW_TOP; t++) {
-        gossip_emit(MSG_SYSTEM, t, ascii_screen);
-      }*/
-      gossip_emit("system:draw", ascii_screen);
+      scenes_draw(scenes, ascii_screen);
+      debugoverlay_draw(debug_overlay, ascii_screen);
 
       ascii_buffer_draw(ascii_screen);
 

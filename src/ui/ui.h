@@ -12,4 +12,7 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
 void ui_window_destroy(UIWindow *const window);
 
 void ui_window_glyph(UIWindow *const window, uint32_t x, uint32_t y, Glyph glyph);
+
+void ui_window_update(UIWindow *const window, double delta);
+void ui_window_draw(UIWindow *const window, AsciiBuffer *const screen);
 // -UIWindow

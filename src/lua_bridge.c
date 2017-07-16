@@ -13,130 +13,9 @@
 #include "scenes.h"
 #include "ui/ui.h"
 
-/*struct {
-  char *name;
-  uint32_t key;
-  struct {
-    char *name;
-    uint32_t key;
-  } children[10];
-} lua_bridge_keys[] = {
-  {
-    .name = "*",
-    .key = GOSSIP_GROUP_ALL,
-    .children = {
-      {
-        .name = "*",
-        .key = GOSSIP_ID_ALL,
-      },
-      {
-        .name = NULL,
-        .key = 0,
-      },
-    },
-  },
-  {
-    .name = "game",
-    .key = MSG_GAME,
-    .children = {
-      {
-        .name = "init",
-        .key = MSG_GAME_INIT,
-      },
-      {
-        .name = "kill",
-        .key = MSG_GAME_KILL,
-      },
-      {
-        .name = NULL,
-        .key = 0,
-      },
-    },
-  },
-  {
-    .name = "scene",
-    .key = MSG_SCENE,
-    .children = {
-      {
-        .name = "prev",
-        .key = MSG_SCENE_PREV,
-      },
-      {
-        .name = "next",
-        .key = MSG_SCENE_NEXT,
-      },
-      {
-        .name = "setup",
-        .key = MSG_SCENE_SETUP,
-      },
-      {
-        .name = "teardown",
-        .key = MSG_SCENE_TEARDOWN,
-      },
-      {
-        .name = "changed",
-        .key = MSG_SCENE_CHANGED,
-      },
-      {
-        .name = NULL,
-        .key = 0,
-      },
-    },
-  },
-  {
-    .name = "window",
-    .key = MSG_UI_WINDOW,
-    .children = {
-      {
-        .name = "mousemove",
-        .key = UI_WINDOW_EVENT_MOUSEMOVE,
-      },
-      {
-        .name = "click",
-        .key = UI_WINDOW_EVENT_CLICK,
-      },
-      {
-        .name = NULL,
-        .key = 0,
-      },
-    },
-  },
-  {
-    .name = "widget",
-    .key = MSG_UI_WIDGET,
-    .children = {
-      {
-        .name = "rune_selected",
-        .key = UI_WIDGET_RUNE_SELECTOR_SELECTED,
-      },
-      {
-        .name = "color_selected",
-        .key = UI_WIDGET_COLOR_SELECTOR_SELECTED,
-      },
-      {
-        .name = "paint",
-        .key = UI_WIDGET_EVENT_PAINT,
-      },
-      {
-        .name = NULL,
-        .key = 0,
-      },
-    },
-  },
-  {
-    .name = NULL,
-    .key = 0,
-  },
-};*/
-
-typedef struct {
-  int32_t group_id;
-  int32_t id;
-} GossipKeys;
-
 typedef struct {
   uint32_t func_ref;
-  GossipKeys keys;
+  //GossipKeys keys;
 } LuaBridgeHandle;
 
 struct LuaBridge {
@@ -192,7 +71,7 @@ LuaBridge *lua_bridge_create(void) {
   lua_bridge_internal_register_lua_module(lua_bridge, "lua_bridge/ui", &lua_bridge_internal_ui_window_load);
 
   lua_bridge->action_handle = gossip_subscribe("lua_bridge:action", &lua_bridge_internal_action_event, lua_bridge);
-  //lua_bridge->gossip_handle = gossip_subscribe("*:*", &lua_bridge_internal_gossip_event, lua_bridge);
+  lua_bridge->gossip_handle = gossip_subscribe("*:*", &lua_bridge_internal_gossip_event, lua_bridge);
 
   {
     lua_pushcclosure(state, &lua_bridge_internal_input_action, 0);
@@ -217,7 +96,7 @@ void lua_bridge_destroy(LuaBridge *const lua_bridge) {
 
   lua_close(lua_bridge->state);
 
-  //gossip_unsubscribe(lua_bridge->gossip_handle);
+  gossip_unsubscribe(lua_bridge->gossip_handle);
   gossip_unsubscribe(lua_bridge->action_handle);
 
   rectify_array_free(lua_bridge->handles);
@@ -446,48 +325,6 @@ int lua_bridge_internal_gossip_load(lua_State *state) {
   return 1;
 }
 
-GossipKeys lua_bridge_internal_find_gossip_keys(const char *lua_keys) {
-  int32_t group_id = -1;
-  int32_t id = -1;
-
-  /*char *tokens = rectify_memory_alloc_copy(lua_keys, strlen(lua_keys) + 1);
-  char *token_group = strtok(tokens, ":");
-  char *token_id = strtok(NULL, ":");
-  for (uint32_t t = 0; lua_bridge_keys[t].name; t++) {
-    if (strcmp(token_group, lua_bridge_keys[t].name) == 0) {
-      group_id = lua_bridge_keys[t].key;
-      for (uint32_t u = 0; lua_bridge_keys[t].children[u].name; u++) {
-        if (strcmp(token_id, lua_bridge_keys[t].children[u].name) == 0) {
-          id = lua_bridge_keys[t].children[u].key;
-          break;
-        } else if (strcmp(token_id, "*") == 0) {
-          id = GOSSIP_ID_ALL;
-          break;
-        }
-      }
-      break;
-    }
-  }
-  free(tokens);*/
-
-  return (GossipKeys){
-    .group_id = group_id,
-    .id = id,
-  };
-}
-
-void lua_bridge_internal_gossip_ids_to_string(uint32_t group_id, uint32_t id, uintmax_t length, char *buffer) {
-  /*for (uint32_t t = 0; lua_bridge_keys[t].name; t++) {
-    if (lua_bridge_keys[t].key == group_id) {
-      for (uint32_t u = 0; lua_bridge_keys[t].children[u].name; u++) {
-        if (lua_bridge_keys[t].children[u].key == id) {
-          snprintf(buffer, length, "%s", lua_bridge_keys[t].children[u].name);
-        }
-      }
-    }
-  }*/
-}
-
 int lua_bridge_internal_gossip_subscribe(lua_State *state) {
   if (lua_gettop(state) < 2) {
     printf("Main: Too few arguments to function \"gossip.subscribe\".\n");
@@ -503,13 +340,13 @@ int lua_bridge_internal_gossip_subscribe(lua_State *state) {
   const char *msg_name = lua_tostring(state, 1);
   int32_t func_ref = (int32_t)luaL_ref(state, LUA_REGISTRYINDEX);
 
-  GossipKeys keys = lua_bridge_internal_find_gossip_keys(msg_name);
+  /*GossipKeys keys = lua_bridge_internal_find_gossip_keys(msg_name);
   if (keys.group_id < 0 || keys.id < 0) {
     return 0;
-  }
+  }*/
 
   lua_bridge->handles = rectify_array_push(lua_bridge->handles, &(LuaBridgeHandle){
-                                                                  .func_ref = func_ref, .keys = keys,
+                                                                  .func_ref = func_ref,
                                                                 });
   lua_pushnumber(lua_bridge->state, func_ref);
 
@@ -552,36 +389,29 @@ int lua_bridge_internal_gossip_emit(lua_State *state) {
     return 0;
   }
 
-  const char *msg_name = lua_tostring(state, 1);
+  const char *message = lua_tostring(state, 1);
 
-  GossipKeys keys = lua_bridge_internal_find_gossip_keys(msg_name);
-  if (keys.group_id < 0 || keys.id < 0) {
-    return 0;
+  char *message_tokens = rectify_memory_alloc_copy(message, strlen(message) + 1);
+  char *message_token_group = strtok(message_tokens, ":");
+  char *message_token_id = strtok(NULL, ":");
+  bool skip_group_check = (strncmp(message_token_group, "*", 2) == 0);
+  bool skip_id_check = (strncmp(message_token_id, "*", 2) == 0);
+
+  if (strncmp(message_token_group, "widget", 128) == 0) {
+    if (strncmp(message_token_id, "rune_selected", 128) == 0) {
+      uint32_t rune = (uint32_t)lua_tonumber(state, 2);
+      gossip_emit(message, &rune);
+    } else if (strncmp(message_token_id, "color_selected", 128) == 0) {
+      uint32_t color = (uint32_t)lua_tonumber(state, 2);
+      gossip_emit(message, &color);
+    } else {
+      gossip_emit(message, NULL);
+    }
+  } else {
+    gossip_emit(message, NULL);
   }
 
-  /*switch (keys.group_id) {
-    case MSG_UI_WIDGET:
-      switch (keys.id) {
-        case UI_WIDGET_RUNE_SELECTOR_SELECTED:
-          uint32_t rune = (uint32_t)lua_tonumber(state, 2);
-          gossip_emit(keys.group_id, keys.id, &rune);
-          break;
-
-        case UI_WIDGET_COLOR_SELECTOR_SELECTED:
-          uint32_t color = (uint32_t)lua_tonumber(state, 2);
-          gossip_emit(keys.group_id, keys.id, &color);
-          break;
-
-        default:
-          gossip_emit(keys.group_id, keys.id, NULL);
-          break;
-      }
-      break;
-
-    default:
-      gossip_emit(keys.group_id, keys.id, NULL);
-      break;
-  }*/
+  free(message_tokens);
 
   return 0;
 }

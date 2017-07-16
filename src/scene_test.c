@@ -149,8 +149,8 @@ SceneTest *scene_test_create(void) {
   const Config *const config = config_get();
 
   scene->offset = 0.0;
-  scene->timing = 1 / 30.0;
-  scene->since_update = scene->timing;
+  scene->timing = 1.0 / 30.0;
+  scene->since_update = 1.0 / (double)((rand() % 29) + 1);
 
   scene->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
 

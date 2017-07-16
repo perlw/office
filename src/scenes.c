@@ -14,7 +14,6 @@ struct Scenes {
   void *current_scene_data;
 
   GossipHandle scene_handle;
-  GossipHandle system_handle;
 };
 
 void *scenes_dummy_create(void) {
@@ -39,7 +38,6 @@ Scene scene_dummy = {
 };
 
 void scenes_internal_scene_event(const char *message, void *const subscriberdata, void *const userdata);
-void scenes_internal_system_event(const char *message, void *const subscriberdata, void *const userdata);
 
 Scenes *scenes_create(void) {
   Scenes *scenes = calloc(1, sizeof(Scenes));
@@ -49,7 +47,6 @@ Scenes *scenes_create(void) {
   scenes->current_scene_data = NULL;
 
   scenes->scene_handle = gossip_subscribe("scene:*", &scenes_internal_scene_event, scenes);
-  scenes->system_handle = gossip_subscribe("system:*", &scenes_internal_system_event, scenes);
 
   return scenes;
 }
@@ -57,7 +54,6 @@ Scenes *scenes_create(void) {
 void scenes_destroy(Scenes *scenes) {
   assert(scenes);
 
-  gossip_unsubscribe(scenes->system_handle);
   gossip_unsubscribe(scenes->scene_handle);
 
   if (scenes->current_scene) {
@@ -126,6 +122,18 @@ void scenes_goto(Scenes *scenes, const char *name) {
   scenes->current_scene_data = NULL;
 }
 
+void scenes_update(Scenes *scenes, double delta) {
+  assert(scenes);
+
+  scenes->current_scene->update(scenes->current_scene_data, delta);
+}
+
+void scenes_draw(Scenes *scenes, AsciiBuffer *const screen) {
+  assert(scenes);
+
+  scenes->current_scene->draw(scenes->current_scene_data, screen);
+}
+
 void scenes_internal_scene_event(const char *message, void *const subscriberdata, void *const userdata) {
   Scenes *scenes = (Scenes *)subscriberdata;
 
@@ -133,16 +141,5 @@ void scenes_internal_scene_event(const char *message, void *const subscriberdata
     scenes_internal_move(scenes, -1);
   } else if (strncmp(message, "next", 128) == 0) {
     scenes_internal_move(scenes, 1);
-  }
-}
-
-void scenes_internal_system_event(const char *message, void *const subscriberdata, void *const userdata) {
-  Scenes *scenes = (Scenes *)subscriberdata;
-
-  if (strncmp(message, "update", 128) == 0) {
-    //scenes->current_scene->update(scenes->current_scene_data, *(double *)userdata);
-  } else if (strncmp(message, "draw", 128) == 0) {
-    AsciiBuffer *screen = (AsciiBuffer *)userdata;
-    //scenes->current_scene->draw(scenes->current_scene_data, screen);
   }
 }

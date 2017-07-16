@@ -7,6 +7,9 @@
 #include "sound.h"
 
 struct SoundSys {
+  double timing;
+  double since_update;
+
   Boombox *boombox;
   BoomboxCassette *init_sound;
   BoomboxCassette *tap_sound;
@@ -16,14 +19,15 @@ struct SoundSys {
   BoomboxCassette *song2;
 
   GossipHandle sound_handle;
-  GossipHandle system_handle;
 };
 
 void soundsys_internal_sound_event(const char *messages, void *const subscriberdata, void *const userdata);
-void soundsys_internal_system_event(const char *messages, void *const subscriberdata, void *const userdata);
 
 SoundSys *soundsys_create(void) {
   SoundSys *soundsys = calloc(1, sizeof(SoundSys));
+
+  soundsys->timing = 1.0 / 30.0;
+  soundsys->since_update = 1.0 / (double)((rand() % 29) + 1);
 
   soundsys->boombox = boombox_create();
   if (boombox_init(soundsys->boombox) != BOOMBOX_OK) {
@@ -65,7 +69,6 @@ SoundSys *soundsys_create(void) {
 
   //gossip_subscribe(MSG_GAME, MSG_GAME_INIT, &soundsys_event, soundsys);
   soundsys->sound_handle = gossip_subscribe("sound:*", &soundsys_internal_sound_event, soundsys);
-  soundsys->system_handle = gossip_subscribe("system:*", &soundsys_internal_system_event, soundsys);
 
   return soundsys;
 }
@@ -73,7 +76,6 @@ SoundSys *soundsys_create(void) {
 void soundsys_destroy(SoundSys *soundsys) {
   assert(soundsys);
 
-  gossip_unsubscribe(soundsys->system_handle);
   gossip_unsubscribe(soundsys->sound_handle);
 
   boombox_cassette_destroy(soundsys->song2);
@@ -86,66 +88,47 @@ void soundsys_destroy(SoundSys *soundsys) {
   free(soundsys);
 }
 
-void soundsys_internal_update(SoundSys *soundsys, double delta) {
+void soundsys_update(SoundSys *soundsys, double delta) {
   assert(soundsys);
 
   boombox_update(soundsys->boombox);
 
-  // Temp
-  if (boombox_cassette_playing(soundsys->song) || boombox_cassette_playing(soundsys->song2)) {
-    Spectrum spectrum;
-    if (boombox_cassette_playing(soundsys->song)) {
-      spectrum.song_id = 0;
-      boombox_cassette_get_spectrum(soundsys->song, spectrum.left, spectrum.right);
-    } else if (boombox_cassette_playing(soundsys->song2)) {
-      spectrum.song_id = 1;
-      boombox_cassette_get_spectrum(soundsys->song2, spectrum.left, spectrum.right);
+  soundsys->since_update += delta;
+  while (soundsys->since_update >= soundsys->timing) {
+    soundsys->since_update -= soundsys->timing;
+
+    // Temp
+    if (boombox_cassette_playing(soundsys->song) || boombox_cassette_playing(soundsys->song2)) {
+      Spectrum spectrum;
+      if (boombox_cassette_playing(soundsys->song)) {
+        spectrum.song_id = 0;
+        boombox_cassette_get_spectrum(soundsys->song, spectrum.left, spectrum.right);
+      } else if (boombox_cassette_playing(soundsys->song2)) {
+        spectrum.song_id = 1;
+        boombox_cassette_get_spectrum(soundsys->song2, spectrum.left, spectrum.right);
+      }
+      gossip_emit("sound:spectrum", &spectrum);
     }
-    gossip_emit("sound:spectrum", &spectrum);
   }
 }
 
 void soundsys_internal_sound_event(const char *message, void *const subscriberdata, void *const userdata) {
   SoundSys *soundsys = (SoundSys *)subscriberdata;
 
-  /*  switch (id) {
-    case MSG_GAME_INIT:
-      boombox_cassette_play(soundsys->init_sound);
-      break;
-
-    case MSG_SOUND_PLAY_TAP:
-      boombox_cassette_play(soundsys->tap_sound);
-      boombox_cassette_set_pitch(soundsys->tap_sound, 0.9f + ((float)(rand() % 20) / 100.0f));
-      break;
-
-    case MSG_SOUND_PLAY_BOOM:
-      boombox_cassette_play(soundsys->boom_sound);
-      break;
-
-    case MSG_SOUND_PLAY_SONG: {
-      uint32_t song = *(uint32_t *)userdata;
-      if (song == 0) {
-        boombox_cassette_play(soundsys->song);
-      } else {
-        boombox_cassette_play(soundsys->song2);
-      }
-      break;
+  if (strncmp(message, "play_tap", 128) == 0) {
+    boombox_cassette_play(soundsys->tap_sound);
+    boombox_cassette_set_pitch(soundsys->tap_sound, 0.9f + ((float)(rand() % 20) / 100.0f));
+  } else if (strncmp(message, "play_boom", 128) == 0) {
+    boombox_cassette_play(soundsys->boom_sound);
+  } else if (strncmp(message, "play_song", 128) == 0) {
+    uint32_t song = *(uint32_t *)userdata;
+    if (song == 0) {
+      boombox_cassette_play(soundsys->song);
+    } else {
+      boombox_cassette_play(soundsys->song2);
     }
-
-    case MSG_SOUND_STOP_SONG:
-      boombox_cassette_stop(soundsys->song);
-      boombox_cassette_stop(soundsys->song2);
-      break;
-
-    default:
-      break;
-  }*/
-}
-
-void soundsys_internal_system_event(const char *message, void *const subscriberdata, void *const userdata) {
-  SoundSys *soundsys = (SoundSys *)subscriberdata;
-
-  if (strncmp(message, "update", 128) == 0) {
-    soundsys_internal_update(soundsys, *(double *)userdata);
+  } else if (strncmp(message, "stop_song", 128) == 0) {
+    boombox_cassette_stop(soundsys->song);
+    boombox_cassette_stop(soundsys->song2);
   }
 }

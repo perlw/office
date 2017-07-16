@@ -8,7 +8,6 @@
 #include "ui.h"
 
 void ui_window_internal_draw_border(UIWindow *const window);
-void ui_window_internal_update(UIWindow *const window, double delta);
 void ui_window_internal_system_event(const char *message, void *const subscriberdata, void *const userdata);
 void ui_window_internal_mouse_event(const char *message, void *const subscriberdata, void *const userdata);
 
@@ -16,8 +15,8 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
   UIWindow *window = calloc(1, sizeof(UIWindow));
 
   *window = (UIWindow){
-    .timing = 1 / 30.0,
-    .since_update = 1 / 30.0,
+    .timing = 1.0 / 30.0,
+    .since_update = 1.0 / (double)((rand() % 29) + 1),
     .title = rectify_memory_alloc_copy(title, strlen(title) + 1),
     .x = x,
     .y = y,
@@ -28,7 +27,6 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
 
   ui_window_internal_draw_border(window);
 
-  window->system_handle = gossip_subscribe("system:*", &ui_window_internal_system_event, window);
   window->mouse_handle = gossip_subscribe("input:click", &ui_window_internal_mouse_event, window);
 
   return window;
@@ -38,7 +36,6 @@ void ui_window_destroy(UIWindow *const window) {
   assert(window);
 
   gossip_unsubscribe(window->mouse_handle);
-  gossip_unsubscribe(window->system_handle);
 
   surface_destroy(window->surface);
 
@@ -82,7 +79,7 @@ void ui_window_internal_draw_border(UIWindow *const window) {
   window->surface->buffer[window->width - 4].rune = 181;
 }
 
-void ui_window_internal_update(UIWindow *const window, double delta) {
+void ui_window_update(UIWindow *const window, double delta) {
   assert(window);
 
   window->since_update += delta;
@@ -93,15 +90,10 @@ void ui_window_internal_update(UIWindow *const window, double delta) {
   }
 }
 
-void ui_window_internal_system_event(const char *message, void *const subscriberdata, void *const userdata) {
-  UIWindow *window = (UIWindow *)subscriberdata;
+void ui_window_draw(UIWindow *const window, AsciiBuffer *const screen) {
+  assert(window);
 
-  if (strncmp(message, "update", 128) == 0) {
-    ui_window_internal_update(window, *(double *)userdata);
-  } else if (strncmp(message, "draw", 128) == 0) {
-    AsciiBuffer *screen = (AsciiBuffer *)userdata;
-    surface_draw(window->surface, screen);
-  }
+  surface_draw(window->surface, screen);
 }
 
 void ui_window_internal_mouse_event(const char *message, void *const subscriberdata, void *const userdata) {

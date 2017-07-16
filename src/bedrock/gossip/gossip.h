@@ -10,6 +10,7 @@ void gossip_destroy(void);
 
 GossipHandle gossip_subscribe(const char *message, GossipCallback callback, void *const subscriberdata);
 bool gossip_unsubscribe(GossipHandle handle);
+void gossip_gc(void);
 
 void gossip_emit(const char *message, void *const userdata);
 
