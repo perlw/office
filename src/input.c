@@ -10,12 +10,12 @@
 InputActionBinding *input_bindings = NULL;
 InputActionRef *input_action_refs = NULL;
 
-void input_init() {
+void input_init(void) {
   input_bindings = rectify_array_alloc(10, sizeof(InputActionBinding));
   input_action_refs = rectify_array_alloc(10, sizeof(InputActionRef));
 }
 
-void input_kill() {
+void input_kill(void) {
   for (uint32_t t = 0; t < rectify_array_size(input_bindings); t++) {
     free(input_bindings[t].action);
   }
@@ -58,25 +58,37 @@ void input_mousemove_callback(const PicassoWindowMouseEvent *event) {
   const Config *const config = config_get();
   uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
   uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
+  static uint32_t o_x = 0;
+  static uint32_t o_y = 0;
 
-  gossip_emit("input:mousemove", &(InputMouseMoveEvent){
-                                   .x = m_x,
-                                   .y = m_y,
-                                 });
+  if (m_x != o_x || m_y != o_y) {
+    gossip_emit("input:mousemove", &(InputMouseMoveEvent){
+                                     .x = m_x,
+                                     .y = m_y,
+                                   });
+    o_x = m_x;
+    o_y = m_y;
+  }
 }
 
 void input_click_callback(const PicassoWindowMouseEvent *event) {
   const Config *const config = config_get();
   uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
   uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
+  static uint32_t o_x = 0;
+  static uint32_t o_y = 0;
 
-  gossip_emit("input:click", &(InputClickEvent){
-                               .button = event->button,
-                               .x = m_x,
-                               .y = m_y,
-                               .pressed = event->pressed,
-                               .released = event->released,
-                             });
+  if (m_x != o_x || m_y != o_y) {
+    gossip_emit("input:click", &(InputClickEvent){
+                                 .button = event->button,
+                                 .x = m_x,
+                                 .y = m_y,
+                                 .pressed = event->pressed,
+                                 .released = event->released,
+                               });
+    o_x = m_x;
+    o_y = m_y;
+  }
 }
 
 void input_action_add_binding(InputActionBinding *binding) {

@@ -120,7 +120,7 @@ void scene_world_edit_update(SceneWorldEdit *const scene, double delta) {
   assert(scene);
 
   scene->since_update += delta;
-  if (scene->since_update >= scene->timing) {
+  while (scene->since_update >= scene->timing) {
     scene->since_update -= scene->timing;
   }
 

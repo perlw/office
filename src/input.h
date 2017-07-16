@@ -27,8 +27,8 @@ typedef struct {
 
 typedef void (*InputActionCallback)(InputActionBinding *, void *);
 
-void input_init();
-void input_kill();
+void input_init(void);
+void input_kill(void);
 void input_keyboard_callback(const PicassoWindowKeyboardEvent *event);
 void input_mousemove_callback(const PicassoWindowMouseEvent *event);
 void input_click_callback(const PicassoWindowMouseEvent *event);
