@@ -83,7 +83,7 @@ void *rectify_array_delete(void *ptr, uintmax_t index) {
   }
 
   meta->size--;
-  return resize_ptr(ptr);
+  return ptr;
 }
 
 uintmax_t rectify_array_cap(const void *const ptr) {
