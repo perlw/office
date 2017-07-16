@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "input.h"
 
 #define UI_INTERNAL
 #include "ui.h"
@@ -97,22 +98,28 @@ void ui_window_internal_draw_border(UIWindow *const window) {
 
 void ui_window_internal_mouse_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   UIWindow *window = (UIWindow *)subscriberdata;
-  PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
 
   const Config *const config = config_get();
 
-  uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
-  uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
+  if (strncmp(id, "mousemove", 128) == 0) {
+    InputMouseMoveEvent *event = (InputMouseMoveEvent *)userdata;
 
-  if (m_x > window->x && m_x < window->x + window->width - 1
-      && m_y > window->y && m_y < window->y + window->width - 1) {
-    gossip_emit("window:mousemove", &(UIEventMouseMove){
-                                      .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+    if (event->x > window->x && event->x < window->x + window->width - 1
+        && event->y > window->y && event->y < window->y + window->width - 1) {
+      gossip_emit("window:mousemove", &(UIEventMouseMove){
+                                        .target = window, .x = event->x - window->x - 1, .y = event->y - window->y - 1,
+                                      });
+    }
+  } else if (strncmp(id, "click", 128) == 0) {
+    InputClickEvent *event = (InputClickEvent *)userdata;
+
+    if (event->x > window->x && event->x < window->x + window->width - 1
+        && event->y > window->y && event->y < window->y + window->width - 1) {
+      if (event->pressed) {
+        gossip_emit("window:click", &(UIEventClick){
+                                      .target = window, .x = event->x - window->x - 1, .y = event->y - window->y - 1,
                                     });
-    if (event->pressed) {
-      gossip_emit("window:click", &(UIEventClick){
-                                    .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
-                                  });
+      }
     }
   }
 }

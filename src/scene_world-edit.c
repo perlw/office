@@ -7,6 +7,7 @@
 
 #include "ascii/ascii.h"
 #include "config.h"
+#include "input.h"
 
 typedef struct {
   double timing;
@@ -29,16 +30,28 @@ typedef struct {
 
 void scene_world_edit_mouse_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
-  PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
   const Config *const config = config_get();
 
   scene->o_x = scene->m_x;
   scene->o_y = scene->m_y;
-  scene->m_x = (uint32_t)(event->x / config->grid_size_width);
-  scene->m_y = (uint32_t)(event->y / config->grid_size_height);
 
-  if (strncmp(id, "click", 128) == 0 && scene->m_x > 0 && scene->m_y > 0 && scene->m_x < scene->world->width - 1 && scene->m_y < scene->world->height - 1) {
-    scene->painting = event->pressed;
+  if (strncmp(id, "click", 128) == 0) {
+    InputClickEvent *event = (InputClickEvent *)userdata;
+
+    if (event->x > 0 && event->y > 0 && event->x < scene->world->width - 1 && event->y < scene->world->height - 1) {
+      scene->m_x = event->x;
+      scene->m_y = event->y;
+      scene->painting = event->pressed;
+    } else {
+      scene->painting = false;
+    }
+  } else {
+    InputMouseMoveEvent *event = (InputMouseMoveEvent *)userdata;
+
+    if (event->x > 0 && event->y > 0 && event->x < scene->world->width - 1 && event->y < scene->world->height - 1) {
+      scene->m_x = event->x;
+      scene->m_y = event->y;
+    }
   }
 }
 
@@ -111,8 +124,8 @@ void scene_world_edit_update(SceneWorldEdit *const scene, double delta) {
     scene->since_update -= scene->timing;
   }
 
-  if (scene->m_x > 0 && scene->m_x < scene->overlay->width - 1
-      && scene->m_y > 0 && scene->m_y < scene->overlay->height - 1) {
+  if (scene->m_x > 0 && scene->m_x < scene->world->width - 1
+      && scene->m_y > 0 && scene->m_y < scene->world->height - 1) {
     if (scene->painting) {
       uint32_t index = (scene->m_y * scene->world->width) + scene->m_x;
       scene->world->buffer[index] = (Glyph){
@@ -122,22 +135,22 @@ void scene_world_edit_update(SceneWorldEdit *const scene, double delta) {
       };
     }
   }
+
   {
-    uint32_t index = (scene->o_y * scene->overlay->width) + scene->o_x;
-    scene->overlay->buffer[index] = (Glyph){
-      .rune = 0,
-      .fore = 0,
-      .back = 0,
-    };
-  }
-  if (scene->m_x > 0 && scene->m_x < scene->overlay->width - 1
-      && scene->m_y > 0 && scene->m_y < scene->overlay->height - 1) {
-    uint32_t index = (scene->m_y * scene->overlay->width) + scene->m_x;
-    scene->overlay->buffer[index] = (Glyph){
-      .rune = scene->chosen_rune,
-      .fore = glyphcolor_from_int(scene->chosen_color),
-      .back = 0,
-    };
+    surface_clear(scene->overlay, (Glyph){
+                                    .rune = 0,
+                                    .fore = 0,
+                                    .back = 0,
+                                  });
+    if (scene->m_x > 0 && scene->m_x < scene->overlay->width - 1
+        && scene->m_y > 0 && scene->m_y < scene->overlay->height - 1) {
+      uint32_t index = (scene->m_y * scene->overlay->width) + scene->m_x;
+      scene->overlay->buffer[index] = (Glyph){
+        .rune = scene->chosen_rune,
+        .fore = glyphcolor_from_int(scene->chosen_color),
+        .back = 0,
+      };
+    }
   }
 }
 

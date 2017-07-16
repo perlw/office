@@ -55,11 +55,28 @@ void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
 }
 
 void input_mousemove_callback(const PicassoWindowMouseEvent *event) {
-  gossip_emit("input:mousemove", (void *)event);
+  const Config *const config = config_get();
+  uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
+  uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
+
+  gossip_emit("input:mousemove", &(InputMouseMoveEvent){
+                                   .x = m_x,
+                                   .y = m_y,
+                                 });
 }
 
 void input_click_callback(const PicassoWindowMouseEvent *event) {
-  gossip_emit("input:click", (void *)event);
+  const Config *const config = config_get();
+  uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
+  uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
+
+  gossip_emit("input:click", &(InputClickEvent){
+                               .button = event->button,
+                               .x = m_x,
+                               .y = m_y,
+                               .pressed = event->pressed,
+                               .released = event->released,
+                             });
 }
 
 void input_action_add_binding(InputActionBinding *binding) {

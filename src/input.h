@@ -12,6 +12,19 @@ typedef struct {
   int32_t ref;
 } InputActionRef;
 
+typedef struct {
+  int32_t button;
+  uint32_t x;
+  uint32_t y;
+  bool pressed;
+  bool released;
+} InputClickEvent;
+
+typedef struct {
+  uint32_t x;
+  uint32_t y;
+} InputMouseMoveEvent;
+
 typedef void (*InputActionCallback)(InputActionBinding *, void *);
 
 void input_init();
