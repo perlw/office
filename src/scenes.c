@@ -37,7 +37,7 @@ Scene scene_dummy = {
   .draw = &scenes_dummy_draw,
 };
 
-void scenes_internal_scene_event(const char *message, void *const subscriberdata, void *const userdata);
+void scenes_internal_scene_event(const char *groupd_id, const char *id, void *const subscriberdata, void *const userdata);
 
 Scenes *scenes_create(void) {
   Scenes *scenes = calloc(1, sizeof(Scenes));
@@ -134,12 +134,12 @@ void scenes_draw(Scenes *scenes, AsciiBuffer *const screen) {
   scenes->current_scene->draw(scenes->current_scene_data, screen);
 }
 
-void scenes_internal_scene_event(const char *message, void *const subscriberdata, void *const userdata) {
+void scenes_internal_scene_event(const char *groupd_id, const char *id, void *const subscriberdata, void *const userdata) {
   Scenes *scenes = (Scenes *)subscriberdata;
 
-  if (strncmp(message, "prev", 128) == 0) {
+  if (strncmp(id, "prev", 128) == 0) {
     scenes_internal_move(scenes, -1);
-  } else if (strncmp(message, "next", 128) == 0) {
+  } else if (strncmp(id, "next", 128) == 0) {
     scenes_internal_move(scenes, 1);
   }
 }

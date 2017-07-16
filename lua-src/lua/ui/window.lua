@@ -24,7 +24,11 @@ function Window:create(title, x, y, width, height)
     ["click"] = function (e) end,
     ["close"] = function () end,
   }
-  self.gossip_window_handle = gossip.subscribe("window:*", function (id, e)
+  self.gossip_window_handle = gossip.subscribe("window:*", function (group_id, id, e)
+    if id ~= "mousemove" and id ~= "click" then
+      return
+    end
+
     if e.target ~= self.handle then
       return
     end

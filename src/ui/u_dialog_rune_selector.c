@@ -20,15 +20,3 @@ void ui_dialog_rune_selector_destroy(UIDialogRuneSelector *const dialog) {
 
   free(dialog);
 }
-
-void ui_dialog_rune_selector_update(UIDialogRuneSelector *const dialog, double delta) {
-  assert(dialog);
-
-  ui_window_update(dialog->window, delta);
-}
-
-void ui_dialog_rune_selector_draw(UIDialogRuneSelector *const dialog, AsciiBuffer *const screen) {
-  assert(dialog);
-
-  ui_window_draw(dialog->window, screen);
-}

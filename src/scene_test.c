@@ -24,7 +24,7 @@ typedef struct {
   GossipHandle input_handle;
 } TextInput;
 
-void textinput_event(const char *message, void *const subscriberdata, void *const userdata);
+void textinput_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
 
 TextInput *textinput_create(uint32_t x, uint32_t y, uint32_t width) {
   TextInput *input = calloc(1, sizeof(TextInput));
@@ -75,7 +75,7 @@ void textinput_update(TextInput *input, double delta) {
   }
 }
 
-void textinput_event(const char *message, void *const subscriberdata, void *const userdata) {
+void textinput_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   TextInput *input = (TextInput *)subscriberdata;
   PicassoWindowKeyboardEvent *event = (PicassoWindowKeyboardEvent *)userdata;
 

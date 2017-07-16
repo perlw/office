@@ -8,8 +8,8 @@
 #include "ui.h"
 
 void ui_window_internal_draw_border(UIWindow *const window);
-void ui_window_internal_system_event(const char *message, void *const subscriberdata, void *const userdata);
-void ui_window_internal_mouse_event(const char *message, void *const subscriberdata, void *const userdata);
+void ui_window_internal_window_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
+void ui_window_internal_mouse_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
 
 UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
   UIWindow *window = calloc(1, sizeof(UIWindow));
@@ -17,7 +17,7 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
   *window = (UIWindow){
     .timing = 1.0 / 30.0,
     .since_update = 1.0 / (double)((rand() % 29) + 1),
-    .title = rectify_memory_alloc_copy(title, strlen(title) + 1),
+    .title = rectify_memory_alloc_copy(title, sizeof(char) * (strlen(title) + 1)),
     .x = x,
     .y = y,
     .width = width,
@@ -27,6 +27,7 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
 
   ui_window_internal_draw_border(window);
 
+  window->window_handle = gossip_subscribe("window:*", &ui_window_internal_window_event, window);
   window->mouse_handle = gossip_subscribe("input:click", &ui_window_internal_mouse_event, window);
 
   return window;
@@ -36,6 +37,7 @@ void ui_window_destroy(UIWindow *const window) {
   assert(window);
 
   gossip_unsubscribe(window->mouse_handle);
+  gossip_unsubscribe(window->window_handle);
 
   surface_destroy(window->surface);
 
@@ -79,24 +81,18 @@ void ui_window_internal_draw_border(UIWindow *const window) {
   window->surface->buffer[window->width - 4].rune = 181;
 }
 
-void ui_window_update(UIWindow *const window, double delta) {
-  assert(window);
+void ui_window_internal_window_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
+  UIWindow *window = (UIWindow *)subscriberdata;
 
-  window->since_update += delta;
-  while (window->since_update >= window->timing) {
-    window->since_update -= window->timing;
-
+  if (strncmp(id, "update", 128) == 0) {
     gossip_emit("widget:paint", window);
+  } else if (strncmp(id, "draw", 128) == 0) {
+    AsciiBuffer *const screen = (AsciiBuffer * const)userdata;
+    surface_draw(window->surface, screen);
   }
 }
 
-void ui_window_draw(UIWindow *const window, AsciiBuffer *const screen) {
-  assert(window);
-
-  surface_draw(window->surface, screen);
-}
-
-void ui_window_internal_mouse_event(const char *message, void *const subscriberdata, void *const userdata) {
+void ui_window_internal_mouse_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   UIWindow *window = (UIWindow *)subscriberdata;
   PicassoWindowMouseEvent *event = (PicassoWindowMouseEvent *)userdata;
 
@@ -107,13 +103,13 @@ void ui_window_internal_mouse_event(const char *message, void *const subscriberd
 
   if (m_x > window->x && m_x < window->x + window->width - 1
       && m_y > window->y && m_y < window->y + window->width - 1) {
-    gossip_emit("window:event_mousemove", &(UIEventMouseMove){
-                                            .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
-                                          });
+    gossip_emit("window:mousemove", &(UIEventMouseMove){
+                                      .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                    });
     if (event->pressed) {
-      gossip_emit("window:event_click", &(UIEventClick){
-                                          .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
-                                        });
+      gossip_emit("window:click", &(UIEventClick){
+                                    .target = window, .x = m_x - window->x - 1, .y = m_y - window->y - 1,
+                                  });
     }
   }
 }

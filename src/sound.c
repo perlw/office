@@ -21,7 +21,7 @@ struct SoundSys {
   GossipHandle sound_handle;
 };
 
-void soundsys_internal_sound_event(const char *messages, void *const subscriberdata, void *const userdata);
+void soundsys_internal_sound_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
 
 SoundSys *soundsys_create(void) {
   SoundSys *soundsys = calloc(1, sizeof(SoundSys));
@@ -112,22 +112,22 @@ void soundsys_update(SoundSys *soundsys, double delta) {
   }
 }
 
-void soundsys_internal_sound_event(const char *message, void *const subscriberdata, void *const userdata) {
+void soundsys_internal_sound_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   SoundSys *soundsys = (SoundSys *)subscriberdata;
 
-  if (strncmp(message, "play_tap", 128) == 0) {
+  if (strncmp(id, "play_tap", 128) == 0) {
     boombox_cassette_play(soundsys->tap_sound);
     boombox_cassette_set_pitch(soundsys->tap_sound, 0.9f + ((float)(rand() % 20) / 100.0f));
-  } else if (strncmp(message, "play_boom", 128) == 0) {
+  } else if (strncmp(id, "play_boom", 128) == 0) {
     boombox_cassette_play(soundsys->boom_sound);
-  } else if (strncmp(message, "play_song", 128) == 0) {
+  } else if (strncmp(id, "play_song", 128) == 0) {
     uint32_t song = *(uint32_t *)userdata;
     if (song == 0) {
       boombox_cassette_play(soundsys->song);
     } else {
       boombox_cassette_play(soundsys->song2);
     }
-  } else if (strncmp(message, "stop_song", 128) == 0) {
+  } else if (strncmp(id, "stop_song", 128) == 0) {
     boombox_cassette_stop(soundsys->song);
     boombox_cassette_stop(soundsys->song2);
   }

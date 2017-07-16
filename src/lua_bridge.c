@@ -15,25 +15,26 @@
 
 typedef struct {
   uint32_t func_ref;
-  //GossipKeys keys;
+  char *group_id;
+  char *id;
 } LuaBridgeHandle;
 
 struct LuaBridge {
   lua_State *state;
   GossipHandle action_handle;
   GossipHandle gossip_handle;
+
   LuaBridgeHandle *handles;
 };
 
 int lua_bridge_internal_input_action(lua_State *state);
-void lua_bridge_internal_action_event(const char *message, void *const subscriberdata, void *const userdata);
-void lua_bridge_internal_gossip_event(const char *message, void *const subscriberdata, void *const userdata);
+void lua_bridge_internal_action_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
+void lua_bridge_internal_gossip_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
 
 int lua_bridge_internal_gossip_load(lua_State *state);
 int lua_bridge_internal_gossip_subscribe(lua_State *state);
 int lua_bridge_internal_gossip_unsubscribe(lua_State *state);
 int lua_bridge_internal_gossip_emit(lua_State *state);
-void lua_bridge_internal_gossip_ids_to_string(uint32_t group_id, uint32_t id, uintmax_t length, char *buffer);
 
 int lua_bridge_internal_ui_window_load(lua_State *state);
 int lua_bridge_internal_ui_window_create(lua_State *state);
@@ -99,12 +100,21 @@ void lua_bridge_destroy(LuaBridge *const lua_bridge) {
   gossip_unsubscribe(lua_bridge->gossip_handle);
   gossip_unsubscribe(lua_bridge->action_handle);
 
+  for (uint32_t t = 0; t < rectify_array_size(lua_bridge->handles); t++) {
+    LuaBridgeHandle *handle = &lua_bridge->handles[t];
+    if (handle->group_id) {
+      free(handle->group_id);
+    }
+    if (handle->id) {
+      free(handle->id);
+    }
+  }
   rectify_array_free(lua_bridge->handles);
 
   free(lua_bridge);
 }
 
-void lua_bridge_internal_action_event(const char *message, void *const subscriberdata, void *const userdata) {
+void lua_bridge_internal_action_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   LuaBridge *lua_bridge = (LuaBridge *)subscriberdata;
   InputActionRef *action_ref = (InputActionRef *)userdata;
 
@@ -117,101 +127,75 @@ void lua_bridge_internal_action_event(const char *message, void *const subscribe
   }
 }
 
-void lua_bridge_internal_gossip_event(const char *message, void *const subscriberdata, void *const userdata) {
+void lua_bridge_internal_gossip_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   LuaBridge *lua_bridge = (LuaBridge *)subscriberdata;
 
-  /*for (uint32_t t = 0; t < rectify_array_size(lua_bridge->handles); t++) {
+  bool skip_group_check = (strncmp(group_id, "*", 2) == 0);
+  bool skip_id_check = (strncmp(id, "*", 2) == 0);
+
+  for (uint32_t t = 0; t < rectify_array_size(lua_bridge->handles); t++) {
     LuaBridgeHandle *handle = &lua_bridge->handles[t];
 
-    if ((handle->keys.group_id == group_id || handle->keys.group_id == GOSSIP_GROUP_ALL)
-        && (handle->keys.id == id || handle->keys.id == GOSSIP_ID_ALL)) {
+    if ((skip_group_check || strncmp(handle->group_id, "*", 2) == 0 || strncmp(handle->group_id, group_id, 128) == 0)
+        && (skip_id_check || strncmp(handle->id, "*", 2) == 0 || strncmp(handle->id, id, 128) == 0)) {
       lua_rawgeti(lua_bridge->state, LUA_REGISTRYINDEX, handle->func_ref);
 
       uint32_t num_args = 0;
 
-      char buffer[128] = { 0 };
-      lua_bridge_internal_gossip_ids_to_string(group_id, id, 128, buffer);
-      lua_pushstring(lua_bridge->state, buffer);
-      num_args++;
+      lua_pushstring(lua_bridge->state, group_id);
+      lua_pushstring(lua_bridge->state, id);
+      num_args += 2;
 
-      switch (group_id) {
-        case MSG_SCENE:
-          switch (id) {
-            case MSG_SCENE_SETUP:
-            case MSG_SCENE_TEARDOWN:
-            case MSG_SCENE_CHANGED: {
-              Scene *scene = (Scene *)userdata;
-              lua_pushstring(lua_bridge->state, scene->name);
-              num_args++;
-              break;
-            }
-          }
-          break;
+      if (strncmp(group_id, "scene", 128) == 0) {
+        Scene *scene = (Scene *)userdata;
+        lua_pushstring(lua_bridge->state, scene->name);
+        num_args++;
+      } else if (strncmp(group_id, "window", 128) == 0) {
+        if (strncmp(id, "mousemove", 128) == 0) {
+          UIEventClick *event = (UIEventClick *)userdata;
 
-        case MSG_UI_WINDOW:
-          switch (id) {
-            case UI_WINDOW_EVENT_MOUSEMOVE: {
-              UIEventClick *event = (UIEventClick *)userdata;
+          lua_newtable(lua_bridge->state);
 
-              lua_newtable(lua_bridge->state);
+          lua_pushnumber(lua_bridge->state, (lua_Number)(uintptr_t)event->target);
+          lua_setfield(lua_bridge->state, -2, "target");
+          lua_pushnumber(lua_bridge->state, event->x);
+          lua_setfield(lua_bridge->state, -2, "x");
+          lua_pushnumber(lua_bridge->state, event->y);
+          lua_setfield(lua_bridge->state, -2, "y");
 
-              lua_pushnumber(lua_bridge->state, (lua_Number)(uintptr_t)event->target);
-              lua_setfield(lua_bridge->state, -2, "target");
-              lua_pushnumber(lua_bridge->state, event->x);
-              lua_setfield(lua_bridge->state, -2, "x");
-              lua_pushnumber(lua_bridge->state, event->y);
-              lua_setfield(lua_bridge->state, -2, "y");
+          num_args++;
+        } else if (strncmp(id, "click", 128) == 0) {
+          UIEventClick *event = (UIEventClick *)userdata;
 
-              num_args++;
-              break;
-            }
+          lua_newtable(lua_bridge->state);
 
-            case UI_WINDOW_EVENT_CLICK: {
-              UIEventClick *event = (UIEventClick *)userdata;
+          lua_pushnumber(lua_bridge->state, (lua_Number)(uintptr_t)event->target);
+          lua_setfield(lua_bridge->state, -2, "target");
+          lua_pushnumber(lua_bridge->state, event->x);
+          lua_setfield(lua_bridge->state, -2, "x");
+          lua_pushnumber(lua_bridge->state, event->y);
+          lua_setfield(lua_bridge->state, -2, "y");
 
-              lua_newtable(lua_bridge->state);
+          num_args++;
+        }
+      } else if (strncmp(group_id, "widget", 128) == 0) {
+        if (strncmp(id, "rune_selected", 128) == 0) {
+          uint32_t rune = *(uint32_t *)userdata;
+          lua_pushnumber(lua_bridge->state, rune);
+          num_args++;
+        } else if (strncmp(id, "color_selected", 128) == 0) {
+          uint32_t color = *(uint32_t *)userdata;
+          lua_pushnumber(lua_bridge->state, color);
+          num_args++;
+        } else if (strncmp(id, "paint", 128) == 0) {
+          UIWindow *window = (UIWindow *)userdata;
+          lua_newtable(lua_bridge->state);
 
-              lua_pushnumber(lua_bridge->state, (lua_Number)(uintptr_t)event->target);
-              lua_setfield(lua_bridge->state, -2, "target");
-              lua_pushnumber(lua_bridge->state, event->x);
-              lua_setfield(lua_bridge->state, -2, "x");
-              lua_pushnumber(lua_bridge->state, event->y);
-              lua_setfield(lua_bridge->state, -2, "y");
+          lua_pushnumber(lua_bridge->state, (lua_Number)(uintptr_t)window);
+          lua_setfield(lua_bridge->state, -2, "target");
 
-              num_args++;
-              break;
-            }
-          }
-          break;
-
-        case MSG_UI_WIDGET:
-          switch (id) {
-            case UI_WIDGET_RUNE_SELECTOR_SELECTED: {
-              uint32_t rune = *(uint32_t *)userdata;
-              lua_pushnumber(lua_bridge->state, rune);
-              num_args++;
-              break;
-            }
-
-            case UI_WIDGET_COLOR_SELECTOR_SELECTED: {
-              uint32_t color = *(uint32_t *)userdata;
-              lua_pushnumber(lua_bridge->state, color);
-              num_args++;
-              break;
-            }
-
-            case UI_WIDGET_EVENT_PAINT: {
-              UIWindow *window = (UIWindow *)userdata;
-              lua_newtable(lua_bridge->state);
-
-              lua_pushnumber(lua_bridge->state, (lua_Number)(uintptr_t)window);
-              lua_setfield(lua_bridge->state, -2, "target");
-
-              num_args++;
-              break;
-            }
-          }
-          break;
+          num_args++;
+        }
       }
 
       int result = lua_pcall(lua_bridge->state, num_args, 0, 0);
@@ -221,7 +205,7 @@ void lua_bridge_internal_gossip_event(const char *message, void *const subscribe
         lua_pop(lua_bridge->state, 1);
       }
     }
-  }*/
+  }
 }
 
 int lua_bridge_internal_input_action(lua_State *state) {
@@ -337,17 +321,21 @@ int lua_bridge_internal_gossip_subscribe(lua_State *state) {
   }
 
   LuaBridge *lua_bridge = (LuaBridge *)lua_topointer(state, lua_upvalueindex(1));
-  const char *msg_name = lua_tostring(state, 1);
+  const char *message = lua_tostring(state, 1);
   int32_t func_ref = (int32_t)luaL_ref(state, LUA_REGISTRYINDEX);
 
-  /*GossipKeys keys = lua_bridge_internal_find_gossip_keys(msg_name);
-  if (keys.group_id < 0 || keys.id < 0) {
-    return 0;
-  }*/
+  char *message_tokens = rectify_memory_alloc_copy(message, sizeof(char) * (strlen(message) + 1));
+  char *message_token_group = strtok(message_tokens, ":");
+  char *message_token_id = strtok(NULL, ":");
 
+  printf("LUA: \"gossip.subscribe\" x <%s>:<%s> #%d\n", message_token_group, message_token_id, func_ref);
   lua_bridge->handles = rectify_array_push(lua_bridge->handles, &(LuaBridgeHandle){
                                                                   .func_ref = func_ref,
+                                                                  .group_id = rectify_memory_alloc_copy(message_token_group, sizeof(char) * (strnlen(message_token_group, 128) + 1)),
+                                                                  .id = rectify_memory_alloc_copy(message_token_id, sizeof(char) * (strnlen(message_token_id, 128) + 1)),
                                                                 });
+  free(message_tokens);
+
   lua_pushnumber(lua_bridge->state, func_ref);
 
   return 1;
@@ -371,7 +359,13 @@ int lua_bridge_internal_gossip_unsubscribe(lua_State *state) {
     LuaBridgeHandle *handle = &lua_bridge->handles[t];
 
     if (handle->func_ref == func_ref) {
+      free(handle->group_id);
+      handle->group_id = NULL;
+      free(handle->id);
+      handle->id = NULL;
       lua_bridge->handles = rectify_array_delete(lua_bridge->handles, t);
+
+      printf("LUA: \"gossip.unsubscribe\" #%d\n", func_ref);
     }
   }
 
@@ -391,11 +385,9 @@ int lua_bridge_internal_gossip_emit(lua_State *state) {
 
   const char *message = lua_tostring(state, 1);
 
-  char *message_tokens = rectify_memory_alloc_copy(message, strlen(message) + 1);
+  char *message_tokens = rectify_memory_alloc_copy(message, sizeof(char) * (strlen(message) + 1));
   char *message_token_group = strtok(message_tokens, ":");
   char *message_token_id = strtok(NULL, ":");
-  bool skip_group_check = (strncmp(message_token_group, "*", 2) == 0);
-  bool skip_id_check = (strncmp(message_token_id, "*", 2) == 0);
 
   if (strncmp(message_token_group, "widget", 128) == 0) {
     if (strncmp(message_token_id, "rune_selected", 128) == 0) {

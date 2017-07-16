@@ -19,6 +19,7 @@
 #include "lua_bridge.h"
 #include "scenes.h"
 #include "sound.h"
+#include "ui/ui.h"
 
 #include "scene_game.h"
 #include "scene_sound-test.h"
@@ -26,7 +27,7 @@
 #include "scene_world-edit.h"
 
 bool quit_game = false;
-void game_kill_event(const char *message, void *const subscriberdata, void *const userdata) {
+void game_kill_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   quit_game = true;
 }
 
@@ -95,6 +96,7 @@ int main(int argc, char **argv) {
 
     soundsys_update(soundsys, delta);
     scenes_update(scenes, delta);
+    ui_update(delta);
     debugoverlay_update(debug_overlay, delta);
 
     next_frame += delta;
@@ -103,6 +105,7 @@ int main(int argc, char **argv) {
       picasso_window_clear();
 
       scenes_draw(scenes, ascii_screen);
+      ui_draw(ascii_screen);
       debugoverlay_draw(debug_overlay, ascii_screen);
 
       ascii_buffer_draw(ascii_screen);

@@ -22,7 +22,7 @@ typedef struct {
   Surface *spectrum;
 } SceneSoundTest;
 
-void scene_sound_test_spectrum(const char *message, void *const subscriberdata, void *const userdata) {
+void scene_sound_test_spectrum(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   SceneSoundTest *scene = (SceneSoundTest *)subscriberdata;
   Spectrum *spectrum = (Spectrum *)userdata;
 
@@ -43,7 +43,7 @@ void scene_sound_test_spectrum(const char *message, void *const subscriberdata, 
   }
 }
 
-void scene_sound_test_keyboard(const char *message, void *const subscriberdata, void *const userdata) {
+void scene_sound_test_keyboard(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   SceneSoundTest *scene = (SceneSoundTest *)subscriberdata;
   PicassoWindowKeyboardEvent *event = (PicassoWindowKeyboardEvent *)userdata;
 

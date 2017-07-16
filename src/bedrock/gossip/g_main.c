@@ -63,11 +63,11 @@ GossipHandle gossip_subscribe(const char *message, GossipCallback callback, void
     .delete = false,
   };
 
-  char *message_tokens = rectify_memory_alloc_copy(message, strlen(message) + 1);
+  char *message_tokens = rectify_memory_alloc_copy(message, sizeof(char) * (strlen(message) + 1));
   char *message_token_group = strtok(message_tokens, ":");
   char *message_token_id = strtok(NULL, ":");
-  listener.group_id = rectify_memory_alloc_copy(message_token_group, strnlen(message_token_group, 128) + 1);
-  listener.id = rectify_memory_alloc_copy(message_token_id, strnlen(message_token_id, 128) + 1);
+  listener.group_id = rectify_memory_alloc_copy(message_token_group, sizeof(char) * (strnlen(message_token_group, 128) + 1));
+  listener.id = rectify_memory_alloc_copy(message_token_id, sizeof(char) * (strnlen(message_token_id, 128) + 1));
   free(message_tokens);
 
   gossip->listeners = rectify_array_push(gossip->listeners, &listener);
@@ -109,12 +109,10 @@ void gossip_gc(void) {
     if (!listener->delete) {
       listeners = rectify_array_push(listeners, listener);
     } else {
-      if (listener->group_id) {
-        free(listener->group_id);
-      }
-      if (listener->id) {
-        free(listener->id);
-      }
+      free(listener->group_id);
+      listener->group_id = NULL;
+      free(listener->id);
+      listener->id = NULL;
       count++;
     }
   }
@@ -127,16 +125,16 @@ void gossip_gc(void) {
 void gossip_emit(const char *message, void *const userdata) {
   assert(gossip);
 
-  char *message_tokens = rectify_memory_alloc_copy(message, strlen(message) + 1);
+  char *message_tokens = rectify_memory_alloc_copy(message, sizeof(char) * (strlen(message) + 1));
   char *message_token_group = strtok(message_tokens, ":");
   char *message_token_id = strtok(NULL, ":");
   bool skip_group_check = (strncmp(message_token_group, "*", 2) == 0);
   bool skip_id_check = (strncmp(message_token_id, "*", 2) == 0);
 
   // TODO: Wrap in debug, verbosity
-  if (strncmp(message_token_id, "paint", 128) != 0 && strncmp(message_token_id, "spectrum", 128) != 0) {
-    printf("Gossip: Emitting <%s>:<%s>\n", message_token_group, message_token_id);
-  }
+  //if (strncmp(message_token_id, "paint", 128) != 0 && strncmp(message_token_id, "spectrum", 128) != 0) {
+  //printf("Gossip: Emitting <%s>:<%s>\n", message_token_group, message_token_id);
+  //}
 
   uintmax_t count = 0;
   for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
@@ -149,7 +147,7 @@ void gossip_emit(const char *message, void *const userdata) {
     if ((skip_group_check || strncmp(listener->group_id, "*", 2) == 0 || strncmp(listener->group_id, message_token_group, 128) == 0)
         && (skip_id_check || strncmp(listener->id, "*", 2) == 0 || strncmp(listener->id, message_token_id, 128) == 0)) {
       GossipCallback callback = listener->callback;
-      callback(message_token_id, listener->subscriberdata, userdata);
+      callback((skip_group_check ? listener->group_id : message_token_group), (skip_id_check ? listener->id : message_token_id), listener->subscriberdata, userdata);
       count++;
     }
   }

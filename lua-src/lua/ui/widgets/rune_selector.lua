@@ -29,7 +29,11 @@ function Widget:create(window)
       gossip.emit("widget:rune_selected", self.chosen_rune)
     end,
   }
-  self.gossip_window_handle = gossip.subscribe("window:*", function (id, e)
+  self.gossip_window_handle = gossip.subscribe("window:*", function (group_id, id, e)
+    if id ~= "mousemove" and id ~= "click" then
+      return
+    end
+
     if e.target ~= self.window.handle then
       return
     end
@@ -37,7 +41,7 @@ function Widget:create(window)
     self.window_events[id](e)
   end)
 
-  self.gossip_widget_handle = gossip.subscribe("widget:paint", function (id, e)
+  self.gossip_widget_handle = gossip.subscribe("widget:paint", function (group_id, id, e)
     if e ~= nil and e.target ~= self.window.handle then
       return
     end

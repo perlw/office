@@ -25,7 +25,7 @@ local rune_sel_window = nil
 local rune_sel_widget = nil
 local color_sel_window = nil
 local color_sel_widget = nil
-gossip.subscribe("scene:setup", function (id, scene)
+gossip.subscribe("scene:setup", function (group_id, id, scene)
   if scene == "world-edit" then
     rune_sel_window = Window("LUA RuneSel", 60, 20, 18, 18)
     rune_sel_widget = RuneSelector(rune_sel_window)
@@ -34,7 +34,7 @@ gossip.subscribe("scene:setup", function (id, scene)
   end
 end)
 
-gossip.subscribe("scene:teardown", function (id, scene)
+gossip.subscribe("scene:teardown", function (group_id, id, scene)
   if scene == "world-edit" then
     if rune_sel_window then
       rune_sel_window:destroy()

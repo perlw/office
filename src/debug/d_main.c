@@ -21,7 +21,7 @@ typedef struct {
   GossipHandle scene_handle;
 } DebugOverlay;
 
-void debugoverlay_internal_scene_changed(const char *message, void *const subscriberdata, void *const userdata) {
+void debugoverlay_internal_scene_changed(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
   Scene *scene = (Scene *)userdata;
 
