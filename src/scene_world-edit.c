@@ -48,10 +48,8 @@ void scene_world_edit_mouse_event(const char *group_id, const char *id, void *co
   } else {
     InputMouseMoveEvent *event = (InputMouseMoveEvent *)userdata;
 
-    if (event->x > 0 && event->y > 0 && event->x < scene->world->width - 1 && event->y < scene->world->height - 1) {
-      scene->m_x = event->x;
-      scene->m_y = event->y;
-    }
+    scene->m_x = event->x;
+    scene->m_y = event->y;
   }
 }
 
