@@ -20,7 +20,15 @@ typedef struct {
 } Listener;
 
 typedef struct {
+  char *message;
+  void *userdata;
+} QueueItem;
+
+typedef struct {
   Listener *listeners;
+  QueueItem *queue;
+  QueueItem *active_queue;
+
   bool dirty;
 } Gossip;
 Gossip *gossip = NULL;
@@ -33,6 +41,8 @@ void gossip_init(void) {
   gossip = calloc(1, sizeof(Gossip));
   *gossip = (Gossip){
     .listeners = rectify_array_alloc(10, sizeof(Listener)),
+    .queue = rectify_array_alloc(10, sizeof(QueueItem)),
+    .active_queue = rectify_array_alloc(10, sizeof(QueueItem)),
     .dirty = false,
   };
 }
@@ -50,6 +60,25 @@ void gossip_destroy(void) {
     }
   }
   rectify_array_free(gossip->listeners);
+
+  for (uintmax_t t = 0; t < rectify_array_size(gossip->queue); t++) {
+    QueueItem *const item = &gossip->queue[t];
+
+    free(item->message);
+    if (item->userdata) {
+      free(item->userdata);
+    }
+  }
+  rectify_array_free(gossip->queue);
+  for (uintmax_t t = 0; t < rectify_array_size(gossip->active_queue); t++) {
+    QueueItem *const item = &gossip->active_queue[t];
+
+    free(item->message);
+    if (item->userdata) {
+      free(item->userdata);
+    }
+  }
+  rectify_array_free(gossip->active_queue);
 
   free(gossip);
 }
@@ -122,37 +151,70 @@ void gossip_gc(void) {
   printf("Gossip: GC pass, cleaned out %" PRIuMAX " dead handles, new count %" PRIuMAX "/%" PRIuMAX "\n", count, rectify_array_size(gossip->listeners), rectify_array_cap(gossip->listeners));
 }
 
-void gossip_emit(const char *message, void *const userdata) {
+void gossip_update(void) {
   assert(gossip);
 
-  char *message_tokens = rectify_memory_alloc_copy(message, sizeof(char) * (strlen(message) + 1));
-  char *message_token_group = strtok(message_tokens, ":");
-  char *message_token_id = strtok(NULL, ":");
-  bool skip_group_check = (strncmp(message_token_group, "*", 2) == 0);
-  bool skip_id_check = (strncmp(message_token_id, "*", 2) == 0);
+  gossip_gc();
+
+  QueueItem *swp = gossip->queue;
+  gossip->queue = gossip->active_queue;
+  gossip->active_queue = swp;
+
+  uintmax_t queue_size = rectify_array_size(gossip->queue);
+  /*if (queue_size > 0) {
+    printf("Gossip: Running queue, %" PRIuMAX " items\n", queue_size);
+  }*/
+
+  for (uintmax_t t = 0; t < queue_size; t++) {
+    QueueItem *const item = &gossip->queue[t];
+
+    char *message_tokens = rectify_memory_alloc_copy(item->message, sizeof(char) * (strlen(item->message) + 1));
+    char *message_token_group = strtok(message_tokens, ":");
+    char *message_token_id = strtok(NULL, ":");
+    bool skip_group_check = (strncmp(message_token_group, "*", 2) == 0);
+    bool skip_id_check = (strncmp(message_token_id, "*", 2) == 0);
+
+    //printf("%s (%s:%s) %d %d\n", item->message, message_token_group, message_token_id, skip_group_check, skip_id_check);
+
+    for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
+      Listener *const listener = &gossip->listeners[t];
+
+      if (listener->delete) {
+        continue;
+      }
+
+      //printf("\t%s:%s\n", listener->group_id, listener->id);
+
+      if ((skip_group_check || strncmp(listener->group_id, "*", 2) == 0 || strncmp(listener->group_id, message_token_group, 128) == 0)
+          && (skip_id_check || strncmp(listener->id, "*", 2) == 0 || strncmp(listener->id, message_token_id, 128) == 0)) {
+        GossipCallback callback = listener->callback;
+        callback((skip_group_check ? listener->group_id : message_token_group), (skip_id_check ? listener->id : message_token_id), listener->subscriberdata, item->userdata);
+      }
+    }
+
+    free(message_tokens);
+
+    free(item->message);
+    if (item->userdata) {
+      free(item->userdata);
+    }
+  }
+  rectify_array_free(gossip->queue);
+  gossip->queue = rectify_array_alloc(10, sizeof(QueueItem));
+}
+
+void gossip_emit(const char *message, uintmax_t size, void *const userdata) {
+  assert(gossip);
 
   // TODO: Wrap in debug, verbosity
   //if (strncmp(message_token_id, "paint", 128) != 0 && strncmp(message_token_id, "spectrum", 128) != 0) {
   //printf("Gossip: Emitting <%s>:<%s>\n", message_token_group, message_token_id);
   //}
 
-  uintmax_t count = 0;
-  for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
-    Listener *const listener = &gossip->listeners[t];
-
-    if (listener->delete) {
-      continue;
-    }
-
-    if ((skip_group_check || strncmp(listener->group_id, "*", 2) == 0 || strncmp(listener->group_id, message_token_group, 128) == 0)
-        && (skip_id_check || strncmp(listener->id, "*", 2) == 0 || strncmp(listener->id, message_token_id, 128) == 0)) {
-      GossipCallback callback = listener->callback;
-      callback((skip_group_check ? listener->group_id : message_token_group), (skip_id_check ? listener->id : message_token_id), listener->subscriberdata, userdata);
-      count++;
-    }
-  }
-
-  free(message_tokens);
+  //printf("Gossip: Emitting %s -> %p\n", message, userdata);
+  gossip->active_queue = rectify_array_push(gossip->active_queue, &(QueueItem){
+                                                                    .message = rectify_memory_alloc_copy(message, strnlen(message, 128) + 1), .userdata = (size > 0 || userdata ? rectify_memory_alloc_copy(userdata, size) : NULL),
+                                                                  });
 }
 
 void handle_to_word(GossipHandle handle, uintmax_t max_len, char *buffer) {

@@ -8,8 +8,7 @@ void *occulus_malloc(size_t size, const char *filepath, uintmax_t line, const ch
 void *occulus_calloc(size_t num, size_t size, const char *filepath, uintmax_t line, const char *function);
 void *occulus_realloc(void *old_ptr, size_t size, const char *filepath, uintmax_t line, const char *function);
 void occulus_free(void *ptr, const char *filepath, uintmax_t line, const char *function);
-void occulus_print(bool detailed);
-uintmax_t occulus_current_allocated(void);
+void occulus_print(void);
 
 #ifdef MEM_DEBUG
 #define malloc(n) occulus_malloc(n, __FILE__, __LINE__, __func__)

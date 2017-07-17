@@ -70,10 +70,10 @@ void debugoverlay_update(DebugOverlay *overlay, double dt) {
 
   overlay->current_second += dt;
   if (overlay->current_second >= 1) {
-    snprintf(overlay->fps_buffer, 32, "FPS: %d | MEM: %.2fkb", overlay->frames, (double)occulus_current_allocated() / 1024.0);
+    snprintf(overlay->fps_buffer, 32, "FPS: %d | MEM: %.2fkb", overlay->frames, 0.0);
     surface_text(overlay->surface, 0, 59, 31, overlay->fps_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
-    {
+    /*{
       uintmax_t raw_new_mem = occulus_current_allocated();
       uintmax_t raw_mem_max = raw_new_mem;
       for (uint32_t t = 0; t < 9; t++) {
@@ -88,7 +88,7 @@ void debugoverlay_update(DebugOverlay *overlay, double dt) {
       }
 
       surface_graph(overlay->surface, 60, 0, 20, 6, 10, overlay->mem_values);
-    }
+    }*/
 
     overlay->current_second = 0;
     overlay->frames = 0;

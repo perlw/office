@@ -49,17 +49,17 @@ void scene_sound_test_keyboard(const char *group_id, const char *id, void *const
 
   if (event->pressed) {
     if (event->key == PICASSO_KEY_P) {
-      gossip_emit("sound:play_song", &scene->song);
+      gossip_emit("sound:play_song", sizeof(uint32_t), &scene->song);
     } else if (event->key == PICASSO_KEY_S) {
-      gossip_emit("sound:stop_song", NULL);
+      gossip_emit("sound:stop_song", 0, NULL);
       for (uint32_t t = 0; t < 78; t++) {
         scene->spectrum_left[t] = 0.0f;
         scene->spectrum_right[t] = 0.0f;
       }
     } else if (event->key == PICASSO_KEY_N) {
       scene->song = (scene->song == 0 ? 1 : 0);
-      gossip_emit("sound:stop_song", NULL);
-      gossip_emit("sound:play_song", &scene->song);
+      gossip_emit("sound:stop_song", 0, NULL);
+      gossip_emit("sound:play_song", sizeof(uint32_t), &scene->song);
     }
   }
 }

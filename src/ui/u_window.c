@@ -64,7 +64,8 @@ void ui_window_update(UIWindow *const window, double delta) {
   while (window->since_update >= window->timing) {
     window->since_update -= window->timing;
 
-    gossip_emit("widget:paint", window);
+    uintptr_t target = (uintptr_t)window;
+    gossip_emit("widget:paint", sizeof(uintptr_t), &target);
   }
 }
 
@@ -106,9 +107,9 @@ void ui_window_internal_mouse_event(const char *group_id, const char *id, void *
 
     if (event->x > window->x && event->x < window->x + window->width - 1
         && event->y > window->y && event->y < window->y + window->width - 1) {
-      gossip_emit("window:mousemove", &(UIEventMouseMove){
-                                        .target = window, .x = event->x - window->x - 1, .y = event->y - window->y - 1,
-                                      });
+      gossip_emit("window:mousemove", sizeof(UIEventMouseMove), &(UIEventMouseMove){
+                                                                  .target = window, .x = event->x - window->x - 1, .y = event->y - window->y - 1,
+                                                                });
     }
   } else if (strncmp(id, "click", 128) == 0) {
     InputClickEvent *event = (InputClickEvent *)userdata;
@@ -116,9 +117,9 @@ void ui_window_internal_mouse_event(const char *group_id, const char *id, void *
     if (event->x > window->x && event->x < window->x + window->width - 1
         && event->y > window->y && event->y < window->y + window->width - 1) {
       if (event->pressed) {
-        gossip_emit("window:click", &(UIEventClick){
-                                      .target = window, .x = event->x - window->x - 1, .y = event->y - window->y - 1,
-                                    });
+        gossip_emit("window:click", sizeof(UIEventClick), &(UIEventClick){
+                                                            .target = window, .x = event->x - window->x - 1, .y = event->y - window->y - 1,
+                                                          });
       }
     }
   }

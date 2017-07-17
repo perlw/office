@@ -12,7 +12,9 @@ GossipHandle gossip_subscribe(const char *message, GossipCallback callback, void
 bool gossip_unsubscribe(GossipHandle handle);
 void gossip_gc(void);
 
-void gossip_emit(const char *message, void *const userdata);
+void gossip_update(void);
+
+void gossip_emit(const char *message, uintmax_t size, void *const userdata);
 
 #ifdef GOSSIP_DEBUG
 GossipHandle gossip_subscribe_debug(const char *message, GossipCallback callback, void *const subscriberdata, const char *filepath, uintmax_t line, const char *function);

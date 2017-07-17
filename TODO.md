@@ -5,10 +5,10 @@ The actual game
 * Logging
   - Log to file aswell as log to console
   - Separate files for different systems
-* UI
-  - Move all UI to lua besides the basics (window creation f.ex)
 * Lua bridge
   - Allow systems to register own interface?
+* Ascii
+  - Save to buffers to remove need to copy from glyphs
 
 ### System management
 For handling global systems, startup, shutdown, etc

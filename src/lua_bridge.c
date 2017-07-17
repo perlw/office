@@ -210,10 +210,10 @@ void lua_bridge_internal_gossip_event(const char *group_id, const char *id, void
           lua_pushnumber(lua_bridge->state, color);
           num_args++;
         } else if (strncmp(id, "paint", 128) == 0) {
-          UIWindow *window = (UIWindow *)userdata;
+          uintptr_t window = *(uintptr_t *)userdata;
           lua_newtable(lua_bridge->state);
 
-          lua_pushnumber(lua_bridge->state, (lua_Number)(uintptr_t)window);
+          lua_pushnumber(lua_bridge->state, (lua_Number)window);
           lua_setfield(lua_bridge->state, -2, "target");
 
           num_args++;
@@ -272,6 +272,7 @@ int lua_bridge_internal_ui_window_create(lua_State *state) {
   uint32_t height = (uint32_t)lua_tonumber(state, 5);
 
   UIWindow *window = ui_window_create(title, x, y, width, height);
+  printf("create_window %p\n", (void *)window);
   lua_bridge->windows = rectify_array_push(lua_bridge->windows, (void *)&window);
 
   lua_pushnumber(state, (lua_Number)(uintptr_t)window);
@@ -287,6 +288,7 @@ int lua_bridge_internal_ui_window_destroy(lua_State *state) {
 
   LuaBridge *lua_bridge = (LuaBridge *)lua_topointer(state, lua_upvalueindex(1));
   UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  printf("destroy_window %p\n", (void *)window);
   if (!window) {
     return 0;
   }
@@ -366,9 +368,7 @@ int lua_bridge_internal_gossip_subscribe(lua_State *state) {
 
   printf("LUA: \"gossip.subscribe\" x <%s>:<%s> #%d\n", message_token_group, message_token_id, func_ref);
   lua_bridge->handles = rectify_array_push(lua_bridge->handles, &(LuaBridgeHandle){
-                                                                  .func_ref = func_ref,
-                                                                  .group_id = rectify_memory_alloc_copy(message_token_group, sizeof(char) * (strnlen(message_token_group, 128) + 1)),
-                                                                  .id = rectify_memory_alloc_copy(message_token_id, sizeof(char) * (strnlen(message_token_id, 128) + 1)),
+                                                                  .func_ref = func_ref, .group_id = rectify_memory_alloc_copy(message_token_group, sizeof(char) * (strnlen(message_token_group, 128) + 1)), .id = rectify_memory_alloc_copy(message_token_id, sizeof(char) * (strnlen(message_token_id, 128) + 1)),
                                                                 });
   free(message_tokens);
 
@@ -428,15 +428,15 @@ int lua_bridge_internal_gossip_emit(lua_State *state) {
   if (strncmp(message_token_group, "widget", 128) == 0) {
     if (strncmp(message_token_id, "rune_selected", 128) == 0) {
       uint32_t rune = (uint32_t)lua_tonumber(state, 2);
-      gossip_emit(message, &rune);
+      gossip_emit(message, sizeof(uint32_t), &rune);
     } else if (strncmp(message_token_id, "color_selected", 128) == 0) {
       uint32_t color = (uint32_t)lua_tonumber(state, 2);
-      gossip_emit(message, &color);
+      gossip_emit(message, sizeof(uint32_t), &color);
     } else {
-      gossip_emit(message, NULL);
+      gossip_emit(message, 0, NULL);
     }
   } else {
-    gossip_emit(message, NULL);
+    gossip_emit(message, 0, NULL);
   }
 
   free(message_tokens);

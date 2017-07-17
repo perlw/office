@@ -54,6 +54,9 @@ typedef struct {
   Glyph *buffer;
   Glyph *last_buffer;
 
+  uint8_t *rune_buffer;
+  GlyphColor *fore_buffer;
+  GlyphColor *back_buffer;
   PicassoTexture *asciimap_texture;
   PicassoTexture *forecolors_texture;
   PicassoTexture *backcolors_texture;

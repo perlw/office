@@ -57,7 +57,7 @@ void scenes_destroy(Scenes *scenes) {
   gossip_unsubscribe(scenes->scene_handle);
 
   if (scenes->current_scene) {
-    gossip_emit("scene:teardown", scenes->current_scene);
+    //gossip_emit("scene:teardown", sizeof(Scene), scenes->current_scene);
     scenes->current_scene->destroy(scenes->current_scene_data);
   }
 
@@ -82,16 +82,16 @@ void scenes_register(Scenes *scenes, Scene *scene) {
 }
 
 void scenes_internal_go(Scenes *scenes, uint32_t index) {
-  gossip_emit("scene:teardown", scenes->current_scene);
+  gossip_emit("scene:teardown", sizeof(Scene), scenes->current_scene);
   scenes->current_scene->destroy(scenes->current_scene_data);
   scenes->current_scene = NULL;
 
   scenes->current_scene = &scenes->scenes[index];
   scenes->current_scene_data = scenes->current_scene->create();
-  gossip_emit("scene:setup", scenes->current_scene);
+  gossip_emit("scene:setup", sizeof(Scene), scenes->current_scene);
 
   printf("SCENES: Switched to scene \"%s\"\n", scenes->current_scene->name);
-  gossip_emit("scene:changed", scenes->current_scene);
+  gossip_emit("scene:changed", sizeof(Scene), scenes->current_scene);
 }
 
 void scenes_internal_move(Scenes *scenes, int32_t move) {

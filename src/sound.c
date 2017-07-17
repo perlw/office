@@ -107,7 +107,7 @@ void soundsys_update(SoundSys *soundsys, double delta) {
         spectrum.song_id = 1;
         boombox_cassette_get_spectrum(soundsys->song2, spectrum.left, spectrum.right);
       }
-      gossip_emit("sound:spectrum", &spectrum);
+      gossip_emit("sound:spectrum", sizeof(Spectrum), &spectrum);
     }
   }
 }

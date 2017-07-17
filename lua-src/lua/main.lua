@@ -19,34 +19,43 @@ end)
 
 gossip.subscribe("game:kill", function ()
   io.write("LUA: Goodbye...\n")
+  teardown_world()
 end)
 
 local rune_sel_window = nil
 local rune_sel_widget = nil
 local color_sel_window = nil
 local color_sel_widget = nil
+function setup_world()
+  rune_sel_window = Window("LUA RuneSel", 60, 20, 18, 18)
+  rune_sel_widget = RuneSelector(rune_sel_window)
+  color_sel_window = Window("ColorSel", 60, 40, 18, 18)
+  color_sel_widget = ColorSelector(color_sel_window)
+end
+
+function teardown_world()
+  if rune_sel_window then
+    rune_sel_window:destroy()
+
+    rune_sel_widget = nil
+    rune_sel_window = nil
+  end
+  if color_sel_window then
+    color_sel_window:destroy()
+
+    color_sel_widget = nil
+    color_sel_window = nil
+  end
+end
+
 gossip.subscribe("scene:setup", function (group_id, id, scene)
   if scene == "world-edit" then
-    rune_sel_window = Window("LUA RuneSel", 60, 20, 18, 18)
-    rune_sel_widget = RuneSelector(rune_sel_window)
-    color_sel_window = Window("ColorSel", 60, 40, 18, 18)
-    color_sel_widget = ColorSelector(color_sel_window)
+    setup_world()
   end
 end)
 
 gossip.subscribe("scene:teardown", function (group_id, id, scene)
   if scene == "world-edit" then
-    if rune_sel_window then
-      rune_sel_window:destroy()
-
-      rune_sel_widget = nil
-      rune_sel_window = nil
-    end
-    if color_sel_window then
-      color_sel_window:destroy()
-
-      color_sel_widget = nil
-      color_sel_window = nil
-    end
+    teardown_world()
   end
 end)

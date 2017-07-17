@@ -80,14 +80,14 @@ void textinput_event(const char *group_id, const char *id, void *const subscribe
   PicassoWindowKeyboardEvent *event = (PicassoWindowKeyboardEvent *)userdata;
 
   if (event->pressed) {
-    gossip_emit("sound:play_tap", NULL);
+    gossip_emit("sound:play_tap", 0, NULL);
 
     if (event->key == PICASSO_KEY_ENTER) {
       input->cursor_pos = 0;
       input->cursor_visible = true;
       printf("TEXTINPUT: YOU WROTE \"%s\"\n", input->buffer);
       if (strcmp(input->buffer, "quit") == 0) {
-        gossip_emit("game:kill", NULL);
+        gossip_emit("game:kill", 0, NULL);
       }
 
       memset(input->buffer, 0, 128);

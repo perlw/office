@@ -34,6 +34,10 @@ void game_kill_event(const char *group_id, const char *id, void *const subscribe
 int main(int argc, char **argv) {
   srand(time(NULL));
 
+#ifdef MEM_DEBUG
+  remove("mem.dbg");
+#endif
+
   char *init_scene = "test";
   // +Flags
   // Module idea. Stackbased, popping off values etc?
@@ -81,7 +85,7 @@ int main(int argc, char **argv) {
 
   gossip_subscribe("game:kill", &game_kill_event, NULL);
 
-  gossip_emit("game:init", NULL);
+  gossip_emit("game:init", 0, NULL);
   scenes_goto(scenes, init_scene);
 
   const double frame_timing = (config->frame_lock > 0 ? 1.0 / (double)config->frame_lock : 0);
@@ -92,12 +96,12 @@ int main(int argc, char **argv) {
     double delta = tick - last_tick;
     last_tick = tick;
 
-    gossip_gc();
-
     soundsys_update(soundsys, delta);
     scenes_update(scenes, delta);
     lua_bridge_update(lua_bridge, delta);
     debugoverlay_update(debug_overlay, delta);
+
+    gossip_update();
 
     next_frame += delta;
     if (next_frame >= frame_timing) {
@@ -131,7 +135,7 @@ int main(int argc, char **argv) {
   picasso_window_kill();
 
 #ifdef MEM_DEBUG
-  occulus_print(false);
+  occulus_print();
 #endif
 
   return 0;

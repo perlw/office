@@ -28,7 +28,13 @@ void input_kill(void) {
 }
 
 void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
-  gossip_emit("input:keyboard", (void *)event);
+  gossip_emit("input:keyboard", sizeof(PicassoWindowKeyboardEvent), (void *)event);
+
+  if (event->key == PICASSO_KEY_F12) {
+    printf("\n-=ABORT=-\n\n");
+    gossip_emit("game:kill", 0, NULL);
+    return;
+  }
 
   if (event->released) {
     return;
@@ -48,7 +54,7 @@ void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
     printf("INPUT: %s\n", key_bind->action);
     for (uint32_t t = 0; t < rectify_array_size(input_action_refs); t++) {
       if (strncmp(input_action_refs[t].action, key_bind->action, 128) == 0) {
-        gossip_emit("lua_bridge:action", &input_action_refs[t]);
+        gossip_emit("lua_bridge:action", sizeof(InputActionRef), &input_action_refs[t]);
       }
     }
   }
@@ -62,10 +68,9 @@ void input_mousemove_callback(const PicassoWindowMouseEvent *event) {
   static uint32_t o_y = 0;
 
   if (m_x != o_x || m_y != o_y) {
-    gossip_emit("input:mousemove", &(InputMouseMoveEvent){
-                                     .x = m_x,
-                                     .y = m_y,
-                                   });
+    gossip_emit("input:mousemove", sizeof(InputMouseMoveEvent), &(InputMouseMoveEvent){
+                                                                  .x = m_x, .y = m_y,
+                                                                });
     o_x = m_x;
     o_y = m_y;
   }
@@ -79,13 +84,9 @@ void input_click_callback(const PicassoWindowMouseEvent *event) {
   static uint32_t o_y = 0;
 
   if (m_x != o_x || m_y != o_y) {
-    gossip_emit("input:click", &(InputClickEvent){
-                                 .button = event->button,
-                                 .x = m_x,
-                                 .y = m_y,
-                                 .pressed = event->pressed,
-                                 .released = event->released,
-                               });
+    gossip_emit("input:click", sizeof(InputClickEvent), &(InputClickEvent){
+                                                          .button = event->button, .x = m_x, .y = m_y, .pressed = event->pressed, .released = event->released,
+                                                        });
     o_x = m_x;
     o_y = m_y;
   }

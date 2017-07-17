@@ -15,4 +15,6 @@ uintmax_t rectify_array_size(const void *const ptr);
 
 // +memory
 void *rectify_memory_alloc_copy(const void *ptr, uintmax_t size);
+//void *rectify_memory_alloc_copy_debug(const void *ptr, uintmax_t size, const char *filepath, uintmax_t line, const char *function);
+//#define rectify_memory_alloc_copy(a, b) rectify_memory_alloc_copy_debug(a, b, __FILE__, __LINE__, __func__)
 // +memory
