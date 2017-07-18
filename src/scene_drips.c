@@ -91,8 +91,8 @@ void scene_drips_update(SceneDrips *const scene, double delta) {
         drip->alive = true;
         drip->distance = 4;
         drip->fade = 1.0;
-        drip->surface->x = (double)((rand() % (scene->surface->width - 32)) + 16);
-        drip->surface->y = (double)((rand() % (scene->surface->height - 32)) + 16);
+        drip->surface->x = (double)(rand() % (scene->surface->width - 32));
+        drip->surface->y = (double)(rand() % (scene->surface->height - 32));
         surface_clear(drip->surface, (Glyph){
                                        .rune = 0,
                                      });
