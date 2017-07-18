@@ -21,6 +21,7 @@
 #include "sound.h"
 #include "ui/ui.h"
 
+#include "scene_drips.h"
 #include "scene_game.h"
 #include "scene_sound-test.h"
 #include "scene_test.h"
@@ -75,7 +76,8 @@ int main(int argc, char **argv) {
 
   Scenes *const scenes = scenes_create();
   scenes_register(scenes, &scene_test);
-  scenes_register(scenes, &scene_game);
+  //scenes_register(scenes, &scene_game);
+  scenes_register(scenes, &scene_drips);
   scenes_register(scenes, &scene_sound_test);
   scenes_register(scenes, &scene_world_edit);
 

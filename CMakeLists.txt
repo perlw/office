@@ -26,6 +26,7 @@ set (
   "src/sound.c"
   "src/scenes.c"
   "src/scene_test.c"
+  "src/scene_drips.c"
   "src/scene_game.c"
   "src/scene_sound-test.c"
   "src/scene_world-edit.c"
