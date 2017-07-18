@@ -9,6 +9,11 @@ The actual game
   - Allow systems to register own interface?
 * Ascii
   - Save to buffers to remove need to copy from glyphs
+* Sound
+  - Ability to load and play sounds, won't need to define
+* Occulus
+  - Break out log parsing in own app
+  - Put fencing back in aswell as bake in size (look at rectify)
 
 ### System management
 For handling global systems, startup, shutdown, etc
