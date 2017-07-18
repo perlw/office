@@ -42,9 +42,9 @@ DebugOverlay *debugoverlay_create(void) {
   snprintf(overlay->fps_buffer, 32, "FPS: 0 | MEM: 0.00kb");
   surface_text(overlay->surface, 0, 59, 31, overlay->fps_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
-  memset(overlay->raw_mem, 0, 10 * sizeof(uintmax_t));
+  /*memset(overlay->raw_mem, 0, 10 * sizeof(uintmax_t));
   memset(overlay->mem_values, 0, 10 * sizeof(float));
-  surface_graph(overlay->surface, 60, 0, 20, 6, 10, overlay->mem_values);
+  surface_graph(overlay->surface, 60, 0, 20, 6, 10, overlay->mem_values);*/
 
   memset(overlay->scene_buffer, 0, 32 * sizeof(char));
   snprintf(overlay->scene_buffer, 32, "SCENE: na");

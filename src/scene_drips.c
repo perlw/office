@@ -22,6 +22,7 @@ typedef struct {
 } Drip;
 
 typedef struct {
+  double offset;
   double timing;
   double since_update;
 
@@ -40,6 +41,7 @@ SceneDrips *scene_drips_create(void) {
 
   const Config *const config = config_get();
 
+  scene->offset = 0.0;
   scene->timing = 1.0 / 30.0;
   scene->since_update = 1.0 / (double)((rand() % 29) + 1);
 
@@ -49,7 +51,7 @@ SceneDrips *scene_drips_create(void) {
   scene->drips = calloc(scene->num_drips, sizeof(Drip));
   for (uint32_t t = 0; t < scene->num_drips; t++) {
     scene->drips[t].alive = false;
-    scene->drips[t].surface = surface_create(0, 0, 30, 30);
+    scene->drips[t].surface = surface_create(0, 0, 32, 32);
   }
   scene->next_drip = 2.0 * (double)(rand() % 100) / 100.0;
 
@@ -89,8 +91,11 @@ void scene_drips_update(SceneDrips *const scene, double delta) {
         drip->alive = true;
         drip->distance = 2.2;
         drip->fade = 1.0;
-        drip->surface->x = (double)((rand() % (scene->surface->width - 30)) + 15);
-        drip->surface->y = (double)((rand() % (scene->surface->height - 30)) + 15);
+        drip->surface->x = (double)((rand() % (scene->surface->width - 32)) + 16);
+        drip->surface->y = (double)((rand() % (scene->surface->height - 32)) + 16);
+        surface_clear(drip->surface, (Glyph){
+                                       .rune = 0,
+                                     });
         break;
       }
 
@@ -130,20 +135,38 @@ void scene_drips_update(SceneDrips *const scene, double delta) {
 
           uint32_t i = (y * drip->surface->width) + x;
           uint8_t rune = (uint8_t)(wave * 255.0);
-          if (rune < 210) {
+          if (rune < 210 || (drip->distance > 10 && dist < 6)) {
             drip->surface->buffer[i].rune = 0;
           } else if (rune < 245) {
-            drip->surface->buffer[i].rune = '.';
+            drip->surface->buffer[i].rune = 247;
           } else {
             drip->surface->buffer[i].rune = '*';
           }
 
           double final_color = wave * drip->fade;
-          uint8_t shade = (uint8_t)(255.0 * final_color);
-          drip->surface->buffer[i].fore.r = shade;
-          drip->surface->buffer[i].fore.g = shade;
-          drip->surface->buffer[i].fore.b = shade;
+          uint32_t i2 = ((drip->surface->y + y) * scene->surface->width) + (drip->surface->x + x);
+          drip->surface->buffer[i].fore = glyphcolor_muls(scene->surface->buffer[i2].fore, 0.5 + final_color);
         }
+      }
+    }
+
+    scene->offset += 0.025;
+    for (uintmax_t y = 0; y < scene->surface->height; y++) {
+      for (uintmax_t x = 0; x < scene->surface->width; x++) {
+        double dist = (double)x + (double)y;
+        double wave = (dist / 50.0) * (M_PI * 2.0);
+
+        double final_color = (cos(wave - scene->offset) + 1.0) / 2.0;
+        final_color *= 0.15;
+        final_color += 0.25;
+
+        uintmax_t i = (y * scene->surface->width) + x;
+        uint8_t color = (uint8_t)(final_color * 255.0);
+        scene->surface->buffer[i].rune = '~';
+
+        scene->surface->buffer[i].fore.r = 0;
+        scene->surface->buffer[i].fore.g = (uint8_t)(196.0 * final_color);
+        scene->surface->buffer[i].fore.b = (uint8_t)(255.0 * final_color);
       }
     }
   }
