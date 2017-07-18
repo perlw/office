@@ -71,6 +71,12 @@ PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, u
 
   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, (gl_debug ? GL_TRUE : GL_FALSE));
 
+  // Borderless fullscreen
+  //glfwWindowHint(GLFW_DECORATED, GL_FALSE);
+  /*GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+  const GLFWvidmode *vid_mode = glfwGetVideoMode(monitor);*/
+  // Borderless fullscreen
+
   window = glfwCreateWindow(res_width, res_height, title, NULL, NULL);
   if (!window) {
     glfwTerminate();

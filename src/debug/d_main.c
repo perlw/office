@@ -25,9 +25,11 @@ void debugoverlay_internal_scene_changed(const char *group_id, const char *id, v
   DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
   Scene *scene = (Scene *)userdata;
 
+  const Config *const config = config_get();
+
   snprintf(overlay->scene_buffer, 32, "SCENE: %s", scene->name);
   printf("%s\n", overlay->scene_buffer);
-  surface_text(overlay->surface, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
+  surface_text(overlay->surface, config->ascii_width - (uint32_t)strnlen(overlay->scene_buffer, 32), config->ascii_height - 1, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 }
 
 DebugOverlay *debugoverlay_create(void) {
@@ -40,15 +42,15 @@ DebugOverlay *debugoverlay_create(void) {
   overlay->frames = 0;
   overlay->current_second = 0.0;
   snprintf(overlay->fps_buffer, 32, "FPS: 0 | MEM: 0.00kb");
-  surface_text(overlay->surface, 0, 59, 31, overlay->fps_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
+  surface_text(overlay->surface, 0, config->ascii_height - 1, 31, overlay->fps_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
   memset(overlay->raw_mem, 0, 10 * sizeof(uintmax_t));
   memset(overlay->mem_values, 0, 10 * sizeof(float));
-  surface_graph(overlay->surface, 60, 0, 20, 6, 10, overlay->mem_values);
+  surface_graph(overlay->surface, config->ascii_width - 20, 0, 20, 6, 10, overlay->mem_values);
 
   memset(overlay->scene_buffer, 0, 32 * sizeof(char));
   snprintf(overlay->scene_buffer, 32, "SCENE: na");
-  surface_text(overlay->surface, 80 - (uint32_t)strnlen(overlay->scene_buffer, 32), 59, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
+  surface_text(overlay->surface, config->ascii_width - (uint32_t)strnlen(overlay->scene_buffer, 32), config->ascii_height - 1, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
   overlay->scene_handle = gossip_subscribe("scene:changed", &debugoverlay_internal_scene_changed, overlay);
 
@@ -70,8 +72,10 @@ void debugoverlay_update(DebugOverlay *overlay, double dt) {
 
   overlay->current_second += dt;
   if (overlay->current_second >= 1) {
+    const Config *const config = config_get();
+
     snprintf(overlay->fps_buffer, 32, "FPS: %d | MEM: %.2fkb", overlay->frames, (double)occulus_current_usage() / 1024.0);
-    surface_text(overlay->surface, 0, 59, 31, overlay->fps_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
+    surface_text(overlay->surface, 0, config->ascii_height - 1, 31, overlay->fps_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
     {
       uintmax_t raw_new_mem = occulus_current_usage();
@@ -87,7 +91,7 @@ void debugoverlay_update(DebugOverlay *overlay, double dt) {
         overlay->mem_values[t] = (float)overlay->raw_mem[t] / (float)raw_mem_max;
       }
 
-      surface_graph(overlay->surface, 60, 0, 20, 6, 10, overlay->mem_values);
+      surface_graph(overlay->surface, config->ascii_width - 20, 0, 20, 6, 10, overlay->mem_values);
     }
 
     overlay->current_second = 0;

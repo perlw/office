@@ -1,6 +1,6 @@
 gl_debug(false)
-resolution(640, 480)
-ascii_resolution(80, 60);
+resolution(1280, 720)
+ascii_resolution(160, 90);
 --frame_lock(60);
 
 bind("close", KEY_ESCAPE)

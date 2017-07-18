@@ -67,7 +67,7 @@ void *texture_loader(const char *name, const char *path) {
     return NULL;
   }
 
-  PicassoTexture *texture = picasso_texture_load(PICASSO_TEXTURE_TARGET_2D, PICASSO_TEXTURE_RGB, buffer_size, buffer);
+  PicassoTexture *texture = picasso_texture_load(PICASSO_TEXTURE_TARGET_2D, PICASSO_TEXTURE_RGBA, buffer_size, buffer);
   free(buffer);
 
   return texture;

@@ -27,9 +27,9 @@ local rune_sel_widget = nil
 local color_sel_window = nil
 local color_sel_widget = nil
 function setup_world()
-  rune_sel_window = Window("LUA RuneSel", 60, 20, 18, 18)
+  rune_sel_window = Window("LUA RuneSel", 141, 7, 18, 18)
   rune_sel_widget = RuneSelector(rune_sel_window)
-  color_sel_window = Window("ColorSel", 60, 40, 18, 18)
+  color_sel_window = Window("ColorSel", 141, 26, 18, 18)
   color_sel_widget = ColorSelector(color_sel_window)
 end
 
