@@ -13,15 +13,24 @@
 #include "config.h"
 
 typedef struct {
-  int dummy;
+  bool alive;
+  double distance;
+  double fade;
+  uint32_t x;
+  uint32_t y;
+  Surface *surface;
 } Drip;
 
 typedef struct {
   double timing;
   double since_update;
 
+  double wave_depth;
+  double wave_thickness;
   uint32_t num_drips;
   Drip *drips;
+
+  double next_drip;
 
   Surface *surface;
 } SceneDrips;
@@ -34,10 +43,15 @@ SceneDrips *scene_drips_create(void) {
   scene->timing = 1.0 / 30.0;
   scene->since_update = 1.0 / (double)((rand() % 29) + 1);
 
+  scene->wave_depth = 0.5;
+  scene->wave_thickness = M_PI * 8.0;
   scene->num_drips = 10;
   scene->drips = calloc(scene->num_drips, sizeof(Drip));
   for (uint32_t t = 0; t < scene->num_drips; t++) {
+    scene->drips[t].alive = false;
+    scene->drips[t].surface = surface_create(0, 0, 30, 30);
   }
+  scene->next_drip = 2.0 * (double)(rand() % 100) / 100.0;
 
   scene->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
 
@@ -47,6 +61,9 @@ SceneDrips *scene_drips_create(void) {
 void scene_drips_destroy(SceneDrips *const scene) {
   assert(scene);
 
+  for (uint32_t t = 0; t < scene->num_drips; t++) {
+    surface_destroy(scene->drips[t].surface);
+  }
   free(scene->drips);
   surface_destroy(scene->surface);
 
@@ -60,7 +77,74 @@ void scene_drips_update(SceneDrips *const scene, double delta) {
   while (scene->since_update >= scene->timing) {
     scene->since_update -= scene->timing;
 
+    scene->next_drip -= scene->timing;
+    if (scene->next_drip <= 0.0) {
+      for (uint32_t t = 0; t < scene->num_drips; t++) {
+        Drip *drip = &scene->drips[t];
+
+        if (drip->alive) {
+          continue;
+        }
+
+        drip->alive = true;
+        drip->distance = 2.2;
+        drip->fade = 1.0;
+        drip->surface->x = (double)((rand() % (scene->surface->width - 30)) + 15);
+        drip->surface->y = (double)((rand() % (scene->surface->height - 30)) + 15);
+        break;
+      }
+
+      scene->next_drip = 2.0 * (double)(rand() % 100) / 100.0;
+    }
+
     for (uint32_t t = 0; t < scene->num_drips; t++) {
+      Drip *drip = &scene->drips[t];
+
+      if (!drip->alive) {
+        continue;
+      }
+
+      drip->distance += 0.2;
+      drip->fade -= 0.016;
+      if (drip->fade < 0.0) {
+        drip->fade = 0.0;
+      }
+
+      double cx = drip->surface->width / 2;
+      double cy = drip->surface->height / 2;
+      for (uint32_t y = 0; y < drip->surface->width; y++) {
+        for (uint32_t x = 0; x < drip->surface->height; x++) {
+          double dx = fabs((double)x - cx);
+          double dy = fabs((double)y - cy);
+          double dist = sqrt(pow(dx, 2) + pow(dy, 2));
+          double ndist = dist / 50.0;
+
+          if (dist > drip->distance) {
+            continue;
+          }
+          if (drip->distance > 14) {
+            drip->alive = false;
+          }
+
+          double wave = ((cos((ndist * scene->wave_thickness) - drip->distance) + 1.0) / 4.0) + scene->wave_depth;
+
+          uint32_t i = (y * drip->surface->width) + x;
+          uint8_t rune = (uint8_t)(wave * 255.0);
+          if (rune < 210) {
+            drip->surface->buffer[i].rune = 0;
+          } else if (rune < 245) {
+            drip->surface->buffer[i].rune = '.';
+          } else {
+            drip->surface->buffer[i].rune = '*';
+          }
+
+          double final_color = wave * drip->fade;
+          uint8_t shade = (uint8_t)(255.0 * final_color);
+          drip->surface->buffer[i].fore.r = shade;
+          drip->surface->buffer[i].fore.g = shade;
+          drip->surface->buffer[i].fore.b = shade;
+        }
+      }
     }
   }
 }
@@ -69,4 +153,9 @@ void scene_drips_draw(SceneDrips *const scene, AsciiBuffer *const screen) {
   assert(scene);
 
   surface_draw(scene->surface, screen);
+  for (uint32_t t = 0; t < scene->num_drips; t++) {
+    if (scene->drips[t].alive) {
+      surface_draw(scene->drips[t].surface, screen);
+    }
+  }
 }
