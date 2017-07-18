@@ -14,6 +14,7 @@ struct SoundSys {
   BoomboxCassette *init_sound;
   BoomboxCassette *tap_sound;
   BoomboxCassette *boom_sound;
+  BoomboxCassette *drip_sound;
 
   BoomboxCassette *song;
   BoomboxCassette *song2;
@@ -38,6 +39,7 @@ SoundSys *soundsys_create(void) {
   soundsys->init_sound = boombox_cassette_create(soundsys->boombox);
   soundsys->tap_sound = boombox_cassette_create(soundsys->boombox);
   soundsys->boom_sound = boombox_cassette_create(soundsys->boombox);
+  soundsys->drip_sound = boombox_cassette_create(soundsys->boombox);
   soundsys->song = boombox_cassette_create(soundsys->boombox);
   soundsys->song2 = boombox_cassette_create(soundsys->boombox);
 
@@ -53,6 +55,11 @@ SoundSys *soundsys_create(void) {
   }
   if (boombox_cassette_load_sound(soundsys->boom_sound, "boom.wav") != BOOMBOX_OK) {
     printf("Boombox: failed to load boom sound\n");
+    boombox_destroy(soundsys->boombox);
+    return NULL;
+  }
+  if (boombox_cassette_load_sound(soundsys->drip_sound, "drip.wav") != BOOMBOX_OK) {
+    printf("Boombox: failed to load drip sound\n");
     boombox_destroy(soundsys->boombox);
     return NULL;
   }
@@ -80,6 +87,7 @@ void soundsys_destroy(SoundSys *soundsys) {
 
   boombox_cassette_destroy(soundsys->song2);
   boombox_cassette_destroy(soundsys->song);
+  boombox_cassette_destroy(soundsys->drip_sound);
   boombox_cassette_destroy(soundsys->boom_sound);
   boombox_cassette_destroy(soundsys->tap_sound);
   boombox_cassette_destroy(soundsys->init_sound);
@@ -120,6 +128,9 @@ void soundsys_internal_sound_event(const char *group_id, const char *id, void *c
     boombox_cassette_set_pitch(soundsys->tap_sound, 0.9f + ((float)(rand() % 20) / 100.0f));
   } else if (strncmp(id, "play_boom", 128) == 0) {
     boombox_cassette_play(soundsys->boom_sound);
+  } else if (strncmp(id, "play_drip", 128) == 0) {
+    boombox_cassette_play(soundsys->drip_sound);
+    boombox_cassette_set_pitch(soundsys->drip_sound, 0.8f + ((float)(rand() % 40) / 100.0f));
   } else if (strncmp(id, "play_song", 128) == 0) {
     uint32_t song = *(uint32_t *)userdata;
     if (song == 0) {
