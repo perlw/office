@@ -100,11 +100,11 @@ void occulus_log_action(MemoryActionType action, uintptr_t ptr, size_t size, con
   switch (action) {
     case MEM_ACTION_ALLOC:
       currently_allocated += size;
-      max_mem = (currently_allocated > max_mem ? currently_allocated : max_mem);
+      max_mem = ((uintmax_t)currently_allocated > max_mem ? (uintmax_t)currently_allocated : max_mem);
       break;
 
     case MEM_ACTION_FREE:
-      if (size > currently_allocated) {
+      if (size > (uintmax_t)currently_allocated) {
         printf("%s:%" PRIuMAX "/%s> Freeing more memory than allocated (%" PRIuMAX " > %" PRIuMAX ").\n", filepath, line, function, size, currently_allocated);
       }
       currently_allocated -= size;
