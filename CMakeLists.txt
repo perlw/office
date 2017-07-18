@@ -11,8 +11,8 @@ include_directories ("${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src")
 file(GLOB LUA_SRCS "${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src/*.c")
 add_library (lua STATIC ${LUA_SRCS})
 
-option (USE_OCCULUS "Use memory debugger" OFF)
-option (DEBUG_GOSSIP "Use gossip debug output" OFF)
+option (OCCULUS_LOG_MEM "Log memory allocations to file" OFF)
+option (GOSSIP_DEBUG "Use gossip debug output" OFF)
 
 add_subdirectory (src/bedrock)
 
@@ -46,12 +46,12 @@ if (WIN32)
   endif (MSVC)
 endif (WIN32)
 
-if (USE_OCCULUS)
-  target_compile_definitions (office PRIVATE MEM_DEBUG)
-endif (USE_OCCULUS)
-if (DEBUG_GOSSIP)
+if (OCCULUS_LOG_MEM)
+  target_compile_definitions (office PRIVATE OCCULUS_LOG_MEM)
+endif (OCCULUS_LOG_MEM)
+if (GOSSIP_DEBUG)
   target_compile_definitions (office PRIVATE GOSSIP_DEBUG)
-endif (DEBUG_GOSSIP)
+endif (GOSSIP_DEBUG)
 
 target_link_libraries (office bedrock lua)
 add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets "${CMAKE_BINARY_DIR}/bin")

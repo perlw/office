@@ -35,9 +35,7 @@ void game_kill_event(const char *group_id, const char *id, void *const subscribe
 int main(int argc, char **argv) {
   srand(time(NULL));
 
-#ifdef MEM_DEBUG
-  remove("mem.dbg");
-#endif
+  occulus_init();
 
   char *init_scene = "test";
   // +Flags
@@ -136,9 +134,7 @@ int main(int argc, char **argv) {
   gossip_destroy();
   picasso_window_kill();
 
-#ifdef MEM_DEBUG
   occulus_print();
-#endif
 
   return 0;
 }

@@ -42,9 +42,9 @@ DebugOverlay *debugoverlay_create(void) {
   snprintf(overlay->fps_buffer, 32, "FPS: 0 | MEM: 0.00kb");
   surface_text(overlay->surface, 0, 59, 31, overlay->fps_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
-  /*memset(overlay->raw_mem, 0, 10 * sizeof(uintmax_t));
+  memset(overlay->raw_mem, 0, 10 * sizeof(uintmax_t));
   memset(overlay->mem_values, 0, 10 * sizeof(float));
-  surface_graph(overlay->surface, 60, 0, 20, 6, 10, overlay->mem_values);*/
+  surface_graph(overlay->surface, 60, 0, 20, 6, 10, overlay->mem_values);
 
   memset(overlay->scene_buffer, 0, 32 * sizeof(char));
   snprintf(overlay->scene_buffer, 32, "SCENE: na");
@@ -70,11 +70,11 @@ void debugoverlay_update(DebugOverlay *overlay, double dt) {
 
   overlay->current_second += dt;
   if (overlay->current_second >= 1) {
-    snprintf(overlay->fps_buffer, 32, "FPS: %d | MEM: %.2fkb", overlay->frames, 0.0);
+    snprintf(overlay->fps_buffer, 32, "FPS: %d | MEM: %.2fkb", overlay->frames, (double)occulus_current_usage() / 1024.0);
     surface_text(overlay->surface, 0, 59, 31, overlay->fps_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
-    /*{
-      uintmax_t raw_new_mem = occulus_current_allocated();
+    {
+      uintmax_t raw_new_mem = occulus_current_usage();
       uintmax_t raw_mem_max = raw_new_mem;
       for (uint32_t t = 0; t < 9; t++) {
         overlay->raw_mem[t] = overlay->raw_mem[t + 1];
@@ -88,7 +88,7 @@ void debugoverlay_update(DebugOverlay *overlay, double dt) {
       }
 
       surface_graph(overlay->surface, 60, 0, 20, 6, 10, overlay->mem_values);
-    }*/
+    }
 
     overlay->current_second = 0;
     overlay->frames = 0;

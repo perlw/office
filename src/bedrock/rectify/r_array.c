@@ -45,7 +45,7 @@ void *rectify_array_alloc(uintmax_t chunk_size, uintmax_t element_size) {
   uintptr_t metadata_size = (uintptr_t)sizeof(ArrayMetadata);
   void *ptr = calloc(1, (chunk_size * element_size) + metadata_size);
   memcpy(ptr, &meta, metadata_size);
-  return (void *)((uintptr_t)ptr + metadata_size);
+  return fence_ptr(ptr);
 }
 
 void rectify_array_free(void *const ptr) {

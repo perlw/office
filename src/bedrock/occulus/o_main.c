@@ -9,6 +9,13 @@
 #define FILEPATH_LENGTH 128
 #define FUNCTION_LENGTH 128
 
+typedef struct {
+  uintmax_t size;
+} PtrMetadata;
+#define FENCE 3
+#define FENCE2 FENCE * 2
+const uint8_t fence[FENCE] = { 'O', 'C', 'C' };
+
 typedef enum {
   MEM_ACTION_ALLOC = 0x1,
   MEM_ACTION_FREE,
@@ -24,6 +31,20 @@ typedef struct {
   uintmax_t line;
 } MemoryAction;
 
+void *occulus_internal_fence_ptr(void *unfenced_ptr) {
+  uintptr_t metadata_size = (uintptr_t)sizeof(PtrMetadata);
+  return (void *)((uintptr_t)unfenced_ptr + metadata_size + FENCE);
+}
+
+void *occulus_internal_unfence_ptr(void *fenced_ptr) {
+  uintptr_t metadata_size = (uintptr_t)sizeof(PtrMetadata);
+  return (void *)((uintptr_t)fenced_ptr - metadata_size - FENCE);
+}
+
+PtrMetadata *occulus_internal_get_meta(void *fenced_ptr) {
+  return (PtrMetadata *)occulus_internal_unfence_ptr(fenced_ptr);
+}
+
 void occulus_assert(void *ptr, const char *filepath, uintmax_t line, const char *function) {
   if (!ptr) {
     printf("%s:%" PRIuMAX "/%s> assert failed on %p.\n", filepath, line, function, ptr);
@@ -31,8 +52,15 @@ void occulus_assert(void *ptr, const char *filepath, uintmax_t line, const char 
   }
 }
 
+uintmax_t max_mem = 0;
+intmax_t currently_allocated = 0;
+
+#ifdef OCCULUS_LOG_MEM
 FILE *mem_log_file = NULL;
+#endif // OCCULUS_LOG_MEM
+
 void occulus_log_action(MemoryActionType action, uintptr_t ptr, size_t size, const char *filepath, uintmax_t line, const char *function) {
+#ifdef OCCULUS_LOG_MEM
   if (!mem_log_file) {
     mem_log_file = fopen("mem.dbg", "a+b");
   }
@@ -51,44 +79,82 @@ void occulus_log_action(MemoryActionType action, uintptr_t ptr, size_t size, con
   if (fwrite(&mem_action, sizeof(MemoryAction), 1, mem_log_file) != 1) {
     printf("%s:%" PRIuMAX "/%s> Couldn't log allocation.\n", filepath, line, function);
   }
+#endif // OCCULUS_LOG_MEM
+
+  switch (action) {
+    case MEM_ACTION_ALLOC:
+      currently_allocated += size;
+      max_mem = (currently_allocated > max_mem ? currently_allocated : max_mem);
+      break;
+
+    case MEM_ACTION_FREE:
+      if (size > currently_allocated) {
+        printf("%s:%" PRIuMAX "/%s> Freeing more memory than allocated (%" PRIuMAX " > %" PRIuMAX ").\n", filepath, line, function, size, currently_allocated);
+      }
+      currently_allocated -= size;
+      break;
+  }
 }
 
 void *occulus_malloc(size_t size, const char *filepath, uintmax_t line, const char *function) {
-  void *ptr = malloc(size);
+  uintptr_t metadata_size = (uintptr_t)sizeof(PtrMetadata);
+  void *ptr = malloc(size + metadata_size + FENCE2);
+  ((PtrMetadata *)ptr)->size = size;
 
-  occulus_assert(ptr, filepath, line, function);
-  occulus_log_action(MEM_ACTION_ALLOC, (uintptr_t)ptr, size, filepath, line, function);
+  void *fenced_ptr = occulus_internal_fence_ptr(ptr);
+  occulus_assert(fenced_ptr, filepath, line, function);
+  occulus_log_action(MEM_ACTION_ALLOC, (uintptr_t)fenced_ptr, size, filepath, line, function);
 
-  return ptr;
+  return fenced_ptr;
 }
 
 void *occulus_calloc(size_t num, size_t size, const char *filepath, uintmax_t line, const char *function) {
+  uintptr_t metadata_size = (uintptr_t)sizeof(PtrMetadata);
   size_t total = num * size;
-  void *ptr = calloc(num, total);
+  void *ptr = calloc(1, total + metadata_size + FENCE2);
+  ((PtrMetadata *)ptr)->size = size;
 
-  occulus_assert(ptr, filepath, line, function);
-  occulus_log_action(MEM_ACTION_ALLOC, (uintptr_t)ptr, size, filepath, line, function);
+  void *fenced_ptr = occulus_internal_fence_ptr(ptr);
+  occulus_assert(fenced_ptr, filepath, line, function);
+  occulus_log_action(MEM_ACTION_ALLOC, (uintptr_t)fenced_ptr, size, filepath, line, function);
 
-  return ptr;
+  return fenced_ptr;
 }
 
 void *occulus_realloc(void *old_ptr, size_t size, const char *filepath, uintmax_t line, const char *function) {
-  void *ptr = realloc(old_ptr, size);
+  void *unfenced_ptr = occulus_internal_unfence_ptr(old_ptr);
+  size_t old_size = ((PtrMetadata *)unfenced_ptr)->size;
+  uintptr_t metadata_size = (uintptr_t)sizeof(PtrMetadata);
+  void *ptr = realloc(unfenced_ptr, size + metadata_size + FENCE2);
+  ((PtrMetadata *)ptr)->size = size;
 
-  occulus_assert(ptr, filepath, line, function);
-  occulus_log_action(MEM_ACTION_FREE, (uintptr_t)old_ptr, 0, filepath, line, function);
-  occulus_log_action(MEM_ACTION_ALLOC, (uintptr_t)ptr, size, filepath, line, function);
+  void *fenced_ptr = occulus_internal_fence_ptr(ptr);
+  occulus_assert(fenced_ptr, filepath, line, function);
+  occulus_log_action(MEM_ACTION_FREE, (uintptr_t)old_ptr, old_size, filepath, line, function);
+  occulus_log_action(MEM_ACTION_ALLOC, (uintptr_t)fenced_ptr, size, filepath, line, function);
 
-  return ptr;
+  return fenced_ptr;
 }
 
 void occulus_free(void *ptr, const char *filepath, uintmax_t line, const char *function) {
+  void *unfenced_ptr = occulus_internal_unfence_ptr(ptr);
+
   occulus_assert(ptr, filepath, line, function);
-  occulus_log_action(MEM_ACTION_FREE, (uintptr_t)ptr, 0, filepath, line, function);
-  free(ptr);
+  occulus_log_action(MEM_ACTION_FREE, (uintptr_t)ptr, ((PtrMetadata *)unfenced_ptr)->size, filepath, line, function);
+
+  free(occulus_internal_unfence_ptr(ptr));
+}
+
+void occulus_init(void) {
+#ifdef OCCULUS_LOG_MEM
+  remove("mem.dbg");
+#endif // OCCULUS_LOG_MEM
 }
 
 void occulus_print(void) {
+  printf("-=-=[OCCULUS]=-=-\nMax: %.2fkb\tLeaked: %.2fkb\n-=-===========-=-\n", (double)max_mem / 1024.0, (double)currently_allocated / 1024.0);
+
+#ifdef OCCULUS_LOG_MEM
   if (mem_log_file) {
     fclose(mem_log_file);
   }
@@ -132,4 +198,9 @@ void occulus_print(void) {
     }
   }
   fclose(mem_log_file);
+#endif // OCCULUS_LOG_MEM
+}
+
+intmax_t occulus_current_usage(void) {
+  return currently_allocated;
 }
