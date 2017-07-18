@@ -133,3 +133,7 @@ GlyphColor glyphcolor_from_int(uint32_t hex) {
 
   return g;
 }
+
+bool glyphcolor_eq(GlyphColor a, GlyphColor b) {
+  return (a.r == b.r && a.g == b.g && a.b == b.b);
+}

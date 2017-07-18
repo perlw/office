@@ -160,18 +160,17 @@ void surface_graph(Surface *const surface, uint32_t x, uint32_t y, uint32_t widt
   }
 }
 
-void surface_draw(Surface *const surface, AsciiBuffer *const tiles) {
+void surface_draw(Surface *const surface, AsciiBuffer *const ascii) {
   assert(surface);
 
   for (uint32_t y = 0; y < surface->height; y++) {
     for (uint32_t x = 0; x < surface->width; x++) {
-      uint32_t s_index = (y * surface->width) + x;
-      uint32_t index = ((y + surface->y) * tiles->width) + (x + surface->x);
-      if (index >= tiles->size || surface->buffer[s_index].rune == 0) {
+      uint32_t index = (y * surface->width) + x;
+      if (surface->buffer[index].rune == 0) {
         continue;
       }
 
-      tiles->buffer[index] = surface->buffer[s_index];
+      ascii_buffer_glyph(ascii, surface->x + x, surface->y + y, surface->buffer[index]);
     }
   }
 }

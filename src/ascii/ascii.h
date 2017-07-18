@@ -42,6 +42,13 @@ GlyphColor glyphcolor_subs(GlyphColor c, float s);
 GlyphColor glyphcolor_muls(GlyphColor c, float s);
 GlyphColor glyphcolor_divs(GlyphColor c, float s);
 GlyphColor glyphcolor_from_int(uint32_t hex);
+bool glyphcolor_eq(GlyphColor a, GlyphColor b);
+
+typedef struct {
+  uint8_t *rune_buffer;
+  GlyphColor *fore_buffer;
+  GlyphColor *back_buffer;
+} DisplayBuffer;
 
 typedef struct {
   PicassoBufferGroup *quad;
@@ -51,12 +58,12 @@ typedef struct {
   uint32_t width;
   uint32_t height;
   uint32_t size;
-  Glyph *buffer;
-  Glyph *last_buffer;
 
-  uint8_t *rune_buffer;
-  GlyphColor *fore_buffer;
-  GlyphColor *back_buffer;
+  bool dirty;
+  DisplayBuffer buffers[2];
+  DisplayBuffer *front_buffer;
+  DisplayBuffer *back_buffer;
+
   PicassoTexture *asciimap_texture;
   PicassoTexture *forecolors_texture;
   PicassoTexture *backcolors_texture;
@@ -70,9 +77,10 @@ typedef struct {
 } AsciiBuffer;
 
 AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height);
-void ascii_buffer_destroy(AsciiBuffer *const layer);
+void ascii_buffer_destroy(AsciiBuffer *const ascii);
 
-void ascii_buffer_draw(AsciiBuffer *const layer);
+void ascii_buffer_glyph(AsciiBuffer *const ascii, uint32_t x, uint32_t y, Glyph glyph);
+void ascii_buffer_draw(AsciiBuffer *const ascii);
 // -AsciiBuffer
 
 // +Surface
