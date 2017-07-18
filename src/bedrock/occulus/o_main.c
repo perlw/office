@@ -31,8 +31,11 @@ void occulus_assert(void *ptr, const char *filepath, uintmax_t line, const char 
   }
 }
 
+FILE *mem_log_file = NULL;
 void occulus_log_action(MemoryActionType action, uintptr_t ptr, size_t size, const char *filepath, uintmax_t line, const char *function) {
-  FILE *log_file = fopen("mem.dbg", "a+b");
+  if (!mem_log_file) {
+    mem_log_file = fopen("mem.dbg", "a+b");
+  }
 
   MemoryAction mem_action = (MemoryAction){
     .ptr = ptr,
@@ -45,11 +48,9 @@ void occulus_log_action(MemoryActionType action, uintptr_t ptr, size_t size, con
   strncpy(mem_action.filepath, filepath, FILEPATH_LENGTH);
   strncpy(mem_action.function, function, FUNCTION_LENGTH);
 
-  if (fwrite(&mem_action, sizeof(MemoryAction), 1, log_file) != 1) {
+  if (fwrite(&mem_action, sizeof(MemoryAction), 1, mem_log_file) != 1) {
     printf("%s:%" PRIuMAX "/%s> Couldn't log allocation.\n", filepath, line, function);
   }
-
-  fclose(log_file);
 }
 
 void *occulus_malloc(size_t size, const char *filepath, uintmax_t line, const char *function) {
@@ -88,20 +89,24 @@ void occulus_free(void *ptr, const char *filepath, uintmax_t line, const char *f
 }
 
 void occulus_print(void) {
-  FILE *log_file = fopen("mem.dbg", "rb");
+  if (mem_log_file) {
+    fclose(mem_log_file);
+  }
+
+  mem_log_file = fopen("mem.dbg", "rb");
   MemoryAction mem_action;
   for (;;) {
-    if (fread(&mem_action, sizeof(MemoryAction), 1, log_file) != 1) {
+    if (fread(&mem_action, sizeof(MemoryAction), 1, mem_log_file) != 1) {
       break;
     }
 
     if (mem_action.action == MEM_ACTION_ALLOC) {
-      uintmax_t orig_pos = ftell(log_file);
+      uintmax_t orig_pos = ftell(mem_log_file);
 
       bool found = false;
       for (;;) {
         MemoryAction check_action;
-        if (fread(&check_action, sizeof(MemoryAction), 1, log_file) != 1) {
+        if (fread(&check_action, sizeof(MemoryAction), 1, mem_log_file) != 1) {
           break;
         }
 
@@ -123,8 +128,8 @@ void occulus_print(void) {
         printf("%s:%" PRIuMAX "/%s> never freed %p.\n", mem_action.filepath, mem_action.line, mem_action.function, (void *)mem_action.ptr);
       }
 
-      fseek(log_file, orig_pos, SEEK_SET);
+      fseek(mem_log_file, orig_pos, SEEK_SET);
     }
   }
-  fclose(log_file);
+  fclose(mem_log_file);
 }
