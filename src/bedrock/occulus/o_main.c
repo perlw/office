@@ -13,7 +13,7 @@ typedef struct {
   uintmax_t size;
 } PtrMetadata;
 #define FENCE 3
-#define FENCE2 FENCE * 2
+#define FENCE2 6
 const uint8_t fence[FENCE] = { 'O', 'C', 'C' };
 
 typedef enum {
@@ -41,14 +41,30 @@ void *occulus_internal_unfence_ptr(void *fenced_ptr) {
   return (void *)((uintptr_t)fenced_ptr - metadata_size - FENCE);
 }
 
-PtrMetadata *occulus_internal_get_meta(void *fenced_ptr) {
-  return (PtrMetadata *)occulus_internal_unfence_ptr(fenced_ptr);
+void occulus_internal_add_fence_check(void *unfenced_ptr) {
+  uintptr_t metadata_size = (uintptr_t)sizeof(PtrMetadata);
+  size_t size = ((PtrMetadata *)unfenced_ptr)->size;
+  memcpy((void *)((uintptr_t)unfenced_ptr + metadata_size), fence, FENCE);
+  memcpy((void *)((uintptr_t)unfenced_ptr + metadata_size + FENCE + size), fence, FENCE);
 }
 
 void occulus_assert(void *ptr, const char *filepath, uintmax_t line, const char *function) {
   if (!ptr) {
     printf("%s:%" PRIuMAX "/%s> assert failed on %p.\n", filepath, line, function, ptr);
     exit(-1);
+  }
+}
+
+void occulus_assert_fence(void *ptr, const char *filepath, uintmax_t line, const char *function) {
+  void *unfenced_ptr = occulus_internal_unfence_ptr(ptr);
+
+  uintptr_t metadata_size = (uintptr_t)sizeof(PtrMetadata);
+  size_t size = ((PtrMetadata *)unfenced_ptr)->size;
+  char *fence_a = (void *)((uintptr_t)unfenced_ptr + metadata_size);
+  char *fence_b = (void *)((uintptr_t)unfenced_ptr + metadata_size + FENCE + size);
+
+  if (memcmp(fence_a, fence, 3) != 0 || memcmp(fence_b, fence, 3) != 0) {
+    printf("%s:%" PRIuMAX "/%s> fence failed on %p.\n", filepath, line, function, ptr);
   }
 }
 
@@ -101,6 +117,8 @@ void *occulus_malloc(size_t size, const char *filepath, uintmax_t line, const ch
   void *ptr = malloc(size + metadata_size + FENCE2);
   ((PtrMetadata *)ptr)->size = size;
 
+  occulus_internal_add_fence_check(ptr);
+
   void *fenced_ptr = occulus_internal_fence_ptr(ptr);
   occulus_assert(fenced_ptr, filepath, line, function);
   occulus_log_action(MEM_ACTION_ALLOC, (uintptr_t)fenced_ptr, size, filepath, line, function);
@@ -112,21 +130,28 @@ void *occulus_calloc(size_t num, size_t size, const char *filepath, uintmax_t li
   uintptr_t metadata_size = (uintptr_t)sizeof(PtrMetadata);
   size_t total = num * size;
   void *ptr = calloc(1, total + metadata_size + FENCE2);
-  ((PtrMetadata *)ptr)->size = size;
+  ((PtrMetadata *)ptr)->size = total;
+
+  occulus_internal_add_fence_check(ptr);
 
   void *fenced_ptr = occulus_internal_fence_ptr(ptr);
   occulus_assert(fenced_ptr, filepath, line, function);
-  occulus_log_action(MEM_ACTION_ALLOC, (uintptr_t)fenced_ptr, size, filepath, line, function);
+  occulus_log_action(MEM_ACTION_ALLOC, (uintptr_t)fenced_ptr, total, filepath, line, function);
 
   return fenced_ptr;
 }
 
 void *occulus_realloc(void *old_ptr, size_t size, const char *filepath, uintmax_t line, const char *function) {
+  occulus_assert_fence(old_ptr, filepath, line, function);
+
   void *unfenced_ptr = occulus_internal_unfence_ptr(old_ptr);
+
   size_t old_size = ((PtrMetadata *)unfenced_ptr)->size;
   uintptr_t metadata_size = (uintptr_t)sizeof(PtrMetadata);
   void *ptr = realloc(unfenced_ptr, size + metadata_size + FENCE2);
   ((PtrMetadata *)ptr)->size = size;
+
+  occulus_internal_add_fence_check(ptr);
 
   void *fenced_ptr = occulus_internal_fence_ptr(ptr);
   occulus_assert(fenced_ptr, filepath, line, function);
@@ -140,9 +165,10 @@ void occulus_free(void *ptr, const char *filepath, uintmax_t line, const char *f
   void *unfenced_ptr = occulus_internal_unfence_ptr(ptr);
 
   occulus_assert(ptr, filepath, line, function);
+  occulus_assert_fence(ptr, filepath, line, function);
   occulus_log_action(MEM_ACTION_FREE, (uintptr_t)ptr, ((PtrMetadata *)unfenced_ptr)->size, filepath, line, function);
 
-  free(occulus_internal_unfence_ptr(ptr));
+  free(unfenced_ptr);
 }
 
 void occulus_init(void) {
