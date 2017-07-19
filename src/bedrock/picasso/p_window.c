@@ -59,7 +59,7 @@ void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
   printf("PICASSO: GL %s\n", message);
 }
 
-PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug) {
+PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool fullscreen, bool gl_debug) {
   if (!glfwInit()) {
     return PICASSO_WINDOW_INIT_FAIL;
   }
@@ -71,11 +71,13 @@ PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, u
 
   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, (gl_debug ? GL_TRUE : GL_FALSE));
 
-  // Borderless fullscreen
-  //glfwWindowHint(GLFW_DECORATED, GL_FALSE);
-  /*GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+  if (fullscreen) {
+    // Borderless fullscreen
+    glfwWindowHint(GLFW_DECORATED, GL_FALSE);
+    /*GLFWmonitor *monitor = glfwGetPrimaryMonitor();
   const GLFWvidmode *vid_mode = glfwGetVideoMode(monitor);*/
-  // Borderless fullscreen
+    // Borderless fullscreen
+  }
 
   window = glfwCreateWindow(res_width, res_height, title, NULL, NULL);
   if (!window) {

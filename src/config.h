@@ -6,6 +6,7 @@
 typedef struct {
   uint32_t res_width;
   uint32_t res_height;
+  bool fullscreen;
   bool gl_debug;
   uint32_t frame_lock;
   uint32_t ascii_width;

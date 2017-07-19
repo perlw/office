@@ -518,16 +518,17 @@ int config_internal_resolution(lua_State *state) {
   return 0;
 }
 
-int config_internal_gl_debug(lua_State *state) {
-  if (lua_gettop(state) < 1) {
-    printf("Config: Too few arguments to function \"gl_debug\".\n");
-    return 0;
-  }
-
+int config_internal_fullscreen(lua_State *state) {
   Config *config = (Config *)lua_topointer(state, lua_upvalueindex(1));
-  config->gl_debug = (uint32_t)lua_toboolean(state, 1);
-  printf("Config: Debugging turned %s\n", (config->gl_debug ? "on" : "off"));
+  config->fullscreen = true;
+  printf("Config: Fullscreen\n");
+  return 0;
+}
 
+int config_internal_gl_debug(lua_State *state) {
+  Config *config = (Config *)lua_topointer(state, lua_upvalueindex(1));
+  config->gl_debug = true;
+  printf("Config: OpenGL debugging\n");
   return 0;
 }
 
@@ -584,12 +585,13 @@ int config_internal_bind(lua_State *state) {
 }
 
 Config config_internal = {
-  .res_width = 640,
-  .res_height = 480,
+  .res_width = 1280,
+  .res_height = 720,
+  .fullscreen = false,
   .gl_debug = false,
   .frame_lock = 0,
-  .ascii_width = 80,
-  .ascii_height = 60,
+  .ascii_width = 160,
+  .ascii_height = 90,
   .grid_size_width = 8.0,
   .grid_size_height = 8.0,
 };
@@ -600,6 +602,10 @@ const Config *const config_init(void) {
   lua_pushlightuserdata(state, &config_internal);
   lua_pushcclosure(state, &config_internal_resolution, 1);
   lua_setglobal(state, "resolution");
+
+  lua_pushlightuserdata(state, &config_internal);
+  lua_pushcclosure(state, &config_internal_fullscreen, 1);
+  lua_setglobal(state, "fullscreen");
 
   lua_pushlightuserdata(state, &config_internal);
   lua_pushcclosure(state, &config_internal_gl_debug, 1);

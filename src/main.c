@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 
   LuaBridge *const lua_bridge = lua_bridge_create();
 
-  if (picasso_window_init("Office", config->res_width, config->res_height, config->gl_debug) != PICASSO_WINDOW_OK) {
+  if (picasso_window_init("Office", config->res_width, config->res_height, config->fullscreen, config->gl_debug) != PICASSO_WINDOW_OK) {
     printf("Window: failed to init\n");
     return -1;
   }

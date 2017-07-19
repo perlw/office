@@ -163,7 +163,7 @@ typedef struct {
 typedef void (*PicassoWindowKeyboardCallback)(const PicassoWindowKeyboardEvent *const);
 typedef void (*PicassoWindowMouseCallback)(const PicassoWindowMouseEvent *const);
 
-PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool gl_debug);
+PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool fullscreen, bool gl_debug);
 void picasso_window_kill(void);
 void picasso_window_clear(void);
 void picasso_window_swap(void);
