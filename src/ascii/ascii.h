@@ -69,16 +69,7 @@ typedef struct {
   PicassoTexture *backcolors_texture;
 
   struct {
-    int32_t pmatrix_uniform;
-    mat4_t projection_matrix;
-    int32_t ascii_width_uniform;
-    int32_t ascii_height_uniform;
-  } shader;
-
-  struct {
     uint32_t id;
-    int32_t pmatrix_uniform;
-    mat4_t projection_matrix;
     PicassoTexture *texture;
     PicassoProgram *program;
     PicassoBufferGroup *quad;

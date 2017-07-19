@@ -68,6 +68,12 @@ void picasso_program_uniform_float(PicassoProgram *const program, int32_t unifor
   glProgramUniform1f(program->id, uniform, val);
 }
 
+void picasso_program_uniform_ivec2(PicassoProgram *const program, int32_t uniform, const int32_t *vec) {
+  assert(program);
+
+  glProgramUniform2iv(program->id, uniform, 1, (const GLint *)vec);
+}
+
 void picasso_program_uniform_mat4(PicassoProgram *const program, int32_t uniform, const float *mat) {
   assert(program);
 

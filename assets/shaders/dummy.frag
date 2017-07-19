@@ -4,6 +4,7 @@ in vec2 texCoord;
 out vec4 fragment;
 
 uniform sampler2D fbo_texture;
+uniform ivec2 resolution;
 
 vec4 sharpen(in sampler2D tex, in vec2 coords, in vec2 renderSize) {
   float dx = 1.0 / renderSize.x;
@@ -18,6 +19,13 @@ vec4 sharpen(in sampler2D tex, in vec2 coords, in vec2 renderSize) {
 }
 
 void main() {
-	fragment = texture(fbo_texture, texCoord);
-  //fragment = sharpen(fbo_texture, texCoord, vec2(1920, 1080));
+  //if (texCoord.s < 0.33) {
+    fragment = texture(fbo_texture, texCoord);
+  /*} else if (texCoord.s < 0.50) {
+    fragment = sharpen(fbo_texture, texCoord, vec2(1920, 1080));
+  } else if (texCoord.s < 0.66) {
+    fragment = sharpen(fbo_texture, texCoord, vec2(res_width, res_height));
+  } else {
+    fragment = sharpen(fbo_texture, texCoord, resolution);
+  }*/
 }

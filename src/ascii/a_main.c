@@ -16,6 +16,8 @@ uint32_t render_height = 720;
 AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height) {
   AsciiBuffer *ascii = calloc(1, sizeof(AsciiBuffer));
 
+  const Config *const config = config_get();
+
   ascii->quad = picasso_buffergroup_create();
 
   ascii->program = (PicassoProgram *)tome_fetch(ASSET_SHADER, "ascii_buffer", "shaders/asciilayer");
@@ -56,12 +58,12 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
     int32_t coord_attr = picasso_program_attrib_location(ascii->program, "coord");
     picasso_buffer_shader_attrib(coord_buffer, coord_attr);
 
-    ascii->shader.projection_matrix = m4_ortho(0, (float)render_width, 0, (float)render_height, 1, 0);
+    mat4_t projection_matrix = m4_ortho(0, (float)render_width, 0, (float)render_height, 1, 0);
     mat4_t model = m4_identity();
 
-    ascii->shader.pmatrix_uniform = picasso_program_uniform_location(ascii->program, "pMatrix");
+    int32_t pmatrix_uniform = picasso_program_uniform_location(ascii->program, "pMatrix");
     int32_t mvmatrix_uniform = picasso_program_uniform_location(ascii->program, "mvMatrix");
-    picasso_program_uniform_mat4(ascii->program, ascii->shader.pmatrix_uniform, (float *)&ascii->shader.projection_matrix);
+    picasso_program_uniform_mat4(ascii->program, pmatrix_uniform, (float *)&projection_matrix);
     picasso_program_uniform_mat4(ascii->program, mvmatrix_uniform, (float *)&model);
   }
 
@@ -71,13 +73,10 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
       printf("Something went wrong when fetching ascii font :(\n");
       exit(-1);
     }
-    picasso_texture_bind_to(ascii->font_texture, 0);
 
     int32_t texture_uniform = picasso_program_uniform_location(ascii->program, "ascii_buffer_font");
     picasso_program_uniform_int(ascii->program, texture_uniform, 0);
-  }
 
-  {
     ascii->width = ascii_width;
     ascii->height = ascii_height;
     ascii->size = ascii->width * ascii->height;
@@ -85,11 +84,8 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
 
     {
       ascii->asciimap_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, ascii->width, ascii->height, PICASSO_TEXTURE_R, false);
-      picasso_texture_bind_to(ascii->asciimap_texture, 1);
       ascii->forecolors_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, ascii->width, ascii->height, PICASSO_TEXTURE_RGB, false);
-      picasso_texture_bind_to(ascii->forecolors_texture, 2);
       ascii->backcolors_texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, ascii->width, ascii->height, PICASSO_TEXTURE_RGB, false);
-      picasso_texture_bind_to(ascii->backcolors_texture, 3);
 
       for (uint32_t t = 0; t < 2; t++) {
         ascii->buffers[t].rune_buffer = calloc(ascii->size, sizeof(uint8_t));
@@ -118,10 +114,10 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
       picasso_program_uniform_int(ascii->program, texture_uniform, 3);
     }
 
-    ascii->shader.ascii_width_uniform = picasso_program_uniform_location(ascii->program, "ascii_res_width");
-    ascii->shader.ascii_height_uniform = picasso_program_uniform_location(ascii->program, "ascii_res_height");
-    picasso_program_uniform_int(ascii->program, ascii->shader.ascii_width_uniform, ascii->width);
-    picasso_program_uniform_int(ascii->program, ascii->shader.ascii_height_uniform, ascii->height);
+    int32_t ascii_width_uniform = picasso_program_uniform_location(ascii->program, "ascii_res_width");
+    int32_t ascii_height_uniform = picasso_program_uniform_location(ascii->program, "ascii_res_height");
+    picasso_program_uniform_int(ascii->program, ascii_width_uniform, ascii->width);
+    picasso_program_uniform_int(ascii->program, ascii_height_uniform, ascii->height);
   }
 
   // +FBO
@@ -180,14 +176,17 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
     int32_t texture_uniform = picasso_program_uniform_location(ascii->fbo.program, "fbo_texture");
     picasso_program_uniform_int(ascii->fbo.program, texture_uniform, 0);
 
-    ascii->fbo.projection_matrix = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
-
-    ascii->fbo.pmatrix_uniform = picasso_program_uniform_location(ascii->fbo.program, "pMatrix");
-    picasso_program_uniform_mat4(ascii->fbo.program, ascii->fbo.pmatrix_uniform, (float *)&ascii->fbo.projection_matrix);
+    mat4_t projection_matrix = m4_ortho(0, (float)width, 0, (float)height, 1, 0);
+    int32_t pmatrix_uniform = picasso_program_uniform_location(ascii->fbo.program, "pMatrix");
+    picasso_program_uniform_mat4(ascii->fbo.program, pmatrix_uniform, (float *)&projection_matrix);
 
     mat4_t model = m4_identity();
     int32_t mvmatrix_uniform = picasso_program_uniform_location(ascii->fbo.program, "mvMatrix");
     picasso_program_uniform_mat4(ascii->fbo.program, mvmatrix_uniform, (float *)&model);
+
+    int32_t vals[2] = { config->res_width, config->res_height };
+    int32_t resolution_uniform = picasso_program_uniform_location(ascii->fbo.program, "resolution");
+    picasso_program_uniform_ivec2(ascii->fbo.program, resolution_uniform, vals);
     // -FBO
   }
 
@@ -266,12 +265,6 @@ void ascii_buffer_draw(AsciiBuffer *const ascii) {
 
   picasso_program_use(ascii->program);
 
-  {
-    picasso_program_uniform_mat4(ascii->program, ascii->shader.pmatrix_uniform, (float *)&ascii->shader.projection_matrix);
-    picasso_program_uniform_int(ascii->program, ascii->shader.ascii_width_uniform, ascii->width);
-    picasso_program_uniform_int(ascii->program, ascii->shader.ascii_height_uniform, ascii->height);
-  }
-
   picasso_texture_bind_to(ascii->font_texture, 0);
   picasso_texture_bind_to(ascii->asciimap_texture, 1);
   picasso_texture_bind_to(ascii->forecolors_texture, 2);
@@ -285,9 +278,7 @@ void ascii_buffer_draw(AsciiBuffer *const ascii) {
   // +STEP 2: DRAW FBO
   glViewport(0, 0, config->res_width, config->res_height);
   picasso_program_use(ascii->fbo.program);
-  picasso_program_uniform_mat4(ascii->fbo.program, ascii->fbo.pmatrix_uniform, (float *)&ascii->fbo.projection_matrix);
   picasso_texture_bind_to(ascii->fbo.texture, 0);
-
   picasso_buffergroup_draw(ascii->fbo.quad, PICASSO_BUFFER_MODE_TRIANGLES, 6);
   // -STEP 2: DRAW FBO
 }
