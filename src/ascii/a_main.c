@@ -126,6 +126,10 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
     uint32_t fudged_width = width;
     uint32_t fudged_height = ((double)fudged_width + 0.5) / widescreen_ratio;
 
+    if (fudged_height > height) {
+      fudged_height = height;
+    }
+
     int32_t vertex_data[] = {
       0, 0,
       fudged_width, fudged_height,
