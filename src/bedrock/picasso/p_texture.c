@@ -25,7 +25,7 @@ GLenum TextureChannelToFormatGL[] = {
   GL_RGBA8,
 };
 
-PicassoTexture *picasso_texture_create(PicassoTextureTarget target, uintmax_t width, uintmax_t height, PicassoTextureChannels channels) {
+PicassoTexture *picasso_texture_create(PicassoTextureTarget target, uintmax_t width, uintmax_t height, PicassoTextureChannels channels, bool filtered) {
   PicassoTexture *texture = calloc(1, sizeof(PicassoTexture));
 
   texture->width = width;
@@ -34,8 +34,13 @@ PicassoTexture *picasso_texture_create(PicassoTextureTarget target, uintmax_t wi
   texture->gl.channels = TextureChannelToGL[channels];
 
   glCreateTextures(texture->gl.target, 1, &texture->id);
-  glTextureParameteri(texture->id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTextureParameteri(texture->id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  if (filtered) {
+    glTextureParameteri(texture->id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(texture->id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  } else {
+    glTextureParameteri(texture->id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTextureParameteri(texture->id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  }
   glTextureParameteri(texture->id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
   glTextureParameteri(texture->id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
@@ -51,7 +56,7 @@ PicassoTexture *picasso_texture_load(PicassoTextureTarget target, PicassoTexture
     return NULL;
   }
 
-  PicassoTexture *texture = picasso_texture_create(target, w, h, channels);
+  PicassoTexture *texture = picasso_texture_create(target, w, h, channels, false);
   picasso_texture_set_data(texture, 0, 0, w, h, imagedata);
 
   stbi_image_free(imagedata);
@@ -81,4 +86,9 @@ void picasso_texture_bind_to(PicassoTexture *const texture, uint32_t index) {
   assert(texture);
 
   glBindTextureUnit(index, texture->id);
+}
+
+uint32_t picasso_texture_get_id(PicassoTexture *const texture) {
+  assert(texture);
+  return texture->id;
 }

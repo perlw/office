@@ -258,10 +258,12 @@ typedef enum {
 
 typedef struct PicassoTexture PicassoTexture;
 
-PicassoTexture *picasso_texture_create(PicassoTextureTarget target, uintmax_t width, uintmax_t height, PicassoTextureChannels channels);
+PicassoTexture *picasso_texture_create(PicassoTextureTarget target, uintmax_t width, uintmax_t height, PicassoTextureChannels channels, bool filtered);
 PicassoTexture *picasso_texture_load(PicassoTextureTarget target, PicassoTextureChannels channels, uintmax_t size, const uint8_t *data);
 void picasso_texture_destroy(PicassoTexture *const texture);
 
 PicassoTextureResult picasso_texture_set_data(PicassoTexture *const texture, uintmax_t offset_x, uintmax_t offset_y, uintmax_t width, uintmax_t height, const void *data);
 void picasso_texture_bind_to(PicassoTexture *const texture, uint32_t index);
+
+uint32_t picasso_texture_get_id(PicassoTexture *const texture);
 // -Textures

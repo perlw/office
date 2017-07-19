@@ -74,6 +74,15 @@ typedef struct {
     int32_t ascii_width_uniform;
     int32_t ascii_height_uniform;
   } shader;
+
+  struct {
+    uint32_t id;
+    int32_t pmatrix_uniform;
+    mat4_t projection_matrix;
+    PicassoTexture *texture;
+    PicassoProgram *program;
+    PicassoBufferGroup *quad;
+  } fbo;
 } AsciiBuffer;
 
 AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height);
