@@ -106,7 +106,7 @@ PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, u
   glClearDepth(1);
   glDepthFunc(GL_LESS);
   glViewport(0, 0, res_width, res_height);
-  glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
+  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
   if (gl_debug) {
     glEnable(GL_DEBUG_OUTPUT);

@@ -122,14 +122,18 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
 
   // +FBO
   {
+    double widescreen_ratio = 16.0 / 9.0;
+    uint32_t fudged_width = width;
+    uint32_t fudged_height = ((double)fudged_width + 0.5) / widescreen_ratio;
+
     int32_t vertex_data[] = {
       0, 0,
-      width, height,
-      0, height,
+      fudged_width, fudged_height,
+      0, fudged_height,
 
       0, 0,
-      width, 0,
-      width, height,
+      fudged_width, 0,
+      fudged_width, fudged_height,
     };
     float coord_data[] = {
       0, 1,
@@ -180,7 +184,7 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
     int32_t pmatrix_uniform = picasso_program_uniform_location(ascii->fbo.program, "pMatrix");
     picasso_program_uniform_mat4(ascii->fbo.program, pmatrix_uniform, (float *)&projection_matrix);
 
-    mat4_t model = m4_identity();
+    mat4_t model = m4_translation((vec3_t){ (width / 2) - (fudged_width / 2), (height / 2) - (fudged_height / 2), 0.0 });
     int32_t mvmatrix_uniform = picasso_program_uniform_location(ascii->fbo.program, "mvMatrix");
     picasso_program_uniform_mat4(ascii->fbo.program, mvmatrix_uniform, (float *)&model);
 

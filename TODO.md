@@ -28,7 +28,6 @@ Tests?
 
 ### Picasso
 Graphics, pipeline
-* Fullscreen support
 * Framebuffer support
 
 ### Archivist module
