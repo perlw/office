@@ -7,12 +7,13 @@ The actual game
   - Separate files for different systems
 * Lua bridge
   - Allow systems to register own interface?
-* Ascii
-  - Save to buffers to remove need to copy from glyphs
 * Sound
   - Ability to load and play sounds, won't need to define
 * Occulus
   - Break out log parsing in own app
+* Resolutions
+  - Limit actual rendering to 16:9, black bars on unsupported ratios
+  - Load higher res font when possible
 
 ### System management
 For handling global systems, startup, shutdown, etc
@@ -28,6 +29,7 @@ Tests?
 ### Picasso
 Graphics, pipeline
 * Fullscreen support
+* Framebuffer support
 
 ### Archivist module
 File management
