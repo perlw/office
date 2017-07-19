@@ -12,8 +12,7 @@ The actual game
 * Occulus
   - Break out log parsing in own app
 * Resolutions
-  - Limit actual rendering to 16:9, black bars on unsupported ratios
-  - Load higher res font when possible
+  - Load higher res font when possible?
 
 ### System management
 For handling global systems, startup, shutdown, etc
@@ -29,6 +28,7 @@ Tests?
 ### Picasso
 Graphics, pipeline
 * Framebuffer support
+* Probable need for reworking of picasso window and gl management
 
 ### Archivist module
 File management

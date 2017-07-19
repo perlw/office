@@ -37,6 +37,10 @@ struct PicassoBufferGroup {
   PicassoBuffer **buffers;
 };
 
+struct PicassoFramebuffer {
+  uint32_t id;
+};
+
 struct PicassoTexture {
   uint32_t id;
   uintmax_t width;
@@ -52,6 +56,7 @@ struct PicassoTexture {
 typedef enum {
   PICASSO_STATE_PROGRAM = 1,
   PICASSO_STATE_BUFFER,
+  PICASSO_STATE_FRAMEBUFFER,
   PICASSO_STATE_VAO,
   PICASSO_STATE_ACTIVE_TEXTURE,
   PICASSO_STATE_TEXTURE,

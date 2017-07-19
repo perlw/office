@@ -166,12 +166,14 @@ typedef void (*PicassoWindowMouseCallback)(const PicassoWindowMouseEvent *const)
 PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool fullscreen, bool gl_debug);
 void picasso_window_kill(void);
 void picasso_window_clear(void);
+void picasso_window_clearcolor(float r, float g, float b, float a);
 void picasso_window_swap(void);
 void picasso_window_update(void);
 bool picasso_window_should_close(void);
 void picasso_window_keyboard_callback(PicassoWindowKeyboardCallback callback);
 void picasso_window_mouse_move_callback(PicassoWindowMouseCallback callback);
 void picasso_window_mouse_button_callback(PicassoWindowMouseCallback callback);
+void picasso_window_viewport(int32_t x, int32_t y, int32_t width, int32_t height);
 // -Window
 
 // +Shaders
@@ -237,6 +239,16 @@ PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *const buffergroup, Pica
 void picasso_buffer_set_data(PicassoBuffer *const buffer, uintmax_t num_fields, PicassoDataType type, uintmax_t size, const void *data);
 void picasso_buffer_shader_attrib(PicassoBuffer *const buffer, int32_t attr_pos);
 // -Buffers
+
+// +Framebuffers
+typedef struct PicassoFramebuffer PicassoFramebuffer;
+
+PicassoFramebuffer *picasso_framebuffer_create(void);
+void picasso_framebuffer_destroy(PicassoFramebuffer *const buffer);
+
+void picasso_framebuffer_bind(PicassoFramebuffer *const buffer);
+void picasso_framebuffer_unbind(PicassoFramebuffer *const buffer);
+// -Framebuffers
 
 // +Textures
 typedef enum {

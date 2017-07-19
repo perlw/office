@@ -253,7 +253,7 @@ void ascii_buffer_draw(AsciiBuffer *const ascii) {
 
   // +STEP 1: FBO
   glBindFramebuffer(GL_FRAMEBUFFER, ascii->fbo.id);
-  glViewport(0, 0, render_width, render_height);
+  picasso_window_viewport(0, 0, render_width, render_height);
 
   if (ascii->dirty) {
     ascii->dirty = false;
@@ -284,7 +284,7 @@ void ascii_buffer_draw(AsciiBuffer *const ascii) {
   // -STEP 1: FBO
 
   // +STEP 2: DRAW FBO
-  glViewport(0, 0, config->res_width, config->res_height);
+  picasso_window_viewport(0, 0, config->res_width, config->res_height);
   picasso_program_use(ascii->fbo.program);
   picasso_texture_bind_to(ascii->fbo.texture, 0);
   picasso_buffergroup_draw(ascii->fbo.quad, PICASSO_BUFFER_MODE_TRIANGLES, 6);

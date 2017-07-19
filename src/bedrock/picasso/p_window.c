@@ -106,7 +106,7 @@ PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, u
   glClearDepth(1);
   glDepthFunc(GL_LESS);
   glViewport(0, 0, res_width, res_height);
-  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   if (gl_debug) {
     glEnable(GL_DEBUG_OUTPUT);
@@ -123,6 +123,10 @@ void picasso_window_kill(void) {
 
 void picasso_window_clear(void) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void picasso_window_clearcolor(float r, float g, float b, float a) {
+  glClearColor(r, g, b, a);
 }
 
 void picasso_window_swap(void) {
@@ -150,4 +154,8 @@ void picasso_window_mouse_move_callback(PicassoWindowMouseCallback callback) {
 void picasso_window_mouse_button_callback(PicassoWindowMouseCallback callback) {
   assert(callback);
   picasso_mouse_button_callback = callback;
+}
+
+void picasso_window_viewport(int32_t x, int32_t y, int32_t width, int32_t height) {
+  glViewport(x, y, width, height);
 }
