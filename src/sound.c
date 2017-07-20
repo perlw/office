@@ -15,6 +15,7 @@ struct SoundSys {
   BoomboxCassette *tap_sound;
   BoomboxCassette *boom_sound;
   BoomboxCassette *drip_sound;
+  BoomboxCassette *water_footsteps_sound;
 
   BoomboxCassette *song;
   BoomboxCassette *song2;
@@ -63,6 +64,11 @@ SoundSys *soundsys_create(void) {
     boombox_destroy(soundsys->boombox);
     return NULL;
   }
+  /*if (boombox_cassette_load_sound(soundsys->water_footsteps_sound, "water_footsteps.wav") != BOOMBOX_OK) {
+    printf("Boombox: failed to load water footsteps sound\n");
+    boombox_destroy(soundsys->boombox);
+    return NULL;
+  }*/
   if (boombox_cassette_load_sound(soundsys->song, "music/settlers.mod") != BOOMBOX_OK) {
     printf("Boombox: failed to load song\n");
     boombox_destroy(soundsys->boombox);
@@ -87,6 +93,7 @@ void soundsys_destroy(SoundSys *soundsys) {
 
   boombox_cassette_destroy(soundsys->song2);
   boombox_cassette_destroy(soundsys->song);
+  //boombox_cassette_destroy(soundsys->water_footsteps_sound);
   boombox_cassette_destroy(soundsys->drip_sound);
   boombox_cassette_destroy(soundsys->boom_sound);
   boombox_cassette_destroy(soundsys->tap_sound);
@@ -130,6 +137,9 @@ void soundsys_internal_sound_event(const char *group_id, const char *id, void *c
     boombox_cassette_play(soundsys->boom_sound);
   } else if (strncmp(id, "play_drip", 128) == 0) {
     boombox_cassette_play(soundsys->drip_sound);
+    boombox_cassette_set_pitch(soundsys->drip_sound, 0.8f + ((float)(rand() % 40) / 100.0f));
+  } else if (strncmp(id, "play_water_footsteps", 128) == 0) {
+    boombox_cassette_play(soundsys->water_footsteps_sound);
     boombox_cassette_set_pitch(soundsys->drip_sound, 0.8f + ((float)(rand() % 40) / 100.0f));
   } else if (strncmp(id, "play_song", 128) == 0) {
     uint32_t song = *(uint32_t *)userdata;
