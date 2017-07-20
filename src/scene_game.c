@@ -8,8 +8,14 @@
 #include "ascii/ascii.h"
 #include "config.h"
 
-const uint8_t splash_num_frames = 3;
-uint8_t splash_frames[3] = { '*', '.', '~' };
+const uint8_t splash_num_frames = 4;
+uint8_t splash_frames[4] = { '*', ',', '.', '-' };
+GlyphColor splash_colors[4] = {
+  (GlyphColor){ 128, 163, 213 },
+  (GlyphColor){ 0, 71, 171 },
+  (GlyphColor){ 0, 53, 128 },
+  (GlyphColor){ 0, 71, 171 },
+};
 
 #define MAP_X 20
 #define MAP_Y 20
@@ -29,7 +35,8 @@ typedef struct {
     uint32_t x;
     uint32_t y;
     uint8_t keyframe;
-  } splash[10];
+    double next_frame;
+  } splashes[10];
 
   Surface *world;
 } SceneGame;
@@ -127,6 +134,29 @@ void scene_game_update(SceneGame *const scene, double delta) {
     }
     // -Draw world
 
+    // +Draw splashes
+    for (uint8_t t = 0; t < 10; t++) {
+      if (scene->splashes[t].keyframe > splash_num_frames - 1) {
+        scene->splashes[t].alive = false;
+      }
+      if (!scene->splashes[t].alive) {
+        continue;
+      }
+
+      surface_glyph(scene->world, scene->splashes[t].x + offset_x, scene->splashes[t].y + offset_y, (Glyph){
+                                                                                                      .rune = splash_frames[scene->splashes[t].keyframe],
+                                                                                                      .fore = splash_colors[scene->splashes[t].keyframe],
+                                                                                                      .back = 0,
+                                                                                                    });
+
+      scene->splashes[t].next_frame -= scene->timing;
+      if (scene->splashes[t].next_frame <= 0.0) {
+        scene->splashes[t].next_frame = 1.0 / 10.0;
+        scene->splashes[t].keyframe++;
+      }
+    }
+    // -Draw splashes
+
     // +Draw player
     surface_glyph(scene->world, scene->p_x + offset_x, scene->p_y + offset_y, (Glyph){
                                                                                 .rune = 1,
@@ -157,6 +187,7 @@ void scene_game_internal_movement_event(const char *groupd_id, const char *id, v
   } else if (strncmp("move_down", id, 128) == 0) {
     scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
   }
+  uint8_t prev_rune = scene->map[(o_y * MAP_X) + o_x];
   uint8_t rune = scene->map[(scene->p_y * MAP_X) + scene->p_x];
   switch (rune) {
     case 179:
@@ -171,6 +202,24 @@ void scene_game_internal_movement_event(const char *groupd_id, const char *id, v
 
     case 247:
       //gossip_emit("sound:play_water_footsteps", 0, NULL);
+      break;
+  }
+
+  switch (prev_rune) {
+    case 247:
+      for (uint8_t t = 0; t < 10; t++) {
+        if (scene->splashes[t].alive) {
+          continue;
+        }
+
+        scene->splashes[t].alive = true;
+        scene->splashes[t].x = o_x;
+        scene->splashes[t].y = o_y;
+        scene->splashes[t].keyframe = 0;
+        scene->splashes[t].next_frame = 1.0 / 10.0;
+
+        break;
+      }
       break;
   }
 }

@@ -13,6 +13,8 @@ The actual game
   - Break out log parsing in own app
 * Resolutions
   - Load higher res font when possible?
+* Input
+  - Remove need for "action" command, bake into gossip
 
 ### System management
 For handling global systems, startup, shutdown, etc

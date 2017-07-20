@@ -13,3 +13,5 @@ bind("player_move_left", KEY_A)
 bind("player_move_right", KEY_D)
 bind("player_move_up", KEY_W)
 bind("player_move_down", KEY_S)
+
+bind("pause_simulation", KEY_PAUSE);

@@ -13,6 +13,8 @@ struct Scenes {
   Scene *current_scene;
   void *current_scene_data;
 
+  bool pause_updates;
+
   GossipHandle scene_handle;
 };
 
@@ -45,6 +47,7 @@ Scenes *scenes_create(void) {
   scenes->scenes = rectify_array_alloc(10, sizeof(Scene));
   scenes->current_scene = &scene_dummy;
   scenes->current_scene_data = NULL;
+  scenes->pause_updates = false;
 
   scenes->scene_handle = gossip_subscribe("scene:*", &scenes_internal_scene_event, scenes);
 
@@ -57,7 +60,6 @@ void scenes_destroy(Scenes *scenes) {
   gossip_unsubscribe(scenes->scene_handle);
 
   if (scenes->current_scene) {
-    //gossip_emit("scene:teardown", sizeof(Scene), scenes->current_scene);
     scenes->current_scene->destroy(scenes->current_scene_data);
   }
 
@@ -125,7 +127,9 @@ void scenes_goto(Scenes *scenes, const char *name) {
 void scenes_update(Scenes *scenes, double delta) {
   assert(scenes);
 
-  scenes->current_scene->update(scenes->current_scene_data, delta);
+  if (!scenes->pause_updates) {
+    scenes->current_scene->update(scenes->current_scene_data, delta);
+  }
 }
 
 void scenes_draw(Scenes *scenes, AsciiBuffer *const screen) {
@@ -141,5 +145,7 @@ void scenes_internal_scene_event(const char *groupd_id, const char *id, void *co
     scenes_internal_move(scenes, -1);
   } else if (strncmp(id, "next", 128) == 0) {
     scenes_internal_move(scenes, 1);
+  } else if (strncmp(id, "pause_updates", 128) == 0) {
+    scenes->pause_updates = !scenes->pause_updates;
   }
 }
