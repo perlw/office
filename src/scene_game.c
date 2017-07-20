@@ -178,13 +178,25 @@ void scene_game_internal_movement_event(const char *groupd_id, const char *id, v
 
   uint32_t o_x = scene->p_x;
   uint32_t o_y = scene->p_y;
-  if (strncmp("move_left", id, 128) == 0) {
+  if (strncmp("move_up_left", id, 128) == 0) {
+    scene->p_x = (scene->p_x > 0 ? scene->p_x - 1 : scene->p_x);
+    scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
+  } else if (strncmp("move_up", id, 128) == 0) {
+    scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
+  } else if (strncmp("move_up_right", id, 128) == 0) {
+    scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
+    scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
+  } else if (strncmp("move_left", id, 128) == 0) {
     scene->p_x = (scene->p_x > 0 ? scene->p_x - 1 : scene->p_x);
   } else if (strncmp("move_right", id, 128) == 0) {
     scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
-  } else if (strncmp("move_up", id, 128) == 0) {
-    scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
+  } else if (strncmp("move_down_left", id, 128) == 0) {
+    scene->p_x = (scene->p_x > 0 ? scene->p_x - 1 : scene->p_x);
+    scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
   } else if (strncmp("move_down", id, 128) == 0) {
+    scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
+  } else if (strncmp("move_down_right", id, 128) == 0) {
+    scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
     scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
   }
   uint8_t prev_rune = scene->map[(o_y * MAP_X) + o_x];
