@@ -27,7 +27,6 @@ Tests?
 
 ### Picasso
 Graphics, pipeline
-* Framebuffer support
 * Probable need for reworking of picasso window and gl management
 
 ### Archivist module

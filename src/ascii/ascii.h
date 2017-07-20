@@ -69,7 +69,7 @@ typedef struct {
   PicassoTexture *backcolors_texture;
 
   struct {
-    uint32_t id;
+    PicassoFramebuffer *framebuffer;
     PicassoTexture *texture;
     PicassoProgram *program;
     PicassoBufferGroup *quad;

@@ -240,16 +240,6 @@ void picasso_buffer_set_data(PicassoBuffer *const buffer, uintmax_t num_fields, 
 void picasso_buffer_shader_attrib(PicassoBuffer *const buffer, int32_t attr_pos);
 // -Buffers
 
-// +Framebuffers
-typedef struct PicassoFramebuffer PicassoFramebuffer;
-
-PicassoFramebuffer *picasso_framebuffer_create(void);
-void picasso_framebuffer_destroy(PicassoFramebuffer *const buffer);
-
-void picasso_framebuffer_bind(PicassoFramebuffer *const buffer);
-void picasso_framebuffer_unbind(PicassoFramebuffer *const buffer);
-// -Framebuffers
-
 // +Textures
 typedef enum {
   PICASSO_TEXTURE_TARGET_1D = 1,
@@ -277,6 +267,21 @@ void picasso_texture_destroy(PicassoTexture *const texture);
 
 PicassoTextureResult picasso_texture_set_data(PicassoTexture *const texture, uintmax_t offset_x, uintmax_t offset_y, uintmax_t width, uintmax_t height, const void *data);
 void picasso_texture_bind_to(PicassoTexture *const texture, uint32_t index);
-
-uint32_t picasso_texture_get_id(PicassoTexture *const texture);
 // -Textures
+
+// +Framebuffers
+typedef enum {
+  PICASSO_FRAMEBUFFER_OK = 1,
+  PICASSO_FRAMEBUFFER_INCOMPLETE,
+} PicassoFramebufferResult;
+
+typedef struct PicassoFramebuffer PicassoFramebuffer;
+
+PicassoFramebuffer *picasso_framebuffer_create(void);
+void picasso_framebuffer_destroy(PicassoFramebuffer *const buffer);
+
+PicassoFramebufferResult picasso_framebuffer_attach_texture(PicassoFramebuffer *const buffer, PicassoTexture *const texture);
+
+void picasso_framebuffer_bind(PicassoFramebuffer *const buffer);
+void picasso_framebuffer_unbind(PicassoFramebuffer *const buffer);
+// -Framebuffers

@@ -87,8 +87,3 @@ void picasso_texture_bind_to(PicassoTexture *const texture, uint32_t index) {
 
   glBindTextureUnit(index, texture->id);
 }
-
-uint32_t picasso_texture_get_id(PicassoTexture *const texture) {
-  assert(texture);
-  return texture->id;
-}

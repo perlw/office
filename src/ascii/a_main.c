@@ -157,17 +157,11 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
     PicassoBuffer *coord_buffer = picasso_buffer_create(ascii->fbo.quad, PICASSO_BUFFER_TYPE_ARRAY, PICASSO_BUFFER_USAGE_STATIC);
     picasso_buffer_set_data(coord_buffer, 2, PICASSO_TYPE_FLOAT, sizeof(*coord_data) * 12, coord_data);
 
-    glGenFramebuffers(1, &ascii->fbo.id);
-    glBindFramebuffer(GL_FRAMEBUFFER, ascii->fbo.id);
-
+    ascii->fbo.framebuffer = picasso_framebuffer_create();
+    picasso_framebuffer_bind(ascii->fbo.framebuffer);
     ascii->fbo.texture = picasso_texture_create(PICASSO_TEXTURE_TARGET_2D, render_width, render_height, PICASSO_TEXTURE_RGBA, true);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, picasso_texture_get_id(ascii->fbo.texture), 0);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-      printf("UHOH!\n");
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    picasso_framebuffer_attach_texture(ascii->fbo.framebuffer, ascii->fbo.texture);
+    picasso_framebuffer_unbind(ascii->fbo.framebuffer);
 
     ascii->fbo.program = (PicassoProgram *)tome_fetch(ASSET_SHADER, "dummy", "shaders/dummy");
     if (!ascii->fbo.program) {
@@ -252,7 +246,7 @@ void ascii_buffer_draw(AsciiBuffer *const ascii) {
   const Config *const config = config_get();
 
   // +STEP 1: FBO
-  glBindFramebuffer(GL_FRAMEBUFFER, ascii->fbo.id);
+  picasso_framebuffer_bind(ascii->fbo.framebuffer);
   picasso_window_viewport(0, 0, render_width, render_height);
 
   if (ascii->dirty) {
@@ -280,7 +274,7 @@ void ascii_buffer_draw(AsciiBuffer *const ascii) {
 
   picasso_buffergroup_draw(ascii->quad, PICASSO_BUFFER_MODE_TRIANGLES, 6);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  picasso_framebuffer_unbind(ascii->fbo.framebuffer);
   // -STEP 1: FBO
 
   // +STEP 2: DRAW FBO
