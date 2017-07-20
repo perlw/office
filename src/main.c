@@ -74,9 +74,9 @@ int main(int argc, char **argv) {
 
   Scenes *const scenes = scenes_create();
   scenes_register(scenes, &scene_test);
-  //scenes_register(scenes, &scene_game);
   scenes_register(scenes, &scene_drips);
   scenes_register(scenes, &scene_sound_test);
+  scenes_register(scenes, &scene_game);
   scenes_register(scenes, &scene_world_edit);
 
   DebugOverlay *const debug_overlay = debugoverlay_create();

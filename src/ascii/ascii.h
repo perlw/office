@@ -107,6 +107,7 @@ void surface_clear(Surface *const surface, Glyph glyph);
 void surface_text(Surface *const surface, uint32_t x, uint32_t y, uint32_t length, const char *string, GlyphColor fore_color, GlyphColor back_color);
 void surface_rect(Surface *const surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, SurfaceRectTiles rect_tiles, bool filled, GlyphColor fore_color, GlyphColor back_color);
 void surface_graph(Surface *const surface, uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint32_t num_values, const float *values);
+void surface_glyph(Surface *const surface, uint32_t x, uint32_t y, Glyph glyph);
 
 void surface_draw(Surface *const surface, AsciiBuffer *const tiles);
 // -Surface

@@ -160,6 +160,17 @@ void surface_graph(Surface *const surface, uint32_t x, uint32_t y, uint32_t widt
   }
 }
 
+void surface_glyph(Surface *const surface, uint32_t x, uint32_t y, Glyph glyph) {
+  assert(surface);
+
+  if (x > surface->width - 1 || y > surface->height - 1) {
+    return;
+  }
+
+  uint32_t index = (y * surface->width) + x;
+  surface->buffer[index] = glyph;
+}
+
 void surface_draw(Surface *const surface, AsciiBuffer *const ascii) {
   assert(surface);
 
