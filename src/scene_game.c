@@ -10,11 +10,11 @@
 
 const uint8_t splash_num_frames = 4;
 uint8_t splash_frames[4] = { '*', ',', '.', '-' };
-GlyphColor splash_colors[4] = {
-  (GlyphColor){ 128, 163, 213 },
-  (GlyphColor){ 0, 71, 171 },
-  (GlyphColor){ 0, 53, 128 },
-  (GlyphColor){ 0, 71, 171 },
+GlyphColor *splash_colors = (GlyphColor[4]){
+  { 128, 163, 213 },
+  { 0, 71, 171 },
+  { 0, 53, 128 },
+  { 0, 71, 171 },
 };
 
 #define MAP_X 20
