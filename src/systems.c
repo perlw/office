@@ -45,15 +45,15 @@ void systems_internal_event(const char *group_id, const char *id, void *const su
   const char *system = (char *)userdata;
 
   if (strncmp(id, "start", 128) == 0) {
-    printf("Systems: attempting to spin up \"%s\"... ", system);
+    printf("System: attempting to spin up \"%s\"...\n", system);
     KronosResult result = kronos_start_system(system);
-    if (result != KRONOS_OK) {
-      printf("OK!\n");
+    if (result == KRONOS_OK) {
+      printf("System: \"%s\" spun up!\n", system);
     } else {
-      printf("%s\n", (result == KRONOS_SYSTEM_NOT_FOUND ? "system does not exist" : "failed to spin up"));
+      printf("System: \"%s\" %s\n", system, (result == KRONOS_SYSTEM_NOT_FOUND ? "does not exist" : "failed to spin up"));
     }
   } else if (strncmp(id, "stop", 128) == 0) {
-    printf("Systems: stopping \"%s\"... ", system);
+    printf("Systems: stopping \"%s\"\n", system);
     kronos_stop_system(system);
   }
 }

@@ -435,6 +435,13 @@ int lua_bridge_internal_gossip_emit(lua_State *state) {
     } else {
       gossip_emit(message, 0, NULL);
     }
+  } else if (strncmp(message_token_group, "system", 128) == 0) {
+    if (strncmp(message_token_id, "start", 128) == 0
+        || strncmp(message_token_id, "stop", 128) == 0) {
+      size_t length = 0;
+      const char *system = lua_tolstring(state, 2, &length);
+      gossip_emit(message, length + 1, (void *)system);
+    }
   } else {
     gossip_emit(message, 0, NULL);
   }

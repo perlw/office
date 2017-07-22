@@ -42,6 +42,8 @@ end)
 
 gossip.subscribe("game:init", function ()
   io.write("LUA: Welcome!\n")
+
+  gossip.emit("system:start", "sound")
 end)
 
 gossip.subscribe("game:kill", function ()
