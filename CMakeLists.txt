@@ -19,7 +19,6 @@ add_subdirectory (src/bedrock)
 set (
   SOURCES
   "src/main.c"
-  "src/lua_bridge.c"
   "src/assets.c"
   "src/config.c"
   "src/input.c"
@@ -27,6 +26,7 @@ set (
   "src/systems.c"
   "src/system_sound.c"
   "src/system_debug.c"
+  "src/system_lua_bridge.c"
   "src/scenes.c"
   "src/scene_test.c"
   "src/scene_drips.c"

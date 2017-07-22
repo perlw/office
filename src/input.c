@@ -5,7 +5,6 @@
 
 #include "config.h"
 #include "input.h"
-#include "lua_bridge.h"
 
 InputActionBinding *input_bindings = NULL;
 InputActionRef *input_action_refs = NULL;

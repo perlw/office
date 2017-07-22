@@ -5,6 +5,7 @@
 #include "bedrock/bedrock.h"
 
 #include "system_debug.h"
+#include "system_lua_bridge.h"
 #include "system_sound.h"
 
 typedef struct {
@@ -26,6 +27,9 @@ void systems_init(void) {
 
   kronos_register(&system_debug);
   kronos_register(&system_sound);
+  kronos_register(&system_lua_bridge);
+
+  kronos_start_system("lua_bridge");
 }
 
 void systems_kill(void) {
@@ -55,7 +59,12 @@ void systems_internal_event(const char *group_id, const char *id, void *const su
       printf("System: \"%s\" %s\n", system, (result == KRONOS_SYSTEM_NOT_FOUND ? "does not exist" : "failed to spin up"));
     }
   } else if (strncmp(id, "stop", 128) == 0) {
-    printf("Systems: stopping \"%s\"\n", system);
-    kronos_stop_system(system);
+    printf("Systems: attempting to stop \"%s\"\n", system);
+    KronosResult result = kronos_stop_system(system);
+    if (result == KRONOS_OK) {
+      printf("System: \"%s\" shut down!\n", system);
+    } else {
+      printf("System: \"%s\" %s\n", system, (result == KRONOS_SYSTEM_NOT_FOUND ? "does not exist" : "stop prevented"));
+    }
   }
 }

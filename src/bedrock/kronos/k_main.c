@@ -90,9 +90,13 @@ KronosResult kronos_stop_system(const char *name) {
     KronosState *state = &kronos->systems[t];
 
     if (strncmp(state->system->name, name, 128) == 0) {
-      state->system->stop();
-      state->running = false;
-      return KRONOS_OK;
+      if (state->system->prevent_stop) {
+        return KRONOS_SYSTEM_STOP_PREVENTED;
+      } else {
+        state->system->stop();
+        state->running = false;
+        return KRONOS_OK;
+      }
     }
   }
 

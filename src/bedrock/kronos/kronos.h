@@ -9,6 +9,7 @@ typedef enum {
   KRONOS_SYSTEM_NOT_FOUND,
   KRONOS_SYSTEM_NAME_TAKEN,
   KRONOS_SYSTEM_FAILED_TO_START,
+  KRONOS_SYSTEM_STOP_PREVENTED,
 } KronosResult;
 
 typedef bool (*KronosSystemStart)(void);
@@ -17,6 +18,7 @@ typedef void (*KronosSystemFunc)(void);
 typedef struct {
   char *name;
   uint32_t frames;
+  bool prevent_stop;
   KronosSystemStart start;
   KronosSystemFunc stop;
   KronosSystemFunc update;

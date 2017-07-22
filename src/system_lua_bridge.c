@@ -7,13 +7,24 @@
 #include "lua.h"
 #include "lualib.h"
 
-#include "lua_bridge.h"
-
 #include "ascii/ascii.h"
 #include "input.h"
 #include "scenes.h"
 #include "screen.h"
 #include "ui/ui.h"
+
+bool system_lua_bridge_start(void);
+void system_lua_bridge_stop(void);
+void system_lua_bridge_update(void);
+
+KronosSystem system_lua_bridge = {
+  .name = "lua_bridge",
+  .frames = 30,
+  .prevent_stop = true,
+  .start = &system_lua_bridge_start,
+  .stop = &system_lua_bridge_stop,
+  .update = &system_lua_bridge_update,
+};
 
 typedef struct {
   uint32_t func_ref;
@@ -21,7 +32,7 @@ typedef struct {
   char *id;
 } LuaBridgeHandle;
 
-struct LuaBridge {
+typedef struct {
   lua_State *state;
   GossipHandle action_handle;
   GossipHandle gossip_handle;
@@ -29,7 +40,7 @@ struct LuaBridge {
   UIWindow **windows;
 
   LuaBridgeHandle *handles;
-};
+} LuaBridge;
 
 int lua_bridge_internal_input_action(lua_State *state);
 void lua_bridge_internal_action_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
@@ -56,8 +67,13 @@ void lua_bridge_internal_register_lua_module(LuaBridge *lua_bridge, const char *
   lua_settop(lua_bridge->state, 0);
 }
 
-LuaBridge *lua_bridge_create(void) {
-  LuaBridge *lua_bridge = calloc(1, sizeof(LuaBridge));
+LuaBridge *lua_bridge = NULL;
+bool system_lua_bridge_start(void) {
+  if (lua_bridge) {
+    return false;
+  }
+
+  lua_bridge = calloc(1, sizeof(LuaBridge));
 
   lua_State *state = luaL_newstate();
   luaL_openlibs(state);
@@ -111,8 +127,10 @@ LuaBridge *lua_bridge_create(void) {
   return lua_bridge;
 }
 
-void lua_bridge_destroy(LuaBridge *const lua_bridge) {
-  assert(lua_bridge);
+void system_lua_bridge_stop(void) {
+  if (!lua_bridge) {
+    return;
+  }
 
   lua_close(lua_bridge->state);
 
@@ -137,11 +155,13 @@ void lua_bridge_destroy(LuaBridge *const lua_bridge) {
   free(lua_bridge);
 }
 
-void lua_bridge_update(LuaBridge *const lua_bridge, double delta) {
-  assert(lua_bridge);
+void system_lua_bridge_update(void) {
+  if (!lua_bridge) {
+    return;
+  }
 
   for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
-    ui_window_update(lua_bridge->windows[t], delta);
+    ui_window_update(lua_bridge->windows[t], 1.0 / 30.0);
   }
 }
 

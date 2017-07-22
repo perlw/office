@@ -15,7 +15,6 @@
 #include "assets.h"
 #include "config.h"
 #include "input.h"
-#include "lua_bridge.h"
 #include "scenes.h"
 #include "screen.h"
 #include "systems.h"
@@ -71,8 +70,6 @@ int main(int argc, char **argv) {
   screen_init();
   systems_init();
 
-  LuaBridge *const lua_bridge = lua_bridge_create();
-
   Scenes *const scenes = scenes_create();
   scenes_register(scenes, &scene_test);
   scenes_register(scenes, &scene_drips);
@@ -94,7 +91,6 @@ int main(int argc, char **argv) {
     last_tick = tick;
 
     scenes_update(scenes, delta);
-    lua_bridge_update(lua_bridge, delta);
 
     systems_update(delta);
 
@@ -116,8 +112,6 @@ int main(int argc, char **argv) {
   systems_kill();
   screen_kill();
   input_kill();
-
-  lua_bridge_destroy(lua_bridge);
 
   tome_kill();
   gossip_kill();
