@@ -11,10 +11,12 @@ The actual game
   - Ability to load and play sounds, won't need to define
 * Occulus
   - Break out log parsing in own app
+  - Move compile flag into a runtime check instead?
 * Resolutions
   - Load higher res font when possible?
 * Input
-  - Remove need for "action" command, bake into gossip
+  - Remove need for "action" command, bake into gossip? Probably?
+    Does it even need a separate command? Let be for now and investigate.
 
 ### System management
 For handling global systems, startup, shutdown, etc
@@ -23,6 +25,7 @@ For handling global systems, startup, shutdown, etc
 * Targetted start/stop
 * Start/stop all
 * Pausing?
+* Profiling
 
 ## Bedrock
 Tests?
