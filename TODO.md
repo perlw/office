@@ -37,6 +37,7 @@ Graphics, pipeline
 ### Archivist module
 File management
 * Opening/reading
+* PAK-files? or should this be part of tome?
 
 ### Sound/Music
 Boombox/Cassette
