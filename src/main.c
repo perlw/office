@@ -54,6 +54,7 @@ int main(int argc, char **argv) {
 
   gossip_init();
   tome_init();
+  kronos_init();
 
   setup_asset_loaders();
   input_init();
@@ -101,6 +102,7 @@ int main(int argc, char **argv) {
     lua_bridge_update(lua_bridge, delta);
     debugoverlay_update(debug_overlay, delta);
 
+    kronos_update(delta);
     gossip_update();
 
     next_frame += delta;
@@ -127,11 +129,12 @@ int main(int argc, char **argv) {
   ascii_buffer_destroy(ascii_screen);
 
   soundsys_destroy(soundsys);
-  tome_kill();
 
   lua_bridge_destroy(lua_bridge);
 
-  gossip_destroy();
+  tome_kill();
+  kronos_kill();
+  gossip_kill();
   picasso_window_kill();
 
   occulus_print();

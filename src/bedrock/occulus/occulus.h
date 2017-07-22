@@ -1,3 +1,7 @@
+/**
+ * Occulus - memory introspector and guard
+ */
+
 #pragma once
 
 #include <stdbool.h>

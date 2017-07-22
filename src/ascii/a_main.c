@@ -202,6 +202,7 @@ void ascii_buffer_destroy(AsciiBuffer *const ascii) {
   picasso_texture_destroy(ascii->fbo.texture);
   tome_release(ASSET_SHADER, "dummy");
   picasso_buffergroup_destroy(ascii->fbo.quad);
+  picasso_framebuffer_destroy(ascii->fbo.framebuffer);
   // -FBO
 
   for (uint32_t t = 0; t < 2; t++) {

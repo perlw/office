@@ -18,15 +18,6 @@ The actual game
   - Remove need for "action" command, bake into gossip? Probably?
     Does it even need a separate command? Let be for now and investigate.
 
-### System management
-For handling global systems, startup, shutdown, etc
-* Message passing
-* How to register a system? Necessary?
-* Targetted start/stop
-* Start/stop all
-* Pausing?
-* Profiling
-
 ## Bedrock
 Tests?
 
@@ -51,6 +42,11 @@ Data, memory, sorting
 
 ### Tome
 Asset management
+
+### Kronos
+Systems management
+* Pausing?
+* Profiling
 
 ## Planned modules
 

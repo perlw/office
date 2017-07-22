@@ -1,3 +1,7 @@
+/**
+ * Gossip - message passer
+ */
+
 #pragma once
 
 #include <stdbool.h>
@@ -6,7 +10,7 @@
 #include "g_types.h"
 
 void gossip_init(void);
-void gossip_destroy(void);
+void gossip_kill(void);
 
 GossipHandle gossip_subscribe(const char *message, GossipCallback callback, void *const subscriberdata);
 bool gossip_unsubscribe(GossipHandle handle);

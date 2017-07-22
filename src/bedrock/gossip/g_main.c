@@ -47,7 +47,7 @@ void gossip_init(void) {
   };
 }
 
-void gossip_destroy(void) {
+void gossip_kill(void) {
   assert(gossip);
 
   for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {

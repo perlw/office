@@ -5,6 +5,7 @@
 #include "archivist/archivist.h"
 #include "boombox/boombox.h"
 #include "gossip/gossip.h"
+#include "kronos/kronos.h"
 #include "picasso/picasso.h"
 #include "rectify/rectify.h"
 #include "tome/tome.h"

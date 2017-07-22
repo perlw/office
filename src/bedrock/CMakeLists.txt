@@ -35,6 +35,7 @@ add_subdirectory (occulus)
 add_subdirectory (picasso)
 add_subdirectory (boombox)
 add_subdirectory (tome)
+add_subdirectory (kronos)
 add_dependencies (bedrock glad glfw)
 
 if (OCCULUS_LOG_MEM)

@@ -1,3 +1,7 @@
+/**
+ * Tome - assetmanager
+ */
+
 #pragma once
 
 typedef void *(*TomeLoader)(const char *name, const char *path);

@@ -1,3 +1,7 @@
+/**
+ * Rectify - datastructures and memory
+ */
+
 #pragma once
 
 #include <stdint.h>

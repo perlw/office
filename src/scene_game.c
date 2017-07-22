@@ -9,7 +9,7 @@
 #include "config.h"
 
 const uint8_t splash_num_frames = 4;
-uint8_t splash_frames[4] = { '*', ',', '.', '-' };
+uint8_t splash_frames[4] = { '*', '+', '.', 'o' };
 GlyphColor *splash_colors = (GlyphColor[4]){
   { 128, 163, 213 },
   { 0, 71, 171 },
@@ -151,7 +151,7 @@ void scene_game_update(SceneGame *const scene, double delta) {
 
       scene->splashes[t].next_frame -= scene->timing;
       if (scene->splashes[t].next_frame <= 0.0) {
-        scene->splashes[t].next_frame = 1.0 / 10.0;
+        scene->splashes[t].next_frame = 1.0 / 20.0;
         scene->splashes[t].keyframe++;
       }
     }
@@ -228,7 +228,7 @@ void scene_game_internal_movement_event(const char *groupd_id, const char *id, v
         scene->splashes[t].x = o_x;
         scene->splashes[t].y = o_y;
         scene->splashes[t].keyframe = 0;
-        scene->splashes[t].next_frame = 1.0 / 10.0;
+        scene->splashes[t].next_frame = 1.0 / 20.0;
 
         break;
       }

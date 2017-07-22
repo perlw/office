@@ -1,3 +1,7 @@
+/**
+ * Boombox - loading and playing sounds
+ */
+
 #pragma once
 
 typedef enum {

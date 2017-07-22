@@ -1,3 +1,6 @@
+/**
+ * Archivist - reading/writing files
+ */
 #pragma once
 
 #include <stdbool.h>

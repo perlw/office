@@ -1,3 +1,7 @@
+/**
+ * Picasso - OpenGL frontend and window management
+ */
+
 #pragma once
 
 typedef struct {

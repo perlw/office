@@ -9,6 +9,7 @@ PicassoFramebuffer *picasso_framebuffer_create(void) {
 void picasso_framebuffer_destroy(PicassoFramebuffer *const buffer) {
   assert(buffer);
   glDeleteFramebuffers(1, &buffer->id);
+  free(buffer);
 }
 
 PicassoFramebufferResult picasso_framebuffer_attach_texture(PicassoFramebuffer *const buffer, PicassoTexture *const texture) {
