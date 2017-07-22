@@ -6,7 +6,7 @@
 
 #include "ascii/ascii.h"
 #include "config.h"
-#include "sound.h"
+#include "system_sound.h"
 
 typedef struct {
   double timing;
