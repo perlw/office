@@ -6,7 +6,14 @@
 #include "kronos.h"
 
 typedef struct {
-  KronosSystem *systems;
+  KronosSystem *system;
+  bool running;
+  double timing;
+  double since_update;
+} KronosState;
+
+typedef struct {
+  KronosState *systems;
 } Kronos;
 
 Kronos *kronos = NULL;
@@ -15,14 +22,19 @@ void kronos_init(void) {
   assert(!kronos);
 
   kronos = calloc(1, sizeof(Kronos));
-  kronos->systems = rectify_array_alloc(10, sizeof(KronosSystem));
+  kronos->systems = rectify_array_alloc(10, sizeof(KronosState));
 }
 
 void kronos_kill(void) {
   assert(kronos);
 
   for (uintmax_t t = 0; t < rectify_array_size(kronos->systems); t++) {
-    kronos->systems[t].stop();
+    KronosState *state = &kronos->systems[t];
+
+    if (state->running) {
+      state->system->stop();
+    }
+    free(state->system);
   }
   rectify_array_free(kronos->systems);
 
@@ -33,14 +45,19 @@ KronosResult kronos_register(KronosSystem *const system) {
   assert(kronos);
 
   for (uintmax_t t = 0; t < rectify_array_size(kronos->systems); t++) {
-    KronosSystem *system = &kronos->systems[t];
+    KronosState *state = &kronos->systems[t];
 
-    if (strncmp(system->name, system->name, 128) == 0) {
-      return KRONOS_NAME_TAKEN;
+    if (strncmp(state->system->name, system->name, 128) == 0) {
+      return KRONOS_SYSTEM_NAME_TAKEN;
     }
   }
 
-  kronos->systems = rectify_array_push(kronos->systems, system);
+  kronos->systems = rectify_array_push(kronos->systems, &(KronosState){
+                                                          .system = rectify_memory_alloc_copy(system, sizeof(KronosSystem)),
+                                                          .running = false,
+                                                          .timing = 1.0 / (double)system->frames,
+                                                          .since_update = 0.0,
+                                                        });
 
   return KRONOS_OK;
 }
@@ -49,11 +66,17 @@ KronosResult kronos_start_system(const char *name) {
   assert(kronos);
 
   for (uintmax_t t = 0; t < rectify_array_size(kronos->systems); t++) {
-    KronosSystem *system = &kronos->systems[t];
+    KronosState *state = &kronos->systems[t];
 
-    if (strncmp(system->name, name, 128) == 0) {
-      system->start();
-      return KRONOS_OK;
+    if (strncmp(state->system->name, name, 128) == 0) {
+      if (state->system->start()) {
+        state->since_update = 1.0 / (double)((rand() % (state->system->frames - 1)) + 1);
+        state->running = true;
+        return KRONOS_OK;
+      } else {
+        state->running = false;
+        return KRONOS_SYSTEM_FAILED_TO_START;
+      }
     }
   }
 
@@ -64,10 +87,11 @@ KronosResult kronos_stop_system(const char *name) {
   assert(kronos);
 
   for (uintmax_t t = 0; t < rectify_array_size(kronos->systems); t++) {
-    KronosSystem *system = &kronos->systems[t];
+    KronosState *state = &kronos->systems[t];
 
-    if (strncmp(system->name, name, 128) == 0) {
-      system->stop();
+    if (strncmp(state->system->name, name, 128) == 0) {
+      state->system->stop();
+      state->running = false;
       return KRONOS_OK;
     }
   }
@@ -79,12 +103,21 @@ void kronos_update(double delta) {
   assert(kronos);
 
   for (uintmax_t t = 0; t < rectify_array_size(kronos->systems); t++) {
-    KronosSystem *system = &kronos->systems[t];
+    KronosState *state = &kronos->systems[t];
 
-    system->since_update += delta;
-    while (system->since_update >= system->timing) {
-      system->since_update -= system->timing;
-      system->update();
+    if (!state->running) {
+      continue;
+    }
+
+    if (state->system->frames == 0) {
+      state->system->update();
+    } else {
+      state->since_update += delta;
+      while (state->since_update >= state->timing) {
+        state->since_update -= state->timing;
+
+        state->system->update();
+      }
     }
   }
 }

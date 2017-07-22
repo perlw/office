@@ -23,7 +23,7 @@ set (
   "src/assets.c"
   "src/config.c"
   "src/input.c"
-  "src/sound.c"
+  "src/system_sound.c"
   "src/scenes.c"
   "src/scene_test.c"
   "src/scene_drips.c"

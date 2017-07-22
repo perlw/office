@@ -7,16 +7,17 @@
 typedef enum {
   KRONOS_OK = 1,
   KRONOS_SYSTEM_NOT_FOUND,
-  KRONOS_NAME_TAKEN,
+  KRONOS_SYSTEM_NAME_TAKEN,
+  KRONOS_SYSTEM_FAILED_TO_START,
 } KronosResult;
 
+typedef bool (*KronosSystemStart)(void);
 typedef void (*KronosSystemFunc)(void);
 
 typedef struct {
   char *name;
-  double timing;
-  double since_update;
-  KronosSystemFunc start;
+  uint32_t frames;
+  KronosSystemStart start;
   KronosSystemFunc stop;
   KronosSystemFunc update;
 } KronosSystem;

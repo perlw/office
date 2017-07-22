@@ -18,8 +18,9 @@
 #include "input.h"
 #include "lua_bridge.h"
 #include "scenes.h"
-#include "sound.h"
 #include "ui/ui.h"
+
+#include "system_sound.h"
 
 #include "scene_drips.h"
 #include "scene_game.h"
@@ -71,7 +72,8 @@ int main(int argc, char **argv) {
   picasso_window_mouse_move_callback(&input_mousemove_callback);
   picasso_window_mouse_button_callback(&input_click_callback);
 
-  SoundSys *const soundsys = soundsys_create();
+  kronos_register(&system_sound);
+  kronos_start_system("sound");
 
   Scenes *const scenes = scenes_create();
   scenes_register(scenes, &scene_test);
@@ -97,7 +99,6 @@ int main(int argc, char **argv) {
     double delta = tick - last_tick;
     last_tick = tick;
 
-    soundsys_update(soundsys, delta);
     scenes_update(scenes, delta);
     lua_bridge_update(lua_bridge, delta);
     debugoverlay_update(debug_overlay, delta);
@@ -127,8 +128,6 @@ int main(int argc, char **argv) {
   input_kill();
 
   ascii_buffer_destroy(ascii_screen);
-
-  soundsys_destroy(soundsys);
 
   lua_bridge_destroy(lua_bridge);
 
