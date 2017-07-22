@@ -18,9 +18,8 @@
 #include "input.h"
 #include "lua_bridge.h"
 #include "scenes.h"
+#include "systems.h"
 #include "ui/ui.h"
-
-#include "system_sound.h"
 
 #include "scene_drips.h"
 #include "scene_game.h"
@@ -55,10 +54,11 @@ int main(int argc, char **argv) {
 
   gossip_init();
   tome_init();
-  kronos_init();
 
   setup_asset_loaders();
   input_init();
+
+  systems_init();
 
   const Config *const config = config_init();
 
@@ -71,9 +71,6 @@ int main(int argc, char **argv) {
   picasso_window_keyboard_callback(&input_keyboard_callback);
   picasso_window_mouse_move_callback(&input_mousemove_callback);
   picasso_window_mouse_button_callback(&input_click_callback);
-
-  kronos_register(&system_sound);
-  kronos_start_system("sound");
 
   Scenes *const scenes = scenes_create();
   scenes_register(scenes, &scene_test);
@@ -103,7 +100,8 @@ int main(int argc, char **argv) {
     lua_bridge_update(lua_bridge, delta);
     debugoverlay_update(debug_overlay, delta);
 
-    kronos_update(delta);
+    systems_update(delta);
+
     gossip_update();
 
     next_frame += delta;
@@ -131,8 +129,9 @@ int main(int argc, char **argv) {
 
   lua_bridge_destroy(lua_bridge);
 
+  systems_kill();
+
   tome_kill();
-  kronos_kill();
   gossip_kill();
   picasso_window_kill();
 
