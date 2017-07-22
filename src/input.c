@@ -7,11 +7,9 @@
 #include "input.h"
 
 InputActionBinding *input_bindings = NULL;
-InputActionRef *input_action_refs = NULL;
 
 void input_init(void) {
   input_bindings = rectify_array_alloc(10, sizeof(InputActionBinding));
-  input_action_refs = rectify_array_alloc(10, sizeof(InputActionRef));
 }
 
 void input_kill(void) {
@@ -19,11 +17,6 @@ void input_kill(void) {
     free(input_bindings[t].action);
   }
   rectify_array_free(input_bindings);
-
-  for (uint32_t t = 0; t < rectify_array_size(input_action_refs); t++) {
-    free(input_action_refs[t].action);
-  }
-  rectify_array_free(input_action_refs);
 }
 
 void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
@@ -51,11 +44,7 @@ void input_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
     }
 
     printf("INPUT: %s\n", key_bind->action);
-    for (uint32_t t = 0; t < rectify_array_size(input_action_refs); t++) {
-      if (strncmp(input_action_refs[t].action, key_bind->action, 128) == 0) {
-        gossip_emit("lua_bridge:action", sizeof(InputActionRef), &input_action_refs[t]);
-      }
-    }
+    gossip_emit(key_bind->action, 0, NULL);
   }
 }
 
@@ -98,13 +87,4 @@ void input_action_add_binding(InputActionBinding *binding) {
   input_bindings = rectify_array_push(input_bindings, &(InputActionBinding){
                                                         .action = rectify_memory_alloc_copy(binding->action, sizeof(char) * length), .key = binding->key,
                                                       });
-}
-
-void input_action_add_action(InputActionRef *action_ref) {
-  assert(action_ref);
-
-  uint32_t length = (uint32_t)strlen(action_ref->action) + 1;
-  input_action_refs = rectify_array_push(input_action_refs, &(InputActionRef){
-                                                              .action = rectify_memory_alloc_copy(action_ref->action, sizeof(char) * length), .ref = action_ref->ref,
-                                                            });
 }

@@ -172,10 +172,11 @@ void gossip_update(void) {
     char *message_token_group = strtok(message_tokens, ":");
     char *message_token_id = strtok(NULL, ":");
     bool skip_group_check = (strncmp(message_token_group, "*", 2) == 0);
-    bool skip_id_check = (strncmp(message_token_id, "*", 2) == 0);
+    bool skip_id_check = (!message_token_id || strncmp(message_token_id, "*", 2) == 0);
 
     //printf("%s (%s:%s) %d %d\n", item->message, message_token_group, message_token_id, skip_group_check, skip_id_check);
 
+    uint32_t count = 0;
     for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
       Listener *const listener = &gossip->listeners[t];
 
@@ -189,7 +190,11 @@ void gossip_update(void) {
           && (skip_id_check || strncmp(listener->id, "*", 2) == 0 || strncmp(listener->id, message_token_id, 128) == 0)) {
         GossipCallback callback = listener->callback;
         callback((skip_group_check ? listener->group_id : message_token_group), (skip_id_check ? listener->id : message_token_id), listener->subscriberdata, item->userdata);
+        count++;
       }
+    }
+    if (count == 0) {
+      printf("Gossip: no one were listening? \"%s\"\n", item->message);
     }
 
     free(message_tokens);

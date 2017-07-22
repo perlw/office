@@ -34,7 +34,6 @@ typedef struct {
 
 typedef struct {
   lua_State *state;
-  GossipHandle action_handle;
   GossipHandle gossip_handle;
 
   UIWindow **windows;
@@ -42,8 +41,6 @@ typedef struct {
   LuaBridgeHandle *handles;
 } LuaBridge;
 
-int lua_bridge_internal_input_action(lua_State *state);
-void lua_bridge_internal_action_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
 void lua_bridge_internal_gossip_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
 void lua_bridge_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
 
@@ -93,7 +90,6 @@ bool system_lua_bridge_start(void) {
   lua_bridge_internal_register_lua_module(lua_bridge, "lua_bridge/gossip", &lua_bridge_internal_gossip_load);
   lua_bridge_internal_register_lua_module(lua_bridge, "lua_bridge/ui", &lua_bridge_internal_ui_window_load);
 
-  lua_bridge->action_handle = gossip_subscribe("lua_bridge:action", &lua_bridge_internal_action_event, lua_bridge);
   lua_bridge->gossip_handle = gossip_subscribe("*:*", &lua_bridge_internal_gossip_event, lua_bridge);
   screen_hook_render(&lua_bridge_internal_render_hook, lua_bridge);
 
@@ -110,9 +106,6 @@ bool system_lua_bridge_start(void) {
   }
 
   {
-    lua_pushcclosure(state, &lua_bridge_internal_input_action, 0);
-    lua_setglobal(state, "action");
-
     luaL_loadfile(state, "./lua/main.lua");
     {
       int result = lua_pcall(state, 0, LUA_MULTRET, 0);
@@ -135,7 +128,6 @@ void system_lua_bridge_stop(void) {
   lua_close(lua_bridge->state);
 
   gossip_unsubscribe(lua_bridge->gossip_handle);
-  gossip_unsubscribe(lua_bridge->action_handle);
 
   screen_unhook_render(&lua_bridge_internal_render_hook, lua_bridge);
 
@@ -162,19 +154,6 @@ void system_lua_bridge_update(void) {
 
   for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
     ui_window_update(lua_bridge->windows[t], 1.0 / 30.0);
-  }
-}
-
-void lua_bridge_internal_action_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
-  LuaBridge *lua_bridge = (LuaBridge *)subscriberdata;
-  InputActionRef *action_ref = (InputActionRef *)userdata;
-
-  lua_rawgeti(lua_bridge->state, LUA_REGISTRYINDEX, action_ref->ref);
-  int result = lua_pcall(lua_bridge->state, 0, 0, 0);
-  if (result != LUA_OK) {
-    const char *message = lua_tostring(lua_bridge->state, -1);
-    printf("LUA: %s: %s\n", __func__, message);
-    lua_pop(lua_bridge->state, 1);
   }
 }
 
@@ -265,15 +244,6 @@ void lua_bridge_internal_render_hook(AsciiBuffer *const screen, void *const user
   for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
     ui_window_draw(lua_bridge->windows[t], screen);
   }
-}
-
-int lua_bridge_internal_input_action(lua_State *state) {
-  InputActionRef action_ref = (InputActionRef){
-    .action = (char *)lua_tostring(state, 1),
-    .ref = (int32_t)luaL_ref(state, LUA_REGISTRYINDEX),
-  };
-  input_action_add_action(&action_ref);
-  return 0;
 }
 
 int lua_bridge_internal_ui_window_load(lua_State *state) {
