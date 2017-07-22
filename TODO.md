@@ -14,9 +14,6 @@ The actual game
   - Move compile flag into a runtime check instead?
 * Resolutions
   - Load higher res font when possible?
-* Input
-  - Remove need for "action" command, bake into gossip? Probably?
-    Does it even need a separate command? Let be for now and investigate.
 
 ## Bedrock
 Tests?
