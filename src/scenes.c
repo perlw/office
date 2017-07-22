@@ -6,6 +6,7 @@
 
 #include "ascii/ascii.h"
 #include "scenes.h"
+#include "screen.h"
 
 struct Scenes {
   Scene *scenes;
@@ -40,6 +41,7 @@ Scene scene_dummy = {
 };
 
 void scenes_internal_scene_event(const char *groupd_id, const char *id, void *const subscriberdata, void *const userdata);
+void scenes_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
 
 Scenes *scenes_create(void) {
   Scenes *scenes = calloc(1, sizeof(Scenes));
@@ -50,6 +52,7 @@ Scenes *scenes_create(void) {
   scenes->pause_updates = false;
 
   scenes->scene_handle = gossip_subscribe("scene:*", &scenes_internal_scene_event, scenes);
+  screen_hook_render(&scenes_internal_render_hook, scenes);
 
   return scenes;
 }
@@ -58,6 +61,8 @@ void scenes_destroy(Scenes *scenes) {
   assert(scenes);
 
   gossip_unsubscribe(scenes->scene_handle);
+
+  screen_unhook_render(&scenes_internal_render_hook, scenes);
 
   if (scenes->current_scene) {
     scenes->current_scene->destroy(scenes->current_scene_data);
@@ -132,12 +137,6 @@ void scenes_update(Scenes *scenes, double delta) {
   }
 }
 
-void scenes_draw(Scenes *scenes, AsciiBuffer *const screen) {
-  assert(scenes);
-
-  scenes->current_scene->draw(scenes->current_scene_data, screen);
-}
-
 void scenes_internal_scene_event(const char *groupd_id, const char *id, void *const subscriberdata, void *const userdata) {
   Scenes *scenes = (Scenes *)subscriberdata;
 
@@ -148,4 +147,10 @@ void scenes_internal_scene_event(const char *groupd_id, const char *id, void *co
   } else if (strncmp(id, "pause_updates", 128) == 0) {
     scenes->pause_updates = !scenes->pause_updates;
   }
+}
+
+void scenes_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
+  Scenes *scenes = (Scenes *)userdata;
+
+  scenes->current_scene->draw(scenes->current_scene_data, screen);
 }

@@ -70,7 +70,7 @@ KronosResult kronos_start_system(const char *name) {
 
     if (strncmp(state->system->name, name, 128) == 0) {
       if (state->system->start()) {
-        state->since_update = 1.0 / (double)((rand() % (state->system->frames - 1)) + 1);
+        state->since_update = 1.0 / (double)((rand() % state->system->frames) + 1);
         state->running = true;
         return KRONOS_OK;
       } else {

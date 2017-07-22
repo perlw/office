@@ -98,7 +98,9 @@ bool system_sound_start(void) {
 }
 
 void system_sound_stop(void) {
-  assert(system_sound_internal);
+  if (!system_sound_internal) {
+    return;
+  }
 
   gossip_unsubscribe(system_sound_internal->sound_handle);
 

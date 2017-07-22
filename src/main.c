@@ -14,10 +14,10 @@
 #include "ascii/ascii.h"
 #include "assets.h"
 #include "config.h"
-#include "debug/debug.h"
 #include "input.h"
 #include "lua_bridge.h"
 #include "scenes.h"
+#include "screen.h"
 #include "systems.h"
 #include "ui/ui.h"
 
@@ -58,11 +58,7 @@ int main(int argc, char **argv) {
   setup_asset_loaders();
   input_init();
 
-  systems_init();
-
   const Config *const config = config_init();
-
-  LuaBridge *const lua_bridge = lua_bridge_create();
 
   if (picasso_window_init("Office", config->res_width, config->res_height, config->fullscreen, config->gl_debug) != PICASSO_WINDOW_OK) {
     printf("Window: failed to init\n");
@@ -72,16 +68,17 @@ int main(int argc, char **argv) {
   picasso_window_mouse_move_callback(&input_mousemove_callback);
   picasso_window_mouse_button_callback(&input_click_callback);
 
+  screen_init();
+  systems_init();
+
+  LuaBridge *const lua_bridge = lua_bridge_create();
+
   Scenes *const scenes = scenes_create();
   scenes_register(scenes, &scene_test);
   scenes_register(scenes, &scene_drips);
   scenes_register(scenes, &scene_sound_test);
   scenes_register(scenes, &scene_game);
   scenes_register(scenes, &scene_world_edit);
-
-  DebugOverlay *const debug_overlay = debugoverlay_create();
-
-  AsciiBuffer *ascii_screen = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
 
   gossip_subscribe("game:kill", &game_kill_event, NULL);
 
@@ -98,7 +95,6 @@ int main(int argc, char **argv) {
 
     scenes_update(scenes, delta);
     lua_bridge_update(lua_bridge, delta);
-    debugoverlay_update(debug_overlay, delta);
 
     systems_update(delta);
 
@@ -108,28 +104,20 @@ int main(int argc, char **argv) {
     if (next_frame >= frame_timing) {
       next_frame = 0.0;
       picasso_window_clear();
-
-      scenes_draw(scenes, ascii_screen);
-      lua_bridge_draw(lua_bridge, ascii_screen);
-      debugoverlay_draw(debug_overlay, ascii_screen);
-
-      ascii_buffer_draw(ascii_screen);
-
+      screen_render();
       picasso_window_swap();
     }
 
     picasso_window_update();
   }
-  debugoverlay_destroy(debug_overlay);
 
   scenes_destroy(scenes);
-  input_kill();
-
-  ascii_buffer_destroy(ascii_screen);
-
-  lua_bridge_destroy(lua_bridge);
 
   systems_kill();
+  screen_kill();
+  input_kill();
+
+  lua_bridge_destroy(lua_bridge);
 
   tome_kill();
   gossip_kill();

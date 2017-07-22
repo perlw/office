@@ -1,6 +1,0 @@
-set (
-  SOURCES
-  ${SOURCES}
-  "${CMAKE_CURRENT_LIST_DIR}/d_main.c"
-  PARENT_SCOPE
-)

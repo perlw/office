@@ -11,4 +11,3 @@ LuaBridge *lua_bridge_create(void);
 void lua_bridge_destroy(LuaBridge *const lua_bridge);
 
 void lua_bridge_update(LuaBridge *const lua_bridge, double delta);
-void lua_bridge_draw(LuaBridge *const lua_bridge, AsciiBuffer *const screen);

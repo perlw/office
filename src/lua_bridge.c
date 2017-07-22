@@ -12,6 +12,7 @@
 #include "ascii/ascii.h"
 #include "input.h"
 #include "scenes.h"
+#include "screen.h"
 #include "ui/ui.h"
 
 typedef struct {
@@ -33,6 +34,7 @@ struct LuaBridge {
 int lua_bridge_internal_input_action(lua_State *state);
 void lua_bridge_internal_action_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
 void lua_bridge_internal_gossip_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
+void lua_bridge_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
 
 int lua_bridge_internal_gossip_load(lua_State *state);
 int lua_bridge_internal_gossip_subscribe(lua_State *state);
@@ -77,6 +79,19 @@ LuaBridge *lua_bridge_create(void) {
 
   lua_bridge->action_handle = gossip_subscribe("lua_bridge:action", &lua_bridge_internal_action_event, lua_bridge);
   lua_bridge->gossip_handle = gossip_subscribe("*:*", &lua_bridge_internal_gossip_event, lua_bridge);
+  screen_hook_render(&lua_bridge_internal_render_hook, lua_bridge);
+
+  {
+    luaL_loadfile(state, "./lua/init.lua");
+    {
+      int result = lua_pcall(state, 0, LUA_MULTRET, 0);
+      if (result != LUA_OK) {
+        const char *message = lua_tostring(state, -1);
+        printf("LUA: %s: %s\n", __func__, message);
+        lua_pop(state, 1);
+      }
+    }
+  }
 
   {
     lua_pushcclosure(state, &lua_bridge_internal_input_action, 0);
@@ -104,6 +119,8 @@ void lua_bridge_destroy(LuaBridge *const lua_bridge) {
   gossip_unsubscribe(lua_bridge->gossip_handle);
   gossip_unsubscribe(lua_bridge->action_handle);
 
+  screen_unhook_render(&lua_bridge_internal_render_hook, lua_bridge);
+
   for (uint32_t t = 0; t < rectify_array_size(lua_bridge->handles); t++) {
     LuaBridgeHandle *handle = &lua_bridge->handles[t];
     if (handle->group_id) {
@@ -125,14 +142,6 @@ void lua_bridge_update(LuaBridge *const lua_bridge, double delta) {
 
   for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
     ui_window_update(lua_bridge->windows[t], delta);
-  }
-}
-
-void lua_bridge_draw(LuaBridge *const lua_bridge, AsciiBuffer *const screen) {
-  assert(lua_bridge);
-
-  for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
-    ui_window_draw(lua_bridge->windows[t], screen);
   }
 }
 
@@ -227,6 +236,14 @@ void lua_bridge_internal_gossip_event(const char *group_id, const char *id, void
         lua_pop(lua_bridge->state, 1);
       }
     }
+  }
+}
+
+void lua_bridge_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
+  LuaBridge *lua_bridge = (LuaBridge *)userdata;
+
+  for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
+    ui_window_draw(lua_bridge->windows[t], screen);
   }
 }
 

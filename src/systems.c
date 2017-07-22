@@ -4,6 +4,7 @@
 
 #include "bedrock/bedrock.h"
 
+#include "system_debug.h"
 #include "system_sound.h"
 
 typedef struct {
@@ -23,6 +24,7 @@ void systems_init(void) {
 
   kronos_init();
 
+  kronos_register(&system_debug);
   kronos_register(&system_sound);
 }
 

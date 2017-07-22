@@ -24,4 +24,3 @@ void scenes_register(Scenes *scenes, Scene *scene);
 void scenes_goto(Scenes *scenes, const char *name);
 
 void scenes_update(Scenes *scenes, double delta);
-void scenes_draw(Scenes *scenes, AsciiBuffer *const screen);

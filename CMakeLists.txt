@@ -23,8 +23,10 @@ set (
   "src/assets.c"
   "src/config.c"
   "src/input.c"
+  "src/screen.c"
   "src/systems.c"
   "src/system_sound.c"
+  "src/system_debug.c"
   "src/scenes.c"
   "src/scene_test.c"
   "src/scene_drips.c"
@@ -32,7 +34,6 @@ set (
   "src/scene_sound-test.c"
   "src/scene_world-edit.c"
 )
-add_subdirectory (src/debug)
 add_subdirectory (src/ascii)
 add_subdirectory (src/ui)
 add_executable (office ${SOURCES})
