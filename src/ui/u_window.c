@@ -117,6 +117,44 @@ void ui_window_internal_draw_border(UIWindow *const window) {
   };
   window->surface->buffer[window->width - 4].rune = 181;
 
+  if (window->scroll_x >= 0) {
+    // X scroll
+    double scroll_mod = (int32_t)window->scroll_x / 100.0;
+    double scroll_width = (double)(window->width - 5);
+    uint32_t x_marker_pos = (uint32_t)((scroll_width * scroll_mod) + 0.5) + 2;
+    uint32_t x_start = 1;
+    uint32_t x_end = window->width - 2;
+    for (uint32_t x = x_start; x < x_end + 1; x++) {
+      uint32_t index = ((window->height - 1) * window->width) + x;
+
+      if (x == x_start) {
+        window->surface->buffer[index] = (Glyph){
+          .rune = 181,
+          .fore = glyphcolor(200, 200, 200),
+          .back = glyphcolor(128, 0, 0),
+        };
+      } else if (x == x_end) {
+        window->surface->buffer[index] = (Glyph){
+          .rune = 198,
+          .fore = glyphcolor(200, 200, 200),
+          .back = glyphcolor(128, 0, 0),
+        };
+      } else if (x == x_marker_pos) {
+        window->surface->buffer[index] = (Glyph){
+          .rune = 254,
+          .fore = glyphcolor(255, 255, 0),
+          .back = glyphcolor(64, 0, 0),
+        };
+      } else {
+        window->surface->buffer[index] = (Glyph){
+          .rune = 196,
+          .fore = glyphcolor(128, 128, 128),
+          .back = glyphcolor(64, 0, 0),
+        };
+      }
+    }
+  }
+
   if (window->scroll_y >= 0) {
     // Y scroll
     double scroll_mod = (int32_t)window->scroll_y / 100.0;
