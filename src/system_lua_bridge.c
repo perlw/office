@@ -52,7 +52,10 @@ int lua_bridge_internal_gossip_emit(lua_State *state);
 int lua_bridge_internal_ui_window_load(lua_State *state);
 int lua_bridge_internal_ui_window_create(lua_State *state);
 int lua_bridge_internal_ui_window_destroy(lua_State *state);
+int lua_bridge_internal_ui_window_clear(lua_State *state);
 int lua_bridge_internal_ui_window_glyph(lua_State *state);
+int lua_bridge_internal_ui_window_scroll_x(lua_State *state);
+int lua_bridge_internal_ui_window_scroll_y(lua_State *state);
 
 void lua_bridge_internal_register_lua_module(LuaBridge *lua_bridge, const char *name, int (*load_func)(lua_State *)) {
   lua_getglobal(lua_bridge->state, "package");
@@ -271,12 +274,26 @@ int lua_bridge_internal_ui_window_load(lua_State *state) {
   lua_pushlightuserdata(state, lua_bridge);
   lua_pushcclosure(state, &lua_bridge_internal_ui_window_create, 1);
   lua_setfield(state, -2, "window_create");
+
   lua_pushlightuserdata(state, lua_bridge);
   lua_pushcclosure(state, &lua_bridge_internal_ui_window_destroy, 1);
   lua_setfield(state, -2, "window_destroy");
+
   lua_pushlightuserdata(state, lua_bridge);
   lua_pushcclosure(state, &lua_bridge_internal_ui_window_glyph, 1);
   lua_setfield(state, -2, "window_glyph");
+
+  lua_pushlightuserdata(state, lua_bridge);
+  lua_pushcclosure(state, &lua_bridge_internal_ui_window_clear, 1);
+  lua_setfield(state, -2, "window_clear");
+
+  lua_pushlightuserdata(state, lua_bridge);
+  lua_pushcclosure(state, &lua_bridge_internal_ui_window_scroll_x, 1);
+  lua_setfield(state, -2, "window_scroll_x");
+
+  lua_pushlightuserdata(state, lua_bridge);
+  lua_pushcclosure(state, &lua_bridge_internal_ui_window_scroll_y, 1);
+  lua_setfield(state, -2, "window_scroll_y");
 
   return 1;
 }
@@ -325,6 +342,30 @@ int lua_bridge_internal_ui_window_destroy(lua_State *state) {
   return 0;
 }
 
+int lua_bridge_internal_ui_window_clear(lua_State *state) {
+  if (lua_gettop(state) < 3) {
+    printf("Main: Too few arguments to function \"ui.window_clear\".\n");
+    return 0;
+  }
+
+  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  if (!window) {
+    return 0;
+  }
+
+  uint8_t rune = (uint8_t)lua_tonumber(state, 2);
+  uint32_t fore_color = (uint32_t)lua_tonumber(state, 3);
+  uint32_t back_color = (uint32_t)lua_tonumber(state, 4);
+
+  ui_window_clear(window, (Glyph){
+                            .rune = rune,
+                            .fore = glyphcolor_hex(fore_color),
+                            .back = glyphcolor_hex(back_color),
+                          });
+
+  return 0;
+}
+
 int lua_bridge_internal_ui_window_glyph(lua_State *state) {
   if (lua_gettop(state) < 5) {
     printf("Main: Too few arguments to function \"ui.window_glyph\".\n");
@@ -347,6 +388,40 @@ int lua_bridge_internal_ui_window_glyph(lua_State *state) {
                                   .fore = glyphcolor_hex(fore_color),
                                   .back = glyphcolor_hex(back_color),
                                 });
+
+  return 0;
+}
+
+int lua_bridge_internal_ui_window_scroll_x(lua_State *state) {
+  if (lua_gettop(state) < 2) {
+    printf("Main: Too few arguments to function \"ui.window_scroll_x\".\n");
+    return 0;
+  }
+
+  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  if (!window) {
+    return 0;
+  }
+
+  int32_t scroll = (uint32_t)lua_tonumber(state, 2);
+  ui_window_scroll_x(window, scroll);
+
+  return 0;
+}
+
+int lua_bridge_internal_ui_window_scroll_y(lua_State *state) {
+  if (lua_gettop(state) < 2) {
+    printf("Main: Too few arguments to function \"ui.window_scroll_y\".\n");
+    return 0;
+  }
+
+  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  if (!window) {
+    return 0;
+  }
+
+  int32_t scroll = (uint32_t)lua_tonumber(state, 2);
+  ui_window_scroll_y(window, scroll);
 
   return 0;
 }

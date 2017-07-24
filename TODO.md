@@ -7,6 +7,7 @@ The actual game
   - Separate files for different systems
 * Lua bridge
   - Allow systems to register own interface?
+  - Remove need for string.byte by simply taking first char of string in C
 * Sound
   - Ability to load and play sounds, won't need to define
 * Occulus

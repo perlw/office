@@ -16,6 +16,9 @@ struct UIWindow {
   uint32_t width;
   uint32_t height;
 
+  int32_t scroll_x;
+  int32_t scroll_y;
+
   Surface *surface;
 
   GossipHandle mouse_handle;

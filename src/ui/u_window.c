@@ -22,6 +22,8 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
     .y = y,
     .width = width,
     .height = height,
+    .scroll_x = -1,
+    .scroll_y = -1,
     .surface = surface_create(x, y, width, height),
   };
 
@@ -44,6 +46,13 @@ void ui_window_destroy(UIWindow *const window) {
   free(window);
 }
 
+void ui_window_clear(UIWindow *const window, Glyph glyph) {
+  assert(window);
+
+  surface_clear(window->surface, glyph);
+  ui_window_internal_draw_border(window);
+}
+
 void ui_window_glyph(UIWindow *const window, uint32_t x, uint32_t y, Glyph glyph) {
   assert(window);
 
@@ -55,6 +64,16 @@ void ui_window_glyph(UIWindow *const window, uint32_t x, uint32_t y, Glyph glyph
   uint32_t ty = y + 1;
 
   window->surface->buffer[(ty * window->width) + tx] = glyph;
+}
+
+void ui_window_scroll_x(UIWindow *const window, int32_t scroll) {
+  assert(window);
+  window->scroll_x = scroll;
+}
+
+void ui_window_scroll_y(UIWindow *const window, int32_t scroll) {
+  assert(window);
+  window->scroll_y = scroll;
 }
 
 void ui_window_update(UIWindow *const window, double delta) {
@@ -83,18 +102,58 @@ void ui_window_internal_draw_border(UIWindow *const window) {
   };
   surface_rect(window->surface, 0, 0, window->width, window->height, rect_tiles, true, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 128, 0, 0 });
 
+  // Title
   uint32_t text_len = (uint32_t)strnlen(window->title, 32) + 1;
   window->surface->buffer[1].rune = 181;
   surface_text(window->surface, 2, 0, text_len, window->title, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 0, 0, 0 });
   window->surface->buffer[text_len + 1].rune = 198;
 
+  // "Close" button
   window->surface->buffer[window->width - 2].rune = 198;
   window->surface->buffer[window->width - 3] = (Glyph){
-    .rune = 254,
-    .fore = (GlyphColor){ 255, 255, 0 },
-    .back = (GlyphColor){ 0, 0, 0 },
+    .rune = 'x',
+    .fore = glyphcolor(255, 255, 0),
+    .back = 0,
   };
   window->surface->buffer[window->width - 4].rune = 181;
+
+  if (window->scroll_y >= 0) {
+    // Y scroll
+    double scroll_mod = (int32_t)window->scroll_y / 100.0;
+    double scroll_height = (double)(window->height - 5);
+    uint32_t y_marker_pos = (uint32_t)((scroll_height * scroll_mod) + 0.5) + 2;
+    uint32_t y_start = 1;
+    uint32_t y_end = window->height - 2;
+    for (uint32_t y = y_start; y < y_end + 1; y++) {
+      uint32_t index = (y * window->width) + window->width - 1;
+
+      if (y == y_start) {
+        window->surface->buffer[index] = (Glyph){
+          .rune = 208,
+          .fore = glyphcolor(200, 200, 200),
+          .back = glyphcolor(128, 0, 0),
+        };
+      } else if (y == y_end) {
+        window->surface->buffer[index] = (Glyph){
+          .rune = 210,
+          .fore = glyphcolor(200, 200, 200),
+          .back = glyphcolor(128, 0, 0),
+        };
+      } else if (y == y_marker_pos) {
+        window->surface->buffer[index] = (Glyph){
+          .rune = 254,
+          .fore = glyphcolor(255, 255, 0),
+          .back = glyphcolor(64, 0, 0),
+        };
+      } else {
+        window->surface->buffer[index] = (Glyph){
+          .rune = 179,
+          .fore = glyphcolor(128, 128, 128),
+          .back = glyphcolor(64, 0, 0),
+        };
+      }
+    }
+  }
 }
 
 void ui_window_internal_mouse_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {

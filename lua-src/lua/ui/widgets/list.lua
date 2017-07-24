@@ -21,13 +21,28 @@ function Widget:create(window, initial_data)
   end
 
   self.data = initial_data
-  io.write("UI:List> got " .. #self.data .. " items\n")
+  self.scroll_y = 1.0
+  self.max_scroll_y = #self.data
+  self.chosen = 0
+  self.dirty = true
+
+  self.window:scroll_y(0)
+  self.window_height = 16
 
   self.window_events = {
     ["mousemove"] = function (e) end,
-    ["click"] = function (e) end,
+    ["click"] = function (e)
+      self.chosen = self.scroll_y + e.y + 1
+      self.dirty = true
+    end,
     ["scroll"] = function (e)
-      io.write("scroll me! " .. e.scroll_x .. "x" .. e.scroll_y .. "\n")
+      local y = self.scroll_y - e.scroll_y
+      if y >= 1 and y + (self.window_height - 1) < self.max_scroll_y then
+        self.scroll_y = y
+
+        self.window:scroll_y(((y - 1) / (self.max_scroll_y - self.window_height - 1)) * 100)
+        self.dirty = true
+      end
     end,
   }
   self.gossip_window_handle = gossip.subscribe("window:*", function (group_id, id, e)
@@ -47,10 +62,30 @@ function Widget:create(window, initial_data)
       return
     end
 
-    for y,str in ipairs(self.data) do
-      for x = 1, #str do
-        local c = string.byte(str:sub(x, x))
-        self.window:glyph(c, x, y, 0xffffff, 0x000000)
+    if not self.dirty then
+      return
+    end
+    self.dirty = false
+
+    local data_end = self.scroll_y + self.window_height
+    if data_end > #self.data then
+      data_end = #self.data
+    end
+
+    self.window:clear(string.byte(" "), 0, 0)
+    for y = self.scroll_y, data_end do
+      local str = self.data[y]
+
+      local back_color = 0
+      if self.chosen == y then
+        back_color = 0x666666
+      end
+      for x = 1, 17 do
+        local c = string.byte(" ")
+        if x <= #str then
+          c = string.byte(str:sub(x, x))
+        end
+        self.window:glyph(c, x - 1, y - self.scroll_y - 1, 0xffffff, back_color)
       end
     end
   end)

@@ -47,8 +47,20 @@ function Window:destroy()
   ui.window_destroy(self.handle)
 end
 
+function Window:clear(rune, fore_color, back_color)
+  ui.window_clear(self.handle, rune, fore_color, back_color)
+end
+
 function Window:glyph(rune, x, y, fore_color, back_color)
   ui.window_glyph(self.handle, rune, x, y, fore_color, back_color)
+end
+
+function Window:scroll_x(scroll)
+  ui.window_scroll_x(self.handle, scroll)
+end
+
+function Window:scroll_y(scroll)
+  ui.window_scroll_y(self.handle, scroll)
 end
 
 function Window:on(event, callback)
