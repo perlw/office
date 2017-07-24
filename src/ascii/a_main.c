@@ -163,7 +163,7 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
     picasso_framebuffer_attach_texture(ascii->fbo.framebuffer, ascii->fbo.texture);
     picasso_framebuffer_unbind(ascii->fbo.framebuffer);
 
-    ascii->fbo.program = (PicassoProgram *)tome_fetch(ASSET_SHADER, "dummy", "shaders/dummy");
+    ascii->fbo.program = (PicassoProgram *)tome_fetch(ASSET_SHADER, "framebuffer", "shaders/framebuffer");
     if (!ascii->fbo.program) {
       printf("Something went wrong when fetching ascii shader :(\n");
       exit(-1);
@@ -200,7 +200,7 @@ void ascii_buffer_destroy(AsciiBuffer *const ascii) {
 
   // +FBO
   picasso_texture_destroy(ascii->fbo.texture);
-  tome_release(ASSET_SHADER, "dummy");
+  tome_release(ASSET_SHADER, "framebuffer");
   picasso_buffergroup_destroy(ascii->fbo.quad);
   picasso_framebuffer_destroy(ascii->fbo.framebuffer);
   // -FBO

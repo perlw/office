@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 
 #include "bedrock/bedrock.h"
 
@@ -57,6 +58,10 @@ void surface_text(Surface *const surface, uint32_t x, uint32_t y, uint32_t lengt
     return;
   }
 
+  if (length == 0 && string && string[0] != 0) {
+    length = (uint32_t)strnlen(string, 256) + 1;
+  }
+
   uint32_t index = (y * surface->width) + x;
   uint32_t max = index + (x + length >= surface->width ? surface->width - x : x + length);
   for (uint32_t t = index, u = 0; t < max; t++, u++) {
@@ -67,6 +72,54 @@ void surface_text(Surface *const surface, uint32_t x, uint32_t y, uint32_t lengt
     surface->buffer[t].rune = string[u];
     surface->buffer[t].fore = fore_color;
     surface->buffer[t].back = back_color;
+  }
+}
+
+void surface_textc(Surface *const surface, uint32_t x, uint32_t y, uint32_t length, const char *string) {
+  assert(surface);
+
+  if (x >= surface->width || y >= surface->height) {
+    return;
+  }
+
+  if (length == 0 && string && string[0] != 0) {
+    length = (uint32_t)strnlen(string, 256) + 1;
+  }
+
+  uint32_t index = (y * surface->width) + x;
+  uint32_t max = index + (x + length >= surface->width ? surface->width - x : x + length);
+  char color_buffer[7] = { 0, 0, 0, 0, 0, 0, 0 };
+  uint32_t fore = 0xffffff;
+  uint32_t back = 0;
+  for (uint32_t t = index, u = 0; t < max; t++, u++) {
+    if (string[u] == '\0') {
+      break;
+    }
+
+    if (string[u] == '#' && u + 1 < length && string[u + 1] == '{') {
+      printf("%d %d %d %d\n", u, length, u + 8 < length, string[u + 8] == '}');
+      if (u + 15 < length && string[u + 15] == '}') {
+        for (uint32_t i = u + 2; i < u + 8; i++) {
+          color_buffer[i - (u + 2)] = string[i];
+        }
+        fore = strtol(color_buffer, NULL, 16);
+        for (uint32_t i = u + 9; i < u + 15; i++) {
+          color_buffer[i - (u + 9)] = string[i];
+        }
+        back = strtol(color_buffer, NULL, 16);
+        u += 16;
+      } else if (u + 8 < length && string[u + 8] == '}') {
+        for (uint32_t i = u + 2; i < u + 8; i++) {
+          color_buffer[i - (u + 2)] = string[i];
+        }
+        fore = strtol(color_buffer, NULL, 16);
+        u += 9;
+      }
+    }
+
+    surface->buffer[t].rune = string[u];
+    surface->buffer[t].fore = glyphcolor_hex(fore);
+    surface->buffer[t].back = glyphcolor_hex(back);
   }
 }
 

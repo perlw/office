@@ -14,6 +14,12 @@ The actual game
   - Move compile flag into a runtime check instead?
 * Resolutions
   - Load higher res font when possible?
+* World edit
+  - Load/save world
+    - Needs more ui widgets, at minimum some kind of lua front for dialogs etc? modals?
+    - Text input widget
+    - File listing widget
+      - Needs list widget
 
 ## Bedrock
 Tests?

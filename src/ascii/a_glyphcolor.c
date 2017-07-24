@@ -1,5 +1,13 @@
 #include "ascii.h"
 
+GlyphColor glyphcolor(uint8_t r, uint8_t g, uint8_t b) {
+  return (GlyphColor){ r, g, b };
+}
+
+GlyphColor glyphcolor_hex(uint32_t hex) {
+  return (GlyphColor){ (hex >> 16) & 0xff, (hex >> 8) & 0xff, hex & 0xff };
+}
+
 GlyphColor glyphcolor_add(GlyphColor a, GlyphColor b) {
   GlyphColor c = {
     .r = a.r + b.r,
@@ -122,16 +130,6 @@ GlyphColor glyphcolor_divs(GlyphColor c, float s) {
   }
 
   return r;
-}
-
-GlyphColor glyphcolor_from_int(uint32_t hex) {
-  GlyphColor g;
-
-  g.r = (hex >> 16) & 0xff;
-  g.g = (hex >> 8) & 0xff;
-  g.b = hex & 0xff;
-
-  return g;
 }
 
 bool glyphcolor_eq(GlyphColor a, GlyphColor b) {

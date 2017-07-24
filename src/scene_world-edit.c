@@ -88,6 +88,7 @@ SceneWorldEdit *scene_world_edit_create(void) {
     '+', '-', '+',
   };
   surface_rect(scene->world, 0, 0, scene->world->width, scene->world->height, rect_tiles, false, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
+  surface_textc(scene->world, 40, scene->world->height - 1, 0, " #{ffffff}S#{aaaaaa}ave/Save #{ffffff}a#{aaaaaa}s | #{ffffff}L#{aaaaaa}oad ");
 
   scene->mouse_handle = gossip_subscribe("input:*", &scene_world_edit_mouse_event, scene);
   scene->rune_handle = gossip_subscribe("widget:rune_selected", &scene_world_edit_rune_selected, scene);
@@ -128,7 +129,7 @@ void scene_world_edit_update(SceneWorldEdit *const scene, double delta) {
       uint32_t index = (scene->m_y * scene->world->width) + scene->m_x;
       scene->world->buffer[index] = (Glyph){
         .rune = scene->chosen_rune,
-        .fore = glyphcolor_from_int(scene->chosen_color),
+        .fore = glyphcolor_hex(scene->chosen_color),
         .back = (GlyphColor){ 0, 0, 0 },
       };
     }
@@ -145,7 +146,7 @@ void scene_world_edit_update(SceneWorldEdit *const scene, double delta) {
       uint32_t index = (scene->m_y * scene->overlay->width) + scene->m_x;
       scene->overlay->buffer[index] = (Glyph){
         .rune = scene->chosen_rune,
-        .fore = glyphcolor_from_int(scene->chosen_color),
+        .fore = glyphcolor_hex(scene->chosen_color),
         .back = 0,
       };
     }

@@ -279,7 +279,6 @@ int lua_bridge_internal_ui_window_create(lua_State *state) {
   uint32_t height = (uint32_t)lua_tonumber(state, 5);
 
   UIWindow *window = ui_window_create(title, x, y, width, height);
-  printf("create_window %p\n", (void *)window);
   lua_bridge->windows = rectify_array_push(lua_bridge->windows, (void *)&window);
 
   lua_pushnumber(state, (lua_Number)(uintptr_t)window);
@@ -295,7 +294,6 @@ int lua_bridge_internal_ui_window_destroy(lua_State *state) {
 
   LuaBridge *lua_bridge = (LuaBridge *)lua_topointer(state, lua_upvalueindex(1));
   UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
-  printf("destroy_window %p\n", (void *)window);
   if (!window) {
     return 0;
   }
@@ -329,8 +327,8 @@ int lua_bridge_internal_ui_window_glyph(lua_State *state) {
 
   ui_window_glyph(window, x, y, (Glyph){
                                   .rune = rune,
-                                  .fore = glyphcolor_from_int(fore_color),
-                                  .back = glyphcolor_from_int(back_color),
+                                  .fore = glyphcolor_hex(fore_color),
+                                  .back = glyphcolor_hex(back_color),
                                 });
 
   return 0;
