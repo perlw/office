@@ -20,6 +20,9 @@ The actual game
     - Text input widget
     - File listing widget
       - Needs list widget
+* Lua UI
+  - Need to rebuild so widgets are part of windows instead of other way
+  - List widget
 
 ## Bedrock
 Tests?

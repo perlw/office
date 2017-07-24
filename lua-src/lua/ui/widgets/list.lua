@@ -12,7 +12,7 @@ setmetatable(Widget, {
   end,
 })
 
-function Widget:create(window)
+function Widget:create(window, initial_data)
   assert(window)
 
   self.window = window
@@ -20,7 +20,8 @@ function Widget:create(window)
     io.write("UI:List> failed to attach to window...\n")
   end
 
-  self.chosen_rune = 1
+  self.data = initial_data
+  io.write("UI:List> got " .. #self.data .. " items\n")
 
   self.window_events = {
     ["mousemove"] = function (e) end,
@@ -41,6 +42,13 @@ function Widget:create(window)
   self.gossip_widget_handle = gossip.subscribe("widget:paint", function (group_id, id, e)
     if e ~= nil and e.target ~= self.window.handle then
       return
+    end
+
+    for y,str in ipairs(self.data) do
+      for x = 1, #str do
+        local c = string.byte(str:sub(x, x))
+        self.window:glyph(c, x, y, 0xffffff, 0x000000)
+      end
     end
   end)
 
