@@ -97,7 +97,6 @@ void surface_textc(Surface *const surface, uint32_t x, uint32_t y, uint32_t leng
     }
 
     if (string[u] == '#' && u + 1 < length && string[u + 1] == '{') {
-      printf("%d %d %d %d\n", u, length, u + 8 < length, string[u + 8] == '}');
       if (u + 15 < length && string[u + 15] == '}') {
         for (uint32_t i = u + 2; i < u + 8; i++) {
           color_buffer[i - (u + 2)] = string[i];
