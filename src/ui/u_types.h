@@ -19,3 +19,11 @@ typedef struct {
   uint32_t x;
   uint32_t y;
 } UIEventClick;
+
+typedef struct {
+  UIWindow *target;
+  int32_t scroll_x;
+  int32_t scroll_y;
+  uint32_t x;
+  uint32_t y;
+} UIEventScroll;

@@ -66,6 +66,7 @@ int main(int argc, char **argv) {
   picasso_window_keyboard_callback(&input_keyboard_callback);
   picasso_window_mouse_move_callback(&input_mousemove_callback);
   picasso_window_mouse_button_callback(&input_click_callback);
+  picasso_window_mouse_scroll_callback(&input_mousescroll_callback);
 
   screen_init();
   systems_init();

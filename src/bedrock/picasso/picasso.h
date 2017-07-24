@@ -164,8 +164,15 @@ typedef struct {
   bool pressed;
   bool released;
 } PicassoWindowMouseEvent;
+typedef struct {
+  double offset_x;
+  double offset_y;
+  double x;
+  double y;
+} PicassoWindowMouseScrollEvent;
 typedef void (*PicassoWindowKeyboardCallback)(const PicassoWindowKeyboardEvent *const);
 typedef void (*PicassoWindowMouseCallback)(const PicassoWindowMouseEvent *const);
+typedef void (*PicassoWindowMouseScrollCallback)(const PicassoWindowMouseScrollEvent *const);
 
 PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool fullscreen, bool gl_debug);
 void picasso_window_kill(void);
@@ -177,6 +184,7 @@ bool picasso_window_should_close(void);
 void picasso_window_keyboard_callback(PicassoWindowKeyboardCallback callback);
 void picasso_window_mouse_move_callback(PicassoWindowMouseCallback callback);
 void picasso_window_mouse_button_callback(PicassoWindowMouseCallback callback);
+void picasso_window_mouse_scroll_callback(PicassoWindowMouseScrollCallback callback);
 void picasso_window_viewport(int32_t x, int32_t y, int32_t width, int32_t height);
 // -Window
 

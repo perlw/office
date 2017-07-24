@@ -207,6 +207,23 @@ void lua_bridge_internal_gossip_event(const char *group_id, const char *id, void
           lua_setfield(lua_bridge->state, -2, "y");
 
           num_args++;
+        } else if (strncmp(id, "scroll", 128) == 0) {
+          UIEventScroll *event = (UIEventScroll *)userdata;
+
+          lua_newtable(lua_bridge->state);
+
+          lua_pushnumber(lua_bridge->state, (lua_Number)(uintptr_t)event->target);
+          lua_setfield(lua_bridge->state, -2, "target");
+          lua_pushnumber(lua_bridge->state, event->scroll_x);
+          lua_setfield(lua_bridge->state, -2, "scroll_x");
+          lua_pushnumber(lua_bridge->state, event->scroll_y);
+          lua_setfield(lua_bridge->state, -2, "scroll_y");
+          lua_pushnumber(lua_bridge->state, event->x);
+          lua_setfield(lua_bridge->state, -2, "x");
+          lua_pushnumber(lua_bridge->state, event->y);
+          lua_setfield(lua_bridge->state, -2, "y");
+
+          num_args++;
         }
       } else if (strncmp(group_id, "widget", 128) == 0) {
         if (strncmp(id, "rune_selected", 128) == 0) {

@@ -27,7 +27,7 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
 
   ui_window_internal_draw_border(window);
 
-  window->mouse_handle = gossip_subscribe("input:click", &ui_window_internal_mouse_event, window);
+  window->mouse_handle = gossip_subscribe("input:*", &ui_window_internal_mouse_event, window);
 
   return window;
 }
@@ -121,6 +121,15 @@ void ui_window_internal_mouse_event(const char *group_id, const char *id, void *
                                                             .target = window, .x = event->x - window->x - 1, .y = event->y - window->y - 1,
                                                           });
       }
+    }
+  } else if (strncmp(id, "mousescroll", 128) == 0) {
+    InputMouseScrollEvent *event = (InputMouseScrollEvent *)userdata;
+
+    if (event->x > window->x && event->x < window->x + window->width - 1
+        && event->y > window->y && event->y < window->y + window->width - 1) {
+      gossip_emit("window:scroll", sizeof(UIEventScroll), &(UIEventScroll){
+                                                            .target = window, .scroll_x = event->scroll_x, .scroll_y = event->scroll_y, .x = event->x, .y = event->y,
+                                                          });
     }
   }
 }

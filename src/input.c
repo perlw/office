@@ -80,6 +80,17 @@ void input_click_callback(const PicassoWindowMouseEvent *event) {
   }
 }
 
+void input_mousescroll_callback(const PicassoWindowMouseScrollEvent *event) {
+  const Config *const config = config_get();
+  uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
+  uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
+  int32_t o_x = (int32_t)(event->offset_x < 0.0 ? event->offset_x - 0.5 : event->offset_x + 0.5);
+  int32_t o_y = (int32_t)(event->offset_y < 0.0 ? event->offset_y - 0.5 : event->offset_y + 0.5);
+  gossip_emit("input:mousescroll", sizeof(InputMouseScrollEvent), &(InputMouseScrollEvent){
+                                                                    .scroll_x = o_x, .scroll_y = o_y, .x = m_x, .y = m_y,
+                                                                  });
+}
+
 void input_action_add_binding(InputActionBinding *binding) {
   assert(binding);
 

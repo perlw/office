@@ -26,9 +26,12 @@ function Widget:create(window, initial_data)
   self.window_events = {
     ["mousemove"] = function (e) end,
     ["click"] = function (e) end,
+    ["scroll"] = function (e)
+      io.write("scroll me! " .. e.scroll_x .. "x" .. e.scroll_y .. "\n")
+    end,
   }
   self.gossip_window_handle = gossip.subscribe("window:*", function (group_id, id, e)
-    if id ~= "mousemove" and id ~= "click" then
+    if id ~= "mousemove" and id ~= "click" and id ~= "scroll" then
       return
     end
 

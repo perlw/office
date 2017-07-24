@@ -15,9 +15,13 @@ void dummy_mouse_move_callback(const PicassoWindowMouseEvent *event){
 void dummy_mouse_button_callback(const PicassoWindowMouseEvent *event){
   //printf("Mouse button: %d %.2f, %.2f %d %d\n", event->button, event->x, event->y, event->pressed, event->released);
 };
+void dummy_mouse_scroll_callback(const PicassoWindowMouseScrollEvent *event){
+  //printf("Mouse scroll: %.2f, %.2f\n", event->offset_x, event->offset_y);
+};
 PicassoWindowKeyboardCallback picasso_keyboard_callback = &dummy_keyboard_callback;
 PicassoWindowMouseCallback picasso_mouse_move_callback = &dummy_mouse_move_callback;
 PicassoWindowMouseCallback picasso_mouse_button_callback = &dummy_mouse_button_callback;
+PicassoWindowMouseScrollCallback picasso_mouse_scroll_callback = &dummy_mouse_scroll_callback;
 
 void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
   if (action == GLFW_REPEAT) {
@@ -55,6 +59,17 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
   });
 }
 
+void mouse_scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+  double x, y;
+  glfwGetCursorPos(window, &x, &y);
+  picasso_mouse_scroll_callback(&(PicassoWindowMouseScrollEvent){
+    .offset_x = xoffset,
+    .offset_y = yoffset,
+    .x = x,
+    .y = y,
+  });
+}
+
 void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *user_param) {
   printf("PICASSO: GL %s\n", message);
 }
@@ -88,6 +103,7 @@ PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, u
   glfwSetKeyCallback(window, keyboard_callback);
   glfwSetCursorPosCallback(window, mouse_move_callback);
   glfwSetMouseButtonCallback(window, mouse_button_callback);
+  glfwSetScrollCallback(window, mouse_scroll_callback);
   glfwMakeContextCurrent(window);
   glfwSwapInterval(0);
 
@@ -154,6 +170,11 @@ void picasso_window_mouse_move_callback(PicassoWindowMouseCallback callback) {
 void picasso_window_mouse_button_callback(PicassoWindowMouseCallback callback) {
   assert(callback);
   picasso_mouse_button_callback = callback;
+}
+
+void picasso_window_mouse_scroll_callback(PicassoWindowMouseScrollCallback callback) {
+  assert(callback);
+  picasso_mouse_scroll_callback = callback;
 }
 
 void picasso_window_viewport(int32_t x, int32_t y, int32_t width, int32_t height) {
