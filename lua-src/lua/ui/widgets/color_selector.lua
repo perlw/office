@@ -12,40 +12,11 @@ setmetatable(Widget, {
   end,
 })
 
-function Widget:create(window)
-  assert(window)
-
-  self.window = window
-  if self.window.handle == nil then
-    io.write("UI:ColorSelector> failed to attach to window...\n")
-  end
+function Widget:create()
+  self.parent = nil
 
   self.chosen_color = 1
   self.color_rune = 1
-
-  self.window_events = {
-    ["mousemove"] = function (e) end,
-    ["click"] = function (e)
-      if e ~= nil and e.target ~= self.window.handle then
-        return
-      end
-
-      self.chosen_color = (e.y * 16) + e.x
-      local fore = hsl_to_rgb(e.y / 16, 1.0, e.x / 16);
-      gossip.emit("widget:color_selected", fore)
-    end,
-  }
-  self.gossip_window_handle = gossip.subscribe("window:*", function (group_id, id, e)
-    if id ~= "mousemove" and id ~= "click" then
-      return
-    end
-
-    if e.target ~= self.window.handle then
-      return
-    end
-
-    self.window_events[id](e)
-  end)
 
   function hue_to_rgb(p, q, t)
     if t < 0 then
@@ -89,40 +60,14 @@ function Widget:create(window)
     return (r << 16) + (g << 8) + b
   end
 
-  self.widget_events = {
-    ["rune_selected"] = function (rune)
+  self.gossip_widget_handle = gossip.subscribe("widget:rune_selected", function (group_id, id, rune)
+    if self.widget_events[id] ~= nil then
       if rune == nil then
         return
       end
 
       self.color_rune = rune
-    end,
-    ["paint"] = function (e)
-      if e ~= nil and e.target ~= self.window.handle then
-        return
-      end
-
-      for y = 0, 15 do
-        for x = 0, 15 do
-          local rune = self.color_rune
-          local fore = hsl_to_rgb(y / 16, 1.0, x / 16);
-          if (y * 16) + x == self.chosen_color then
-            rune = string.byte("*")
-          end
-
-          self.window:glyph(rune, x, y, fore, 0x0)
-        end
-      end
-    end,
-  }
-  self.gossip_widget_handle = gossip.subscribe("widget:*", function (group_id, id, e)
-    if self.widget_events[id] ~= nil then
-      self.widget_events[id](e)
     end
-  end)
-
-  self.window:on("close", function ()
-    self:destroy()
   end)
 
   return self
@@ -130,7 +75,30 @@ end
 
 function Widget:destroy()
   gossip.unsubscribe(self.gossip_widget_handle)
-  gossip.unsubscribe(self.gossip_window_handle)
+end
+
+function Widget:attach(parent)
+  self.parent = parent
+
+  parent:on("click", function (e)
+    self.chosen_color = (e.y * 16) + e.x
+    local fore = hsl_to_rgb(e.y / 16, 1.0, e.x / 16);
+    gossip.emit("widget:color_selected", fore)
+  end)
+end
+
+function Widget:paint()
+  for y = 0, 15 do
+    for x = 0, 15 do
+      local rune = self.color_rune
+      local fore = hsl_to_rgb(y / 16, 1.0, x / 16);
+      if (y * 16) + x == self.chosen_color then
+        rune = string.byte("*")
+      end
+
+      self.parent:glyph(rune, x, y, fore, 0x0)
+    end
+  end
 end
 
 return Widget

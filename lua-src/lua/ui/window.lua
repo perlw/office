@@ -19,32 +19,50 @@ function Window:create(title, x, y, width, height)
     self.handle = 0
   end
 
+  self.widget = nil
+
   self.window_events = {
     ["mousemove"] = function (e) end,
     ["click"] = function (e) end,
-    ["close"] = function () end,
+    ["scroll"] = function (e) end,
   }
   self.gossip_window_handle = gossip.subscribe("window:*", function (group_id, id, e)
-    if id ~= "mousemove" and id ~= "click" then
-      return
-    end
-
     if e.target ~= self.handle then
       return
     end
 
-    self.window_events[id](e)
+    if self.window_events[id] ~= nil then
+      self.window_events[id](e)
+    end
+  end)
+
+  self.gossip_widget_handle = gossip.subscribe("widget:paint", function (group_id, id, e)
+    if e ~= nil and e.target ~= self.handle then
+      return
+    end
+
+    if self.widget ~= nil and self.widget.paint ~= nil then
+      self.widget:paint(self)
+    end
   end)
 
   return self
 end
 
 function Window:destroy()
-  self.window_events["close"]()
+  if self.widget ~= nil and self.widget.destroy ~= nil then
+    self.widget:destroy()
+  end
 
+  gossip.unsubscribe(self.gossip_widget_handle)
   gossip.unsubscribe(self.gossip_window_handle)
 
   ui.window_destroy(self.handle)
+end
+
+function Window:content(content)
+  self.widget = content
+  self.widget:attach(self)
 end
 
 function Window:clear(rune, fore_color, back_color)

@@ -14,16 +14,15 @@ gossip.subscribe("game:kill", function ()
 end)
 
 local windows = {}
-local widgets = {}
 function setup_world()
   windows[#windows + 1] = Window("RuneSel", 141, 7, 18, 18)
-  widgets[#widgets + 1] = RuneSelector(windows[#windows])
+  windows[#windows]:content(RuneSelector())
 
   windows[#windows + 1] = Window("ColorSel", 141, 26, 18, 18)
-  widgets[#widgets + 1] = ColorSelector(windows[#windows])
+  windows[#windows]:content(ColorSelector())
 
   windows[#windows + 1] = Window("List", 141, 45, 18, 18)
-  widgets[#widgets + 1] = List(windows[#windows], {
+  windows[#windows]:content(List({
     "foo",
     "bar",
     "c:\\foo\\bar",
@@ -45,7 +44,25 @@ function setup_world()
     "p",
     "q",
     "r",
-  })
+    "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+    "g",
+    "h",
+    "i",
+    "j",
+    "k",
+    "l",
+    "m",
+    "n",
+    "o",
+    "p",
+    "q",
+    "r",
+  }))
 end
 
 function teardown_world()
@@ -53,7 +70,6 @@ function teardown_world()
     window:destroy()
   end
   windows = {}
-  widgets = {}
 end
 
 gossip.subscribe("scene:setup", function (group_id, id, scene)
