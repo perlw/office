@@ -23,6 +23,7 @@ The actual game
       - Needs list widget
 * Lua UI
   - Need to rebuild so widgets are part of windows instead of other way
+    - Really right way?
   - List widget
 
 ## Bedrock
@@ -34,8 +35,8 @@ Graphics, pipeline
 
 ### Archivist module
 File management
-* Opening/reading
-* PAK-files? or should this be part of tome?
+* Opening/reading/writing
+* PAK-files
 
 ### Sound/Music
 Boombox/Cassette

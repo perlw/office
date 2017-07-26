@@ -80,6 +80,7 @@ void system_debug_stop(void) {
   surface_destroy(debugoverlay->surface);
 
   free(debugoverlay);
+  debugoverlay = NULL;
 }
 
 void system_debug_update(void) {

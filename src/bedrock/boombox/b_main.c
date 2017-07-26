@@ -1,12 +1,13 @@
 #include "b_internal.h"
 
-Boombox *boombox_create(void) {
-  return calloc(1, sizeof(Boombox));
-}
+Boombox *boombox = NULL;
 
-BoomboxResult boombox_init(Boombox *const boombox) {
+BoomboxResult boombox_init(void) {
+  assert(!boombox);
+
+  boombox = calloc(1, sizeof(Boombox));
+
   FMOD_RESULT result;
-
   result = FMOD_System_Create(&boombox->fmod.system);
   if (result != FMOD_OK) {
     printf("FMOD: (%d) %s\n", result, FMOD_ErrorString(result));
@@ -25,25 +26,22 @@ BoomboxResult boombox_init(Boombox *const boombox) {
     return BOOMBOX_FAIL;
   }
 
-  boombox->init = true;
   return BOOMBOX_OK;
 }
 
-void boombox_destroy(Boombox *const boombox) {
+void boombox_kill(void) {
   assert(boombox);
 
-  if (boombox->init) {
-    FMOD_DSP_Release(boombox->fmod.dsp);
-    FMOD_System_Close(boombox->fmod.system);
-    FMOD_System_Release(boombox->fmod.system);
-  }
+  FMOD_DSP_Release(boombox->fmod.dsp);
+  FMOD_System_Close(boombox->fmod.system);
+  FMOD_System_Release(boombox->fmod.system);
 
   free(boombox);
+  boombox = NULL;
 }
 
-void boombox_update(Boombox *const boombox) {
+void boombox_update(void) {
   assert(boombox);
-  assert(boombox->init);
 
   FMOD_System_Update(boombox->fmod.system);
 }

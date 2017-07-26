@@ -148,6 +148,7 @@ void system_lua_bridge_stop(void) {
   rectify_array_free(lua_bridge->windows);
 
   free(lua_bridge);
+  lua_bridge = NULL;
 }
 
 void system_lua_bridge_update(void) {

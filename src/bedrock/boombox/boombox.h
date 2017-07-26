@@ -12,22 +12,22 @@ typedef enum {
 } BoomboxResult;
 
 // +Boombox
-typedef struct Boombox Boombox;
+BoomboxResult boombox_init(void);
+void boombox_kill(void);
 
-Boombox *boombox_create(void);
-BoomboxResult boombox_init(Boombox *const boombox);
-void boombox_destroy(Boombox *const boombox);
-void boombox_update(Boombox *const boombox);
+void boombox_update(void);
 // -Boombox
 
 // +Cassette
 typedef struct BoomboxCassette BoomboxCassette;
 
-BoomboxCassette *boombox_cassette_create(Boombox *const boombox);
+BoomboxCassette *boombox_cassette_create(void);
 void boombox_cassette_destroy(BoomboxCassette *const cassette);
+
 BoomboxResult boombox_cassette_load_sound(BoomboxCassette *const cassette, const char *filepath);
 BoomboxResult boombox_cassette_play(BoomboxCassette *const cassette);
 BoomboxResult boombox_cassette_stop(BoomboxCassette *const cassette);
+
 bool boombox_cassette_playing(BoomboxCassette *const cassette);
 BoomboxResult boombox_cassette_set_pitch(BoomboxCassette *const cassette, float pitch);
 BoomboxResult boombox_cassette_get_spectrum(BoomboxCassette *const cassette, float *left, float *right);

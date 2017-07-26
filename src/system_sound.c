@@ -20,7 +20,6 @@ KronosSystem system_sound = {
 };
 
 typedef struct {
-  Boombox *boombox;
   BoomboxCassette *init_sound;
   BoomboxCassette *tap_sound;
   BoomboxCassette *boom_sound;
@@ -43,18 +42,17 @@ bool system_sound_start(void) {
 
   system_sound_internal = calloc(1, sizeof(SystemSound));
 
-  system_sound_internal->boombox = boombox_create();
-  if (boombox_init(system_sound_internal->boombox) != BOOMBOX_OK) {
+  if (boombox_init() != BOOMBOX_OK) {
     printf("Boombox: failed to init\n");
     return false;
   }
 
-  system_sound_internal->init_sound = boombox_cassette_create(system_sound_internal->boombox);
-  system_sound_internal->tap_sound = boombox_cassette_create(system_sound_internal->boombox);
-  system_sound_internal->boom_sound = boombox_cassette_create(system_sound_internal->boombox);
-  system_sound_internal->drip_sound = boombox_cassette_create(system_sound_internal->boombox);
-  system_sound_internal->song = boombox_cassette_create(system_sound_internal->boombox);
-  system_sound_internal->song2 = boombox_cassette_create(system_sound_internal->boombox);
+  system_sound_internal->init_sound = boombox_cassette_create();
+  system_sound_internal->tap_sound = boombox_cassette_create();
+  system_sound_internal->boom_sound = boombox_cassette_create();
+  system_sound_internal->drip_sound = boombox_cassette_create();
+  system_sound_internal->song = boombox_cassette_create();
+  system_sound_internal->song2 = boombox_cassette_create();
 
   bool abort = false;
   if (boombox_cassette_load_sound(system_sound_internal->init_sound, "swish.wav") != BOOMBOX_OK) {
@@ -87,7 +85,7 @@ bool system_sound_start(void) {
   }
 
   if (abort) {
-    boombox_destroy(system_sound_internal->boombox);
+    boombox_kill();
     return false;
   }
 
@@ -111,15 +109,16 @@ void system_sound_stop(void) {
   boombox_cassette_destroy(system_sound_internal->boom_sound);
   boombox_cassette_destroy(system_sound_internal->tap_sound);
   boombox_cassette_destroy(system_sound_internal->init_sound);
-  boombox_destroy(system_sound_internal->boombox);
+  boombox_kill();
 
   free(system_sound_internal);
+  system_sound_internal = NULL;
 }
 
 void system_sound_update(void) {
   assert(system_sound_internal);
 
-  boombox_update(system_sound_internal->boombox);
+  boombox_update();
 
   // Temp
   if (boombox_cassette_playing(system_sound_internal->song) || boombox_cassette_playing(system_sound_internal->song2)) {

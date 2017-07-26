@@ -1,9 +1,7 @@
 #include "b_internal.h"
 
-BoomboxCassette *boombox_cassette_create(Boombox *const boombox) {
+BoomboxCassette *boombox_cassette_create(void) {
   BoomboxCassette *cassette = calloc(1, sizeof(BoomboxCassette));
-
-  cassette->parent = boombox;
 
   return cassette;
 }
@@ -21,7 +19,7 @@ void boombox_cassette_destroy(BoomboxCassette *const cassette) {
 BoomboxResult boombox_cassette_load_sound(BoomboxCassette *const cassette, const char *filepath) {
   assert(cassette);
 
-  FMOD_RESULT result = FMOD_System_CreateStream(cassette->parent->fmod.system, filepath, FMOD_DEFAULT, 0, &cassette->fmod.sound);
+  FMOD_RESULT result = FMOD_System_CreateStream(boombox->fmod.system, filepath, FMOD_DEFAULT, 0, &cassette->fmod.sound);
   if (result != FMOD_OK) {
     printf("FMOD: (%d) %s\n", result, FMOD_ErrorString(result));
     return BOOMBOX_FAIL;
@@ -37,7 +35,7 @@ BoomboxResult boombox_cassette_play(BoomboxCassette *const cassette) {
     return BOOMBOX_NO_SOUND_LOADED;
   }
 
-  FMOD_RESULT result = FMOD_System_PlaySound(cassette->parent->fmod.system, cassette->fmod.sound, 0, false, &cassette->fmod.channel);
+  FMOD_RESULT result = FMOD_System_PlaySound(boombox->fmod.system, cassette->fmod.sound, 0, false, &cassette->fmod.channel);
   if (result != FMOD_OK) {
     printf("FMOD: (%d) %s\n", result, FMOD_ErrorString(result));
     return BOOMBOX_FAIL;
@@ -102,8 +100,8 @@ BoomboxResult boombox_cassette_get_spectrum(BoomboxCassette *const cassette, flo
   }
 
   FMOD_DSP_PARAMETER_FFT *fft;
-  FMOD_Channel_AddDSP(cassette->fmod.channel, 0, cassette->parent->fmod.dsp);
-  FMOD_DSP_GetParameterData(cassette->parent->fmod.dsp, FMOD_DSP_FFT_SPECTRUMDATA, (void **)&fft, NULL, NULL, 0);
+  FMOD_Channel_AddDSP(cassette->fmod.channel, 0, boombox->fmod.dsp);
+  FMOD_DSP_GetParameterData(boombox->fmod.dsp, FMOD_DSP_FFT_SPECTRUMDATA, (void **)&fft, NULL, NULL, 0);
 
   if (left && fft->numchannels == 1) {
     for (int32_t t = 0; t < fft->length; t++) {

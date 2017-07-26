@@ -9,18 +9,19 @@
 
 #include "boombox.h"
 
-struct Boombox {
-  bool init;
+typedef struct {
   struct {
     FMOD_SYSTEM *system;
     FMOD_DSP *dsp;
   } fmod;
-};
+} Boombox;
+
+extern Boombox *boombox;
 
 struct BoomboxCassette {
   bool loaded;
   bool playing;
-  Boombox *parent;
+
   struct {
     FMOD_SOUND *sound;
     FMOD_CHANNEL *channel;
