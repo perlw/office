@@ -32,7 +32,7 @@ void scenes_dummy_update(void *const scene, double delta) {
 void scenes_dummy_draw(void *const scene, AsciiBuffer *const screen) {
 }
 
-Scene scene_dummy = {
+Scene scenes_dummy = {
   .name = "dummy",
   .create = &scenes_dummy_create,
   .destroy = &scenes_dummy_destroy,
@@ -47,7 +47,7 @@ Scenes *scenes_create(void) {
   Scenes *scenes = calloc(1, sizeof(Scenes));
 
   scenes->scenes = rectify_array_alloc(10, sizeof(Scene));
-  scenes->current_scene = &scene_dummy;
+  scenes->current_scene = &scenes_dummy;
   scenes->current_scene_data = NULL;
   scenes->pause_updates = false;
 
@@ -125,7 +125,7 @@ void scenes_goto(Scenes *scenes, const char *name) {
   }
 
   printf("SCENES: No such scene, \"%s\"\n", name);
-  scenes->current_scene = &scene_dummy;
+  scenes->current_scene = &scenes_dummy;
   scenes->current_scene_data = NULL;
 }
 

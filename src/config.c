@@ -8,7 +8,6 @@
 #include "bedrock/bedrock.h"
 
 #include "config.h"
-#include "input.h"
 
 struct {
   char *name;
@@ -568,15 +567,17 @@ int config_internal_bind(lua_State *state) {
     return 0;
   }
 
-  InputActionBinding binding = (InputActionBinding){
+  /*InputActionBinding binding = (InputActionBinding){
     .action = (char *)lua_tolstring(state, 1, NULL),
     .key = (int32_t)lua_tonumber(state, 2),
   };
-  input_action_add_binding(&binding);
+  input_action_add_binding(&binding);*/
 
+  const char *dummy_name = lua_tostring(state, 1);
+  int32_t dummy_key = (int32_t)lua_tonumber(state, 2);
   for (uint32_t t = 0; key_names[t].name; t++) {
-    if (key_names[t].val == binding.key) {
-      printf("Config: Bound %s to %s\n", key_names[t].name, binding.action);
+    if (key_names[t].val == dummy_key) {
+      printf("NOT IMPLEMENTED! Config: Bound %s to %s\n", key_names[t].name, dummy_name);
       break;
     }
   }

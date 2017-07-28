@@ -1,9 +1,10 @@
-local gossip = require("lua_bridge/gossip")
-local Window = require("ui/window")
+--local gossip = require("lua_bridge/gossip")
+--[[local Window = require("ui/window")
 local RuneSelector = require("ui/widgets/rune_selector")
 local ColorSelector = require("ui/widgets/color_selector")
-local List = require("ui/widgets/list")
+local List = require("ui/widgets/list")]]
 
+--[[
 gossip.subscribe("game:init", function ()
   io.write("LUA: Welcome!\n")
 end)
@@ -12,11 +13,12 @@ gossip.subscribe("game:kill", function ()
   io.write("LUA: Goodbye...\n")
   teardown_world()
 end)
+]]
 
 local windows = {}
 function setup_world()
-  windows[#windows + 1] = Window("RuneSel", 141, 7, 18, 18)
-  windows[#windows]:content(RuneSelector())
+  --windows[#windows + 1] = Window("RuneSel", 141, 7, 18, 18)
+  --windows[#windows]:content(RuneSelector())
 
 --[[  windows[#windows + 1] = Window("ColorSel", 141, 26, 18, 18)
   windows[#windows]:content(ColorSelector())
