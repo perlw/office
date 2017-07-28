@@ -6,12 +6,14 @@
 
 #include "ascii/ascii.h"
 #include "config.h"
+#include "messages.h"
 #include "scenes.h"
 #include "screen.h"
 
 bool system_debug_start(void);
 void system_debug_stop(void);
 void system_debug_update(void);
+void system_debug_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem system_debug = {
   .name = "debug",
@@ -19,6 +21,7 @@ KronosSystem system_debug = {
   .start = &system_debug_start,
   .stop = &system_debug_stop,
   .update = &system_debug_update,
+  .message = &system_debug_message,
 };
 
 typedef struct {
@@ -29,8 +32,6 @@ typedef struct {
   float mem_values[10];
 
   Surface *surface;
-
-  GossipHandle scene_handle;
 } DebugOverlay;
 
 void system_debug_internal_scene_changed(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
@@ -60,8 +61,6 @@ bool system_debug_start(void) {
   snprintf(debugoverlay->scene_buffer, 32, "SCENE: na");
   surface_text(debugoverlay->surface, config->ascii_width - (uint32_t)strnlen(debugoverlay->scene_buffer, 32), config->ascii_height - 1, 32, debugoverlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
-  debugoverlay->scene_handle = gossip_subscribe("scene:changed", &system_debug_internal_scene_changed, debugoverlay);
-
   screen_hook_render(&system_debug_internal_render_hook, debugoverlay);
 
   return true;
@@ -71,8 +70,6 @@ void system_debug_stop(void) {
   if (!debugoverlay) {
     return;
   }
-
-  gossip_unsubscribe(debugoverlay->scene_handle);
 
   screen_unhook_render(&system_debug_internal_render_hook, debugoverlay);
   surface_destroy(debugoverlay->surface);
@@ -111,20 +108,28 @@ void system_debug_update(void) {
   debugoverlay->frames = 0;
 }
 
-void system_debug_internal_scene_changed(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
-  DebugOverlay *overlay = (DebugOverlay *)subscriberdata;
-  Scene *scene = (Scene *)userdata;
+void system_debug_message(uint32_t id, RectifyMap *const map) {
+  if (!debugoverlay) {
+    return;
+  }
 
-  const Config *const config = config_get();
+  switch (id) {
+    case MSG_SCENE_CHANGED: {
+      const Config *const config = config_get();
 
-  snprintf(overlay->scene_buffer, 32, "SCENE: %s", scene->name);
-  printf("%s\n", overlay->scene_buffer);
-  surface_text(overlay->surface, config->ascii_width - (uint32_t)strnlen(overlay->scene_buffer, 32), config->ascii_height - 1, 32, overlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
+      snprintf(debugoverlay->scene_buffer, 32, "SCENE: %s", (char *)rectify_map_get(map, "scene"));
+      printf("%s\n", debugoverlay->scene_buffer);
+      surface_text(debugoverlay->surface, config->ascii_width - (uint32_t)strnlen(debugoverlay->scene_buffer, 32), config->ascii_height - 1, 32, debugoverlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
+      break;
+    }
+  }
 }
 
 void system_debug_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
-  DebugOverlay *overlay = (DebugOverlay *)userdata;
+  if (!debugoverlay) {
+    return;
+  }
 
-  surface_draw(overlay->surface, screen);
-  overlay->frames++;
+  surface_draw(debugoverlay->surface, screen);
+  debugoverlay->frames++;
 }

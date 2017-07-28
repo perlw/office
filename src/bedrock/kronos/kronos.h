@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "rectify/rectify.h"
+
 typedef enum {
   KRONOS_OK = 1,
   KRONOS_SYSTEM_NOT_FOUND,
@@ -13,6 +15,7 @@ typedef enum {
 } KronosResult;
 
 typedef bool (*KronosSystemStart)(void);
+typedef void (*KronosSystemMessage)(uint32_t id, RectifyMap *const map);
 typedef void (*KronosSystemFunc)(void);
 
 typedef struct {
@@ -22,6 +25,7 @@ typedef struct {
   KronosSystemStart start;
   KronosSystemFunc stop;
   KronosSystemFunc update;
+  KronosSystemMessage message;
 } KronosSystem;
 
 void kronos_init(void);

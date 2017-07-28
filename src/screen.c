@@ -32,7 +32,7 @@ void screen_init(void) {
 void screen_kill(void) {
   assert(screen_internal);
 
-  rectify_array_free(screen_internal->hooks);
+  rectify_array_free(&screen_internal->hooks);
   ascii_buffer_destroy(screen_internal->ascii);
 
   free(screen_internal);

@@ -26,6 +26,7 @@ set (
   #"src/system_sound.c"
   "src/system_debug.c"
   "src/system_input.c"
+  "src/system_game.c"
   #"src/system_ui.c"
   #"src/system_ui_window.c"
   #"src/system_lua_bridge.c"

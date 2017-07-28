@@ -3,10 +3,12 @@
 #include "bedrock/bedrock.h"
 
 #include "config.h"
+#include "messages.h"
 
 bool system_input_start(void);
 void system_input_stop(void);
 void system_input_update(void);
+void system_input_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem system_input = {
   .name = "input",
@@ -15,6 +17,7 @@ KronosSystem system_input = {
   .start = &system_input_start,
   .stop = &system_input_stop,
   .update = &system_input_update,
+  .message = &system_input_message,
 };
 
 void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *event);
@@ -57,10 +60,17 @@ void system_input_update(void) {
   }
 }
 
+void system_input_message(uint32_t id, RectifyMap *const map) {
+  if (!system_input_internal) {
+    return;
+  }
+}
+
 void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
   if (event->key == PICASSO_KEY_F12) {
     printf("\n-=ABORT=-\n\n");
-    gossip_emit("game:kill", 0, NULL);
+    gossip_emit(MSG_GAME_KILL, NULL);
+    //gossip_emit("game:kill", 0, NULL);
     return;
   }
 

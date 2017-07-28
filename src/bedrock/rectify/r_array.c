@@ -48,10 +48,11 @@ void *rectify_array_alloc(uintmax_t chunk_size, uintmax_t element_size) {
   return fence_ptr(ptr);
 }
 
-void rectify_array_free(void *const ptr) {
+void rectify_array_free(void **ptr) {
   assert(ptr);
 
-  free(unfence_ptr(ptr));
+  free(unfence_ptr(*ptr));
+  *ptr = NULL;
 }
 
 void *rectify_array_push(void *ptr, const void *data) {

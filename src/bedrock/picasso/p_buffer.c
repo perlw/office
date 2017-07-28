@@ -44,7 +44,7 @@ void picasso_buffergroup_destroy(PicassoBufferGroup *const buffergroup) {
   for (uintmax_t t = 0; t < rectify_array_size(buffergroup->buffers); t++) {
     buffer_destroy(buffergroup->buffers[t]);
   }
-  rectify_array_free(buffergroup->buffers);
+  rectify_array_free((void **)&buffergroup->buffers);
 
   glDeleteVertexArrays(1, &buffergroup->id);
   free(buffergroup);

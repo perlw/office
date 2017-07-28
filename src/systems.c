@@ -5,6 +5,7 @@
 #include "bedrock/bedrock.h"
 
 #include "system_debug.h"
+#include "system_game.h"
 #include "system_input.h"
 /*#include "system_lua_bridge.h"
 #include "system_sound.h"
@@ -24,23 +25,25 @@ void systems_init(void) {
   assert(!systems_internal);
 
   systems_internal = calloc(1, sizeof(Systems));
-  systems_internal->gossip_handle = gossip_subscribe("system:*", &systems_internal_event, NULL);
+  //systems_internal->gossip_handle = gossip_subscribe("system:*", &systems_internal_event, NULL);
 
   kronos_init();
   kronos_register(&system_debug);
   kronos_register(&system_input);
+  kronos_register(&system_game);
   /*kronos_register(&system_sound);
   kronos_register(&system_ui);
   kronos_register(&system_lua_bridge);*/
 
   systems_internal_start("debug");
   systems_internal_start("input");
+  systems_internal_start("game");
 }
 
 void systems_kill(void) {
   assert(systems_internal);
 
-  gossip_unsubscribe(systems_internal->gossip_handle);
+  //gossip_unsubscribe(systems_internal->gossip_handle);
 
   kronos_kill();
   free(systems_internal);

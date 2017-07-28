@@ -18,17 +18,14 @@
 #include "screen.h"
 #include "systems.h"
 
+#include "system_game.h"
+
 #include "scene_dummy.h"
 /*#include "scene_drips.h"
 #include "scene_game.h"
 #include "scene_sound-test.h"
 #include "scene_test.h"
 #include "scene_world-edit.h"*/
-
-bool quit_game = false;
-void game_kill_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
-  quit_game = true;
-}
 
 int main(int argc, char **argv) {
   srand(time(NULL));
@@ -61,10 +58,6 @@ int main(int argc, char **argv) {
     printf("Window: failed to init\n");
     return -1;
   }
-  /*picasso_window_keyboard_callback(&input_keyboard_callback);
-  picasso_window_mouse_move_callback(&input_mousemove_callback);
-  picasso_window_mouse_button_callback(&input_click_callback);
-  picasso_window_mouse_scroll_callback(&input_mousescroll_callback);*/
 
   screen_init();
   systems_init();
@@ -77,15 +70,12 @@ int main(int argc, char **argv) {
   scenes_register(scenes, &scene_game);
   scenes_register(scenes, &scene_world_edit);*/
 
-  gossip_subscribe("game:kill", &game_kill_event, NULL);
-
-  //gossip_emit("game:init", 0, NULL);
   scenes_goto(scenes, init_scene);
 
   const double frame_timing = (config->frame_lock > 0 ? 1.0 / (double)config->frame_lock : 0);
   double next_frame = frame_timing;
   double last_tick = bedrock_time();
-  while (!picasso_window_should_close() && !quit_game) {
+  while (!picasso_window_should_close() && !system_game_should_kill()) {
     double tick = bedrock_time();
     double delta = tick - last_tick;
     last_tick = tick;

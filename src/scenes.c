@@ -5,6 +5,7 @@
 #include "bedrock/bedrock.h"
 
 #include "ascii/ascii.h"
+#include "messages.h"
 #include "scenes.h"
 #include "screen.h"
 
@@ -51,7 +52,7 @@ Scenes *scenes_create(void) {
   scenes->current_scene_data = NULL;
   scenes->pause_updates = false;
 
-  scenes->scene_handle = gossip_subscribe("scene:*", &scenes_internal_scene_event, scenes);
+  //scenes->scene_handle = gossip_subscribe("scene:*", &scenes_internal_scene_event, scenes);
   screen_hook_render(&scenes_internal_render_hook, scenes);
 
   return scenes;
@@ -60,7 +61,7 @@ Scenes *scenes_create(void) {
 void scenes_destroy(Scenes *scenes) {
   assert(scenes);
 
-  gossip_unsubscribe(scenes->scene_handle);
+  //gossip_unsubscribe(scenes->scene_handle);
 
   screen_unhook_render(&scenes_internal_render_hook, scenes);
 
@@ -71,7 +72,7 @@ void scenes_destroy(Scenes *scenes) {
   for (uintmax_t t = 0; t < rectify_array_size(scenes->scenes); t++) {
     free(scenes->scenes[t].name);
   }
-  rectify_array_free(scenes->scenes);
+  rectify_array_free(&scenes->scenes);
   free(scenes);
 }
 
@@ -89,16 +90,28 @@ void scenes_register(Scenes *scenes, Scene *scene) {
 }
 
 void scenes_internal_go(Scenes *scenes, uint32_t index) {
-  gossip_emit("scene:teardown", sizeof(Scene), scenes->current_scene);
+  {
+    RectifyMap *map = rectify_map_create();
+    rectify_map_set(map, "scene", sizeof(char) * (strnlen(scenes->current_scene->name, 128) + 1), scenes->current_scene->name);
+    gossip_emit(MSG_SCENE_TEARDOWN, map);
+  }
   scenes->current_scene->destroy(scenes->current_scene_data);
   scenes->current_scene = NULL;
 
   scenes->current_scene = &scenes->scenes[index];
   scenes->current_scene_data = scenes->current_scene->create();
-  gossip_emit("scene:setup", sizeof(Scene), scenes->current_scene);
+  {
+    RectifyMap *map = rectify_map_create();
+    rectify_map_set(map, "scene", sizeof(char) * (strnlen(scenes->current_scene->name, 128) + 1), scenes->current_scene->name);
+    gossip_emit(MSG_SCENE_SETUP, map);
+  }
 
   printf("SCENES: Switched to scene \"%s\"\n", scenes->current_scene->name);
-  gossip_emit("scene:changed", sizeof(Scene), scenes->current_scene);
+  {
+    RectifyMap *map = rectify_map_create();
+    rectify_map_set(map, "scene", sizeof(char) * (strnlen(scenes->current_scene->name, 128) + 1), scenes->current_scene->name);
+    gossip_emit(MSG_SCENE_CHANGED, map);
+  }
 }
 
 void scenes_internal_move(Scenes *scenes, int32_t move) {

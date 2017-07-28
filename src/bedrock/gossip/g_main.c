@@ -6,26 +6,19 @@
 
 #include "occulus/occulus.h"
 
-#include "g_types.h"
-#include "g_words.h"
+#include "kronos/kronos.h"
 #include "rectify/rectify.h"
 
-typedef struct {
-  char *group_id;
-  char *id;
-  bool delete;
-  GossipHandle handle;
-  void *subscriberdata;
-  GossipCallback callback;
-} Listener;
+#include "g_types.h"
+#include "g_words.h"
 
 typedef struct {
-  char *message;
-  void *userdata;
+  uint32_t id;
+  RectifyMap *map;
 } QueueItem;
 
 typedef struct {
-  Listener *listeners;
+  KronosSystem **systems;
   QueueItem *queue;
   QueueItem *active_queue;
 
@@ -49,7 +42,7 @@ void gossip_init(void) {
 
   gossip = calloc(1, sizeof(Gossip));
   *gossip = (Gossip){
-    .listeners = rectify_array_alloc(10, sizeof(Listener)),
+    .systems = rectify_array_alloc(10, sizeof(KronosSystem *)),
     .queue = rectify_array_alloc(10, sizeof(QueueItem)),
     .active_queue = rectify_array_alloc(10, sizeof(QueueItem)),
     .dirty = false,
@@ -59,7 +52,7 @@ void gossip_init(void) {
 void gossip_kill(void) {
   assert(gossip);
 
-  for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
+  /*for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
     Listener *const listener = &gossip->listeners[t];
     if (listener->group_id) {
       free(listener->group_id);
@@ -67,32 +60,75 @@ void gossip_kill(void) {
     if (listener->id) {
       free(listener->id);
     }
-  }
-  rectify_array_free(gossip->listeners);
+  }*/
+  rectify_array_free((void **)&gossip->systems);
 
   for (uintmax_t t = 0; t < rectify_array_size(gossip->queue); t++) {
     QueueItem *const item = &gossip->queue[t];
-
-    free(item->message);
-    if (item->userdata) {
-      free(item->userdata);
-    }
+    rectify_map_destroy(&item->map);
   }
-  rectify_array_free(gossip->queue);
+  rectify_array_free(&gossip->queue);
   for (uintmax_t t = 0; t < rectify_array_size(gossip->active_queue); t++) {
     QueueItem *const item = &gossip->active_queue[t];
-
-    free(item->message);
-    if (item->userdata) {
-      free(item->userdata);
-    }
+    rectify_map_destroy(&item->map);
   }
-  rectify_array_free(gossip->active_queue);
+  rectify_array_free(&gossip->active_queue);
 
   free(gossip);
 }
 
-GossipHandle gossip_subscribe(const char *message, GossipCallback callback, void *const subscriberdata) {
+void gossip_register_system(KronosSystem *const system) {
+  assert(gossip);
+  gossip->systems = rectify_array_push(gossip->systems, &system);
+}
+
+void gossip_unregister_system(KronosSystem *const system) {
+  assert(gossip);
+
+  for (uint32_t t = 0; t < rectify_array_size(gossip->systems); t++) {
+    if (strncmp(gossip->systems[t]->name, system->name, 128) == 0) {
+      gossip->systems = rectify_array_delete(gossip->systems, t);
+      break;
+    }
+  }
+}
+
+void gossip_post(const char *system, uint32_t id, RectifyMap *const map) {
+  assert(gossip);
+}
+
+void gossip_emit(uint32_t id, RectifyMap *const map) {
+  assert(gossip);
+
+  gossip->active_queue = rectify_array_push(gossip->active_queue, &(QueueItem){
+                                                                    .id = id,
+                                                                    .map = map,
+                                                                  });
+}
+
+void gossip_update(void) {
+  assert(gossip);
+
+  QueueItem *swp = gossip->queue;
+  gossip->queue = gossip->active_queue;
+  gossip->active_queue = swp;
+
+  uintmax_t queue_size = rectify_array_size(gossip->queue);
+  for (uintmax_t t = 0; t < queue_size; t++) {
+    QueueItem *const item = &gossip->queue[t];
+
+    for (uint32_t u = 0; u < rectify_array_size(gossip->systems); u++) {
+      gossip->systems[u]->message(item->id, item->map);
+    }
+
+    rectify_map_destroy(&item->map);
+  }
+
+  rectify_array_free(&gossip->queue);
+  gossip->queue = rectify_array_alloc(10, sizeof(QueueItem));
+}
+
+/*GossipHandle gossip_subscribe(const char *message, GossipCallback callback, void *const subscriberdata) {
   assert(gossip);
 
   Listener listener = (Listener){
@@ -178,9 +214,9 @@ void gossip_update(void) {
   gossip->active_queue = swp;
 
   uintmax_t queue_size = rectify_array_size(gossip->queue);
-  /*if (queue_size > 0) {
-    printf("Gossip: Running queue, %" PRIuMAX " items\n", queue_size);
-  }*/
+  //if (queue_size > 0) {
+  //printf("Gossip: Running queue, %" PRIuMAX " items\n", queue_size);
+  //}
 
   for (uintmax_t t = 0; t < queue_size; t++) {
     QueueItem *const item = &gossip->queue[t];
@@ -261,4 +297,4 @@ bool gossip_unsubscribe_debug(GossipHandle handle, const char *filepath, uintmax
     printf("handle not found.\n");
   }
   return result;
-}
+}*/
