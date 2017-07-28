@@ -25,6 +25,7 @@ The actual game
   - Need to rebuild so widgets are part of windows instead of other way
     - Really right way?
   - List widget
+  - Ditch backend UI system, not necessary, run completely in lua?
 
 ## Bedrock
 Tests?

@@ -101,7 +101,7 @@ void scene_game_update(SceneGame *const scene, double delta) {
     scene->since_update -= scene->timing;
 
     surface_clear(scene->world, (Glyph){
-                                  .rune = 0,
+                                  .rune = ' ',
                                   .fore = 0,
                                   .back = 0,
                                 });

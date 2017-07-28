@@ -11,7 +11,7 @@
 #include "input.h"
 #include "scenes.h"
 #include "screen.h"
-#include "ui/ui.h"
+#include "system_ui.h"
 
 bool system_lua_bridge_start(void);
 void system_lua_bridge_stop(void);
@@ -36,7 +36,7 @@ typedef struct {
   lua_State *state;
   GossipHandle gossip_handle;
 
-  UIWindow **windows;
+  //UIWindow **windows;
 
   LuaBridgeHandle *handles;
 } LuaBridge;
@@ -87,7 +87,7 @@ bool system_lua_bridge_start(void) {
   *lua_bridge = (LuaBridge){
     .state = state,
     .handles = rectify_array_alloc(10, sizeof(LuaBridgeHandle)),
-    .windows = rectify_array_alloc(10, sizeof(UIWindow *)),
+    //.windows = rectify_array_alloc(10, sizeof(UIWindow *)),
   };
 
   lua_bridge_internal_register_lua_module(lua_bridge, "lua_bridge/gossip", &lua_bridge_internal_gossip_load);
@@ -145,7 +145,7 @@ void system_lua_bridge_stop(void) {
   }
   rectify_array_free(lua_bridge->handles);
 
-  rectify_array_free(lua_bridge->windows);
+  //rectify_array_free(lua_bridge->windows);
 
   free(lua_bridge);
   lua_bridge = NULL;
@@ -156,9 +156,9 @@ void system_lua_bridge_update(void) {
     return;
   }
 
-  for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
+  /*for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
     ui_window_update(lua_bridge->windows[t], 1.0 / 30.0);
-  }
+  }*/
 }
 
 void lua_bridge_internal_gossip_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
@@ -184,6 +184,12 @@ void lua_bridge_internal_gossip_event(const char *group_id, const char *id, void
         Scene *scene = (Scene *)userdata;
         lua_pushstring(lua_bridge->state, scene->name);
         num_args++;
+      } else if (strncmp(group_id, "ui", 128) == 0) {
+        if (strncmp(id, "window_created", 128) == 0) {
+          UIWindow *window = (UIWindow *)*(uintptr_t *)userdata;
+          lua_pushnumber(lua_bridge->state, (lua_Number)(uintptr_t)window);
+          num_args++;
+        }
       } else if (strncmp(group_id, "window", 128) == 0) {
         if (strncmp(id, "mousemove", 128) == 0) {
           UIEventClick *event = (UIEventClick *)userdata;
@@ -239,13 +245,13 @@ void lua_bridge_internal_gossip_event(const char *group_id, const char *id, void
           lua_pushnumber(lua_bridge->state, color);
           num_args++;
         } else if (strncmp(id, "paint", 128) == 0) {
-          uintptr_t window = *(uintptr_t *)userdata;
+          /*uintptr_t window = *(uintptr_t *)userdata;
           lua_newtable(lua_bridge->state);
 
           lua_pushnumber(lua_bridge->state, (lua_Number)window);
           lua_setfield(lua_bridge->state, -2, "target");
 
-          num_args++;
+          num_args++;*/
         }
       }
 
@@ -260,11 +266,6 @@ void lua_bridge_internal_gossip_event(const char *group_id, const char *id, void
 }
 
 void lua_bridge_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
-  LuaBridge *lua_bridge = (LuaBridge *)userdata;
-
-  for (uint32_t t = 0; t < rectify_array_size(lua_bridge->windows); t++) {
-    ui_window_draw(lua_bridge->windows[t], screen);
-  }
 }
 
 int lua_bridge_internal_ui_window_load(lua_State *state) {
@@ -311,12 +312,20 @@ int lua_bridge_internal_ui_window_create(lua_State *state) {
   uint32_t x = (uint32_t)lua_tonumber(state, 2);
   uint32_t y = (uint32_t)lua_tonumber(state, 3);
   uint32_t width = (uint32_t)lua_tonumber(state, 4);
-  uint32_t height = (uint32_t)lua_tonumber(state, 5);
+  int32_t height = (uint32_t)lua_tonumber(state, 5);
 
-  UIWindow *window = ui_window_create(title, x, y, width, height);
+  gossip_emit("ui:window_create", sizeof(UIEventCreateWindow), &(UIEventCreateWindow){
+                                                                 .title = (char *)title,
+                                                                 .x = x,
+                                                                 .y = y,
+                                                                 .width = width,
+                                                                 .height = height,
+                                                               });
+
+  /*UIWindow *window = ui_window_create(title, x, y, width, height);
   lua_bridge->windows = rectify_array_push(lua_bridge->windows, (void *)&window);
 
-  lua_pushnumber(state, (lua_Number)(uintptr_t)window);
+  lua_pushnumber(state, (lua_Number)(uintptr_t)window);*/
 
   return 1;
 }
@@ -328,7 +337,9 @@ int lua_bridge_internal_ui_window_destroy(lua_State *state) {
   }
 
   LuaBridge *lua_bridge = (LuaBridge *)lua_topointer(state, lua_upvalueindex(1));
-  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  uintptr_t window_ptr = lua_tonumber(state, 1);
+  gossip_emit("ui:window_destroy", sizeof(uintptr_t), &window_ptr);
+  /*UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
   if (!window) {
     return 0;
   }
@@ -338,7 +349,7 @@ int lua_bridge_internal_ui_window_destroy(lua_State *state) {
     }
   }
 
-  ui_window_destroy(window);
+  ui_window_destroy(window);*/
 
   return 0;
 }
@@ -349,7 +360,7 @@ int lua_bridge_internal_ui_window_clear(lua_State *state) {
     return 0;
   }
 
-  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  /*UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
   if (!window) {
     return 0;
   }
@@ -362,7 +373,7 @@ int lua_bridge_internal_ui_window_clear(lua_State *state) {
                             .rune = rune,
                             .fore = glyphcolor_hex(fore_color),
                             .back = glyphcolor_hex(back_color),
-                          });
+                          });*/
 
   return 0;
 }
@@ -384,11 +395,21 @@ int lua_bridge_internal_ui_window_glyph(lua_State *state) {
   uint32_t fore_color = (uint32_t)lua_tonumber(state, 5);
   uint32_t back_color = (uint32_t)lua_tonumber(state, 6);
 
-  ui_window_glyph(window, x, y, (Glyph){
+  gossip_emit("ui:window_glyph", sizeof(UIEventWindowGlyph), &(UIEventWindowGlyph){
+                                                               .window = window,
+                                                               .x = x,
+                                                               .y = y,
+                                                               .glyph = (Glyph){
+                                                                 .rune = rune,
+                                                                 .fore = glyphcolor_hex(fore_color),
+                                                                 .back = glyphcolor_hex(back_color),
+                                                               },
+                                                             });
+  /*ui_window_glyph(window, x, y, (Glyph){
                                   .rune = rune,
                                   .fore = glyphcolor_hex(fore_color),
                                   .back = glyphcolor_hex(back_color),
-                                });
+                                });*/
 
   return 0;
 }
@@ -399,13 +420,13 @@ int lua_bridge_internal_ui_window_scroll_x(lua_State *state) {
     return 0;
   }
 
-  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  /*UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
   if (!window) {
     return 0;
   }
 
   int32_t scroll = (uint32_t)lua_tonumber(state, 2);
-  ui_window_scroll_x(window, scroll);
+  ui_window_scroll_x(window, scroll);*/
 
   return 0;
 }
@@ -416,13 +437,13 @@ int lua_bridge_internal_ui_window_scroll_y(lua_State *state) {
     return 0;
   }
 
-  UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
+  /*UIWindow *window = (UIWindow *)(uintptr_t)lua_tonumber(state, 1);
   if (!window) {
     return 0;
   }
 
   int32_t scroll = (uint32_t)lua_tonumber(state, 2);
-  ui_window_scroll_y(window, scroll);
+  ui_window_scroll_y(window, scroll);*/
 
   return 0;
 }

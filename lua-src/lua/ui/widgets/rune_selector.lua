@@ -20,7 +20,6 @@ function Widget:create()
 end
 
 function Widget:destroy()
-  gossip.unsubscribe(self.gossip_window_handle)
 end
 
 function Widget:attach(parent)

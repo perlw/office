@@ -9,8 +9,6 @@
 #include "scenes.h"
 #include "screen.h"
 
-#include "bedrock/bedrock.h"
-
 bool system_debug_start(void);
 void system_debug_stop(void);
 void system_debug_update(void);

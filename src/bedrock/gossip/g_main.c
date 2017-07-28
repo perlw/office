@@ -30,8 +30,17 @@ typedef struct {
   QueueItem *active_queue;
 
   bool dirty;
+  uint32_t next_handle;
 } Gossip;
 Gossip *gossip = NULL;
+
+void handle_to_word(GossipHandle handle, uintmax_t max_len, char *buffer) {
+  uint32_t a = (handle >> 24) & 0xff;
+  uint32_t b = (handle >> 16) & 0xff;
+  uint32_t c = (handle >> 8) & 0xff;
+  uint32_t d = handle & 0xff;
+  snprintf(buffer, max_len, "%d %s %s %s", a, COLORS[b % NUM_COLORS], ADJECTIVES[c % NUM_ADJECTIVES], SUBJECTS[d % NUM_SUBJECTS]);
+}
 
 void gossip_init(void) {
   if (gossip) {
@@ -90,7 +99,12 @@ GossipHandle gossip_subscribe(const char *message, GossipCallback callback, void
     .subscriberdata = subscriberdata,
     .callback = callback,
     .delete = false,
+    .handle = gossip->next_handle,
   };
+  if (gossip->next_handle + 1 < gossip->next_handle) {
+    printf("Gossip: Warning! Handles wrapped around!\n");
+  }
+  gossip->next_handle++;
 
   char *message_tokens = rectify_memory_alloc_copy(message, sizeof(char) * (strlen(message) + 1));
   char *message_token_group = strtok(message_tokens, ":");
@@ -101,10 +115,9 @@ GossipHandle gossip_subscribe(const char *message, GossipCallback callback, void
 
   gossip->listeners = rectify_array_push(gossip->listeners, &listener);
 
-  Listener *pushed_listener = &gossip->listeners[rectify_array_size(gossip->listeners) - 1];
-  pushed_listener->handle = (uintptr_t)pushed_listener;
+  //Listener *pushed_listener = &gossip->listeners[rectify_array_size(gossip->listeners) - 1];
 
-  return pushed_listener->handle;
+  return listener.handle;
 }
 
 bool gossip_unsubscribe(GossipHandle handle) {
@@ -138,6 +151,10 @@ void gossip_gc(void) {
     if (!listener->delete) {
       listeners = rectify_array_push(listeners, listener);
     } else {
+      char buffer[256];
+      handle_to_word(listener->handle, 256, buffer);
+      printf("Gossip: Cleaning up handle [%s] (%d)\n", buffer, listener->handle);
+
       free(listener->group_id);
       listener->group_id = NULL;
       free(listener->id);
@@ -222,20 +239,12 @@ void gossip_emit(const char *message, uintmax_t size, void *const userdata) {
                                                                   });
 }
 
-void handle_to_word(GossipHandle handle, uintmax_t max_len, char *buffer) {
-  uint32_t a = (handle >> 24) & 0xff;
-  uint32_t b = (handle >> 16) & 0xff;
-  uint32_t c = (handle >> 8) & 0xff;
-  uint32_t d = handle & 0xff;
-  snprintf(buffer, max_len, "%d %s %s %s", a, COLORS[b % NUM_COLORS], ADJECTIVES[c % NUM_ADJECTIVES], SUBJECTS[d % NUM_SUBJECTS]);
-}
-
 GossipHandle gossip_subscribe_debug(const char *message, GossipCallback callback, void *const subscriberdata, const char *filepath, uintmax_t line, const char *function) {
   GossipHandle handle = gossip_subscribe(message, callback, subscriberdata);
 
   char buffer[256];
   handle_to_word(handle, 256, buffer);
-  printf("Gossip:(%s:%" PRIuPTR "/%s) Subscribing to %s, handle is [%s] (%p)\n", filepath, line, function, message, buffer, (void *)handle);
+  printf("Gossip:(%s:%" PRIuPTR "/%s) Subscribing to %s, handle is [%s] (%d)\n", filepath, line, function, message, buffer, handle);
 
   return handle;
 }
@@ -243,7 +252,7 @@ GossipHandle gossip_subscribe_debug(const char *message, GossipCallback callback
 bool gossip_unsubscribe_debug(GossipHandle handle, const char *filepath, uintmax_t line, const char *function) {
   char buffer[256];
   handle_to_word(handle, 256, buffer);
-  printf("Gossip:(%s:%" PRIuPTR "/%s) Unsubscribing [%s] (%p)... ", filepath, line, function, buffer, (void *)handle);
+  printf("Gossip:(%s:%" PRIuPTR "/%s) Unsubscribing [%s] (%d)... ", filepath, line, function, buffer, handle);
 
   bool result = gossip_unsubscribe(handle);
   if (result) {

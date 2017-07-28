@@ -11,14 +11,12 @@
 
 #include "bedrock/bedrock.h"
 
-#include "ascii/ascii.h"
 #include "assets.h"
 #include "config.h"
 #include "input.h"
 #include "scenes.h"
 #include "screen.h"
 #include "systems.h"
-#include "ui/ui.h"
 
 #include "scene_drips.h"
 #include "scene_game.h"

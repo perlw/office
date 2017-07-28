@@ -13,13 +13,17 @@ setmetatable(Window, {
 })
 
 function Window:create(title, x, y, width, height)
-  self.handle = ui.window_create(title, x, y, width, height)
-  if self.handle == nil then
-    io.write("UI:Window> failed to create window...\n")
-    self.handle = 0
-  end
-
+  self.handle = nil
   self.widget = nil
+
+  self.gossip_ui_handle = gossip.subscribe("ui:*", function (group_id, id, e)
+    if self.handle == nil then
+      if id == "window_created" then
+        self.handle = e
+        return
+      end
+    end
+  end)
 
   self.window_events = {
     ["mousemove"] = function (e) end,
@@ -27,7 +31,7 @@ function Window:create(title, x, y, width, height)
     ["scroll"] = function (e) end,
   }
   self.gossip_window_handle = gossip.subscribe("window:*", function (group_id, id, e)
-    if e.target ~= self.handle then
+    if e ~= nil and e.target ~= self.handle then
       return
     end
 
@@ -46,6 +50,8 @@ function Window:create(title, x, y, width, height)
     end
   end)
 
+  ui.window_create(title, x, y, width, height)
+
   return self
 end
 
@@ -56,6 +62,7 @@ function Window:destroy()
 
   gossip.unsubscribe(self.gossip_widget_handle)
   gossip.unsubscribe(self.gossip_window_handle)
+  gossip.unsubscribe(self.gossip_ui_handle)
 
   ui.window_destroy(self.handle)
 end
@@ -66,7 +73,7 @@ function Window:content(content)
 end
 
 function Window:clear(rune, fore_color, back_color)
-  ui.window_clear(self.handle, rune, fore_color, back_color)
+  --ui.window_clear(self.handle, rune, fore_color, back_color)
 end
 
 function Window:glyph(rune, x, y, fore_color, back_color)
@@ -74,11 +81,11 @@ function Window:glyph(rune, x, y, fore_color, back_color)
 end
 
 function Window:scroll_x(scroll)
-  ui.window_scroll_x(self.handle, scroll)
+  --ui.window_scroll_x(self.handle, scroll)
 end
 
 function Window:scroll_y(scroll)
-  ui.window_scroll_y(self.handle, scroll)
+  --ui.window_scroll_y(self.handle, scroll)
 end
 
 function Window:on(event, callback)

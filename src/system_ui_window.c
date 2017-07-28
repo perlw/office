@@ -5,8 +5,7 @@
 #include "config.h"
 #include "input.h"
 
-#define UI_INTERNAL
-#include "ui.h"
+#include "system_ui.h"
 
 void ui_window_internal_draw_border(UIWindow *const window);
 void ui_window_internal_mouse_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
@@ -15,8 +14,6 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
   UIWindow *window = calloc(1, sizeof(UIWindow));
 
   *window = (UIWindow){
-    .timing = 1.0 / 30.0,
-    .since_update = 1.0 / (double)((rand() % 29) + 1),
     .title = rectify_memory_alloc_copy(title, sizeof(char) * (strlen(title) + 1)),
     .x = x,
     .y = y,
@@ -26,6 +23,7 @@ UIWindow *ui_window_create(const char *title, uint32_t x, uint32_t y, uint32_t w
     .scroll_y = -1,
     .surface = surface_create(x, y, width, height),
   };
+  window->handle = (UIWindowHandle)window;
 
   ui_window_internal_draw_border(window);
 
@@ -38,11 +36,9 @@ void ui_window_destroy(UIWindow *const window) {
   assert(window);
 
   gossip_unsubscribe(window->mouse_handle);
-
   surface_destroy(window->surface);
 
   free(window->title);
-
   free(window);
 }
 
@@ -79,13 +75,8 @@ void ui_window_scroll_y(UIWindow *const window, int32_t scroll) {
 void ui_window_update(UIWindow *const window, double delta) {
   assert(window);
 
-  window->since_update += delta;
-  while (window->since_update >= window->timing) {
-    window->since_update -= window->timing;
-
-    uintptr_t target = (uintptr_t)window;
-    gossip_emit("widget:paint", sizeof(uintptr_t), &target);
-  }
+  uintptr_t target = (uintptr_t)window;
+  gossip_emit("widget:paint", sizeof(uintptr_t), &target);
 }
 
 void ui_window_draw(UIWindow *const window, AsciiBuffer *const screen) {

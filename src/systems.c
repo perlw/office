@@ -7,6 +7,7 @@
 #include "system_debug.h"
 #include "system_lua_bridge.h"
 #include "system_sound.h"
+#include "system_ui.h"
 
 typedef struct {
   GossipHandle gossip_handle;
@@ -27,6 +28,7 @@ void systems_init(void) {
 
   kronos_register(&system_debug);
   kronos_register(&system_sound);
+  kronos_register(&system_ui);
   kronos_register(&system_lua_bridge);
 
   kronos_start_system("lua_bridge");

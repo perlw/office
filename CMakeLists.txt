@@ -26,6 +26,8 @@ set (
   "src/systems.c"
   "src/system_sound.c"
   "src/system_debug.c"
+  "src/system_ui.c"
+  "src/system_ui_window.c"
   "src/system_lua_bridge.c"
   "src/scenes.c"
   "src/scene_test.c"
@@ -35,7 +37,6 @@ set (
   "src/scene_world-edit.c"
 )
 add_subdirectory (src/ascii)
-add_subdirectory (src/ui)
 add_executable (office ${SOURCES})
 
 if (UNIX)

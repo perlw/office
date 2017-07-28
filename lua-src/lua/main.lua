@@ -18,7 +18,7 @@ function setup_world()
   windows[#windows + 1] = Window("RuneSel", 141, 7, 18, 18)
   windows[#windows]:content(RuneSelector())
 
-  windows[#windows + 1] = Window("ColorSel", 141, 26, 18, 18)
+--[[  windows[#windows + 1] = Window("ColorSel", 141, 26, 18, 18)
   windows[#windows]:content(ColorSelector())
 
   windows[#windows + 1] = Window("List", 141, 45, 18, 18)
@@ -63,6 +63,7 @@ function setup_world()
     "q",
     "r",
   }))
+  ]]
 end
 
 function teardown_world()
