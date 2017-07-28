@@ -8,6 +8,7 @@
 
 typedef struct {
   ScreenRender render_func;
+  uint32_t layer;
   void *userdata;
 } ScreenRenderHook;
 
@@ -38,7 +39,7 @@ void screen_kill(void) {
   free(screen_internal);
 }
 
-void screen_hook_render(ScreenRender render_func, void *const userdata /*, uint32_t prio/order */) {
+void screen_hook_render(ScreenRender render_func, void *const userdata, uint32_t layer) {
   assert(screen_internal);
 
   for (uint32_t t = 0; t < rectify_array_size(screen_internal->hooks); t++) {
@@ -50,10 +51,29 @@ void screen_hook_render(ScreenRender render_func, void *const userdata /*, uint3
     }
   }
 
-  screen_internal->hooks = rectify_array_push(screen_internal->hooks, &(ScreenRenderHook){
-                                                                        .render_func = render_func,
-                                                                        .userdata = userdata,
-                                                                      });
+  bool inserted = false;
+  ScreenRenderHook *new_list = rectify_array_alloc(10, sizeof(ScreenRenderHook));
+  for (uint32_t t = 0; t < rectify_array_size(screen_internal->hooks); t++) {
+    if (!inserted && screen_internal->hooks[t].layer >= layer) {
+      inserted = true;
+      new_list = rectify_array_push(new_list, &(ScreenRenderHook){
+                                                .render_func = render_func,
+                                                .layer = layer,
+                                                .userdata = userdata,
+                                              });
+    }
+    new_list = rectify_array_push(new_list, &screen_internal->hooks[t]);
+  }
+  if (!inserted) {
+    new_list = rectify_array_push(new_list, &(ScreenRenderHook){
+                                              .render_func = render_func,
+                                              .layer = layer,
+                                              .userdata = userdata,
+                                            });
+  }
+
+  rectify_array_free(&screen_internal->hooks);
+  screen_internal->hooks = new_list;
 }
 
 void screen_unhook_render(ScreenRender render_func, void *const userdata) {

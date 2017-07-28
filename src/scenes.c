@@ -16,8 +16,6 @@ struct Scenes {
   void *current_scene_data;
 
   bool pause_updates;
-
-  GossipHandle scene_handle;
 };
 
 void *scenes_dummy_create(void) {
@@ -52,16 +50,13 @@ Scenes *scenes_create(void) {
   scenes->current_scene_data = NULL;
   scenes->pause_updates = false;
 
-  //scenes->scene_handle = gossip_subscribe("scene:*", &scenes_internal_scene_event, scenes);
-  screen_hook_render(&scenes_internal_render_hook, scenes);
+  screen_hook_render(&scenes_internal_render_hook, scenes, 0);
 
   return scenes;
 }
 
 void scenes_destroy(Scenes *scenes) {
   assert(scenes);
-
-  //gossip_unsubscribe(scenes->scene_handle);
 
   screen_unhook_render(&scenes_internal_render_hook, scenes);
 

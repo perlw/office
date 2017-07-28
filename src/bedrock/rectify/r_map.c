@@ -25,7 +25,6 @@ void rectify_map_destroy(RectifyMap **map) {
     return;
   }
 
-  printf("KILL ME\n");
   RectifyMap *dereffed = *map;
   for (uint32_t t = 0; t < rectify_array_size(dereffed->key_vals); t++) {
     free(dereffed->key_vals[t].key);
@@ -64,7 +63,6 @@ void *const rectify_map_get(RectifyMap *const map, const char *key) {
 
   for (uint32_t t = 0; t < rectify_array_size(map->key_vals); t++) {
     if (strncmp(map->key_vals[t].key, key, 128) == 0) {
-      printf("FOUND\n");
       return map->key_vals[t].val;
     }
   }

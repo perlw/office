@@ -32,7 +32,7 @@ set (
   #"src/system_lua_bridge.c"
   "src/scenes.c"
   "src/scene_dummy.c"
-  #"src/scene_test.c"
+  "src/scene_test.c"
   #"src/scene_drips.c"
   #"src/scene_game.c"
   #"src/scene_sound-test.c"

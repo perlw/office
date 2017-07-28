@@ -61,7 +61,7 @@ bool system_debug_start(void) {
   snprintf(debugoverlay->scene_buffer, 32, "SCENE: na");
   surface_text(debugoverlay->surface, config->ascii_width - (uint32_t)strnlen(debugoverlay->scene_buffer, 32), config->ascii_height - 1, 32, debugoverlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
-  screen_hook_render(&system_debug_internal_render_hook, debugoverlay);
+  screen_hook_render(&system_debug_internal_render_hook, debugoverlay, 9999);
 
   return true;
 }
