@@ -24,11 +24,9 @@ void systems_init(void) {
   assert(!systems_internal);
 
   systems_internal = calloc(1, sizeof(Systems));
-
   systems_internal->gossip_handle = gossip_subscribe("system:*", &systems_internal_event, NULL);
 
   kronos_init();
-
   kronos_register(&system_debug);
   kronos_register(&system_input);
   /*kronos_register(&system_sound);

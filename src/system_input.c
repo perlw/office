@@ -11,6 +11,7 @@ void system_input_update(void);
 KronosSystem system_input = {
   .name = "input",
   .frames = 1,
+  .prevent_stop = true,
   .start = &system_input_start,
   .stop = &system_input_stop,
   .update = &system_input_update,
