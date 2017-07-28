@@ -67,10 +67,17 @@ void system_input_message(uint32_t id, RectifyMap *const map) {
 }
 
 void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
+  if (event->released) {
+    return;
+  }
+
   if (event->key == PICASSO_KEY_F12) {
     printf("\n-=ABORT=-\n\n");
     gossip_emit(MSG_GAME_KILL, NULL);
-    //gossip_emit("game:kill", 0, NULL);
+    return;
+  }
+  if (event->key == PICASSO_KEY_P) {
+    gossip_emit(MSG_SOUND_PLAY, NULL);
     return;
   }
 

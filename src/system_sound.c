@@ -5,11 +5,12 @@
 
 #include "bedrock/bedrock.h"
 
-#include "system_sound.h"
+#include "messages.h"
 
 bool system_sound_start(void);
 void system_sound_stop(void);
 void system_sound_update(void);
+void system_sound_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem system_sound = {
   .name = "sound",
@@ -17,6 +18,7 @@ KronosSystem system_sound = {
   .start = &system_sound_start,
   .stop = &system_sound_stop,
   .update = &system_sound_update,
+  .message = &system_sound_message,
 };
 
 typedef struct {
@@ -28,11 +30,7 @@ typedef struct {
 
   BoomboxCassette *song;
   BoomboxCassette *song2;
-
-  GossipHandle sound_handle;
 } SystemSound;
-
-void system_sound_internal_sound_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
 
 SystemSound *system_sound_internal = NULL;
 bool system_sound_start(void) {
@@ -89,9 +87,6 @@ bool system_sound_start(void) {
     return false;
   }
 
-  //gossip_subscribe(MSG_GAME, MSG_GAME_INIT, &system_sound_event, system_sound_internal);
-  system_sound_internal->sound_handle = gossip_subscribe("sound:*", &system_sound_internal_sound_event, system_sound_internal);
-
   return true;
 }
 
@@ -99,8 +94,6 @@ void system_sound_stop(void) {
   if (!system_sound_internal) {
     return;
   }
-
-  gossip_unsubscribe(system_sound_internal->sound_handle);
 
   boombox_cassette_destroy(system_sound_internal->song2);
   boombox_cassette_destroy(system_sound_internal->song);
@@ -122,21 +115,39 @@ void system_sound_update(void) {
 
   // Temp
   if (boombox_cassette_playing(system_sound_internal->song) || boombox_cassette_playing(system_sound_internal->song2)) {
-    Spectrum spectrum;
+    uint32_t song_id = 0;
+    float left[2048];
+    float right[2048];
     if (boombox_cassette_playing(system_sound_internal->song)) {
-      spectrum.song_id = 0;
-      boombox_cassette_get_spectrum(system_sound_internal->song, spectrum.left, spectrum.right);
+      song_id = 0;
+      boombox_cassette_get_spectrum(system_sound_internal->song, left, right);
     } else if (boombox_cassette_playing(system_sound_internal->song2)) {
-      spectrum.song_id = 1;
-      boombox_cassette_get_spectrum(system_sound_internal->song2, spectrum.left, spectrum.right);
+      song_id = 1;
+      boombox_cassette_get_spectrum(system_sound_internal->song2, left, right);
     }
-    gossip_emit("sound:spectrum", sizeof(Spectrum), &spectrum);
+
+    RectifyMap *map = rectify_map_create();
+    rectify_map_set(map, "song_id", sizeof(uint32_t), &song_id);
+    rectify_map_set(map, "left", sizeof(float) * 2048, left);
+    rectify_map_set(map, "right", sizeof(float) * 2048, right);
+    gossip_emit(MSG_SOUND_SPECTRUM, map);
   }
 }
 
-void system_sound_internal_sound_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
-  //SystemSound *system_sound = (SystemSound *)subscriberdata;
+void system_sound_message(uint32_t id, RectifyMap *const map) {
+  if (!system_sound_internal) {
+    return;
+  }
 
+  switch (id) {
+    case MSG_SOUND_PLAY:
+      boombox_cassette_play(system_sound_internal->drip_sound);
+      boombox_cassette_set_pitch(system_sound_internal->drip_sound, 0.8f + ((float)(rand() % 40) / 100.0f));
+      break;
+  }
+}
+/*
+void system_sound_internal_sound_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   if (strncmp(id, "play_tap", 128) == 0) {
     boombox_cassette_play(system_sound_internal->tap_sound);
     boombox_cassette_set_pitch(system_sound_internal->tap_sound, 0.9f + ((float)(rand() % 20) / 100.0f));
@@ -160,3 +171,4 @@ void system_sound_internal_sound_event(const char *group_id, const char *id, voi
     boombox_cassette_stop(system_sound_internal->song2);
   }
 }
+*/
