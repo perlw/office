@@ -42,7 +42,7 @@ bool scene_test_start(void) {
     .surface = surface_create(0, 0, config->ascii_width, config->ascii_height),
   };
 
-  screen_hook_render(&scene_test_internal_render_hook, scene_test_internal, 0);
+  screen_hook_render(&scene_test_internal_render_hook, NULL, 0);
 
   return true;
 }
@@ -52,7 +52,7 @@ void scene_test_stop(void) {
     return;
   }
 
-  screen_unhook_render(&scene_test_internal_render_hook, scene_test_internal);
+  screen_unhook_render(&scene_test_internal_render_hook, NULL);
   surface_destroy(scene_test_internal->surface);
 
   free(scene_test_internal);

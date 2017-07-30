@@ -71,10 +71,56 @@ void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *e
     return;
   }
 
-  if (event->key == PICASSO_KEY_F12) {
-    printf("\n-=ABORT=-\n\n");
-    gossip_emit(MSG_GAME_KILL, NULL);
-    return;
+  switch (event->key) {
+    case PICASSO_KEY_ESCAPE: {
+      printf("\n-=ABORT=-\n\n");
+      gossip_emit(MSG_GAME_KILL, NULL);
+      return;
+    }
+
+    case PICASSO_KEY_LEFT:
+      gossip_emit(MSG_SCENE_PREV, NULL);
+      return;
+
+    case PICASSO_KEY_RIGHT:
+      gossip_emit(MSG_SCENE_NEXT, NULL);
+      return;
+
+    case PICASSO_KEY_KP_1:
+      gossip_emit(MSG_PLAYER_MOVE_DOWN_LEFT, NULL);
+      return;
+
+    case PICASSO_KEY_KP_2:
+      gossip_emit(MSG_PLAYER_MOVE_DOWN, NULL);
+      return;
+
+    case PICASSO_KEY_KP_3:
+      gossip_emit(MSG_PLAYER_MOVE_DOWN_RIGHT, NULL);
+      return;
+
+    case PICASSO_KEY_KP_4:
+      gossip_emit(MSG_PLAYER_MOVE_LEFT, NULL);
+      return;
+
+    case PICASSO_KEY_KP_5:
+      printf("SYSTEM_INPUT: Something should happen?\n");
+      break;
+
+    case PICASSO_KEY_KP_6:
+      gossip_emit(MSG_PLAYER_MOVE_RIGHT, NULL);
+      return;
+
+    case PICASSO_KEY_KP_7:
+      gossip_emit(MSG_PLAYER_MOVE_UP_LEFT, NULL);
+      return;
+
+    case PICASSO_KEY_KP_8:
+      gossip_emit(MSG_PLAYER_MOVE_UP, NULL);
+      return;
+
+    case PICASSO_KEY_KP_9:
+      gossip_emit(MSG_PLAYER_MOVE_UP_RIGHT, NULL);
+      return;
   }
 
   // Temp

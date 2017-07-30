@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "bedrock/bedrock.h"
@@ -32,8 +33,11 @@ void kronos_kill(void) {
     KronosState *state = &kronos->systems[t];
 
     if (state->running) {
+      gossip_unregister_system(state->system);
       state->system->stop();
+      state->running = false;
     }
+
     free(state->system);
   }
   rectify_array_free(&kronos->systems);

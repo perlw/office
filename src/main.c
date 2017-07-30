@@ -61,6 +61,8 @@ int main(int argc, char **argv) {
   kronos_register(&scenes);
   kronos_start_system("scenes");
 
+  gossip_emit(MSG_GAME_INIT, NULL);
+
   {
     char buffer[128] = { 0 };
     snprintf(buffer, 128, "scene_%s", init_scene);

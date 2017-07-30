@@ -85,8 +85,15 @@ void system_debug_update(void) {
 
   const Config *const config = config_get();
 
+  surface_clear(debugoverlay->surface, (Glyph){
+                                         .rune = 0,
+                                         .fore = 0,
+                                         .back = 0,
+                                       });
+
   snprintf(debugoverlay->fps_buffer, 32, "FPS: %d | MEM: %.2fkb", debugoverlay->frames, (double)occulus_current_usage() / 1024.0);
   surface_text(debugoverlay->surface, 0, config->ascii_height - 1, 31, debugoverlay->fps_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
+  surface_text(debugoverlay->surface, config->ascii_width - (uint32_t)strnlen(debugoverlay->scene_buffer, 32), config->ascii_height - 1, 32, debugoverlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
   {
     uintmax_t raw_new_mem = occulus_current_usage();
@@ -118,8 +125,6 @@ void system_debug_message(uint32_t id, RectifyMap *const map) {
       const Config *const config = config_get();
 
       snprintf(debugoverlay->scene_buffer, 32, "SCENE: %s", (char *)rectify_map_get(map, "scene"));
-      printf("%s\n", debugoverlay->scene_buffer);
-      surface_text(debugoverlay->surface, config->ascii_width - (uint32_t)strnlen(debugoverlay->scene_buffer, 32), config->ascii_height - 1, 32, debugoverlay->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
       break;
     }
   }

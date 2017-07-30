@@ -2,6 +2,7 @@ TODO
 ===
 ## Game
 The actual game
+* Scene-wrapper-system for scenes instead of raw systems
 * Logging
   - Log to file aswell as log to console
   - Separate files for different systems

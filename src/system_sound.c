@@ -127,7 +127,7 @@ void system_sound_update(void) {
     }
 
     RectifyMap *map = rectify_map_create();
-    rectify_map_set(map, "song_id", sizeof(uint32_t), &song_id);
+    rectify_map_set(map, "song", sizeof(uint32_t), &song_id);
     rectify_map_set(map, "left", sizeof(float) * 2048, left);
     rectify_map_set(map, "right", sizeof(float) * 2048, right);
     gossip_emit(MSG_SOUND_SPECTRUM, map);
@@ -164,7 +164,7 @@ void system_sound_message(uint32_t id, RectifyMap *const map) {
         break;
       }
 
-      if (song == 0) {
+      if (*song == 0) {
         boombox_cassette_play(system_sound_internal->song);
       } else {
         boombox_cassette_play(system_sound_internal->song2);

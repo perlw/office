@@ -178,7 +178,7 @@ void occulus_init(void) {
 }
 
 void occulus_print(void) {
-  printf("-=-=[OCCULUS]=-=-\nMax: %.2fkb\tLeaked: %.2fkb\n-=-===========-=-\n", (double)max_mem / 1024.0, (double)currently_allocated / 1024.0);
+  printf("\n-=-=[OCCULUS]=-=-\nMax: %.2fkb\tLeaked: %.2fkb\n-=-===========-=-\n\n", (double)max_mem / 1024.0, (double)currently_allocated / 1024.0);
 
 #ifdef OCCULUS_LOG_MEM
   if (mem_log_file) {
