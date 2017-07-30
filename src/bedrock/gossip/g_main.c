@@ -13,6 +13,7 @@
 #include "g_words.h"
 
 typedef struct {
+  char *system;
   uint32_t id;
   RectifyMap *map;
 } QueueItem;
@@ -52,15 +53,6 @@ void gossip_init(void) {
 void gossip_kill(void) {
   assert(gossip);
 
-  /*for (uintmax_t t = 0; t < rectify_array_size(gossip->listeners); t++) {
-    Listener *const listener = &gossip->listeners[t];
-    if (listener->group_id) {
-      free(listener->group_id);
-    }
-    if (listener->id) {
-      free(listener->id);
-    }
-  }*/
   rectify_array_free((void **)&gossip->systems);
 
   for (uintmax_t t = 0; t < rectify_array_size(gossip->queue); t++) {
@@ -95,12 +87,17 @@ void gossip_unregister_system(KronosSystem *const system) {
 
 void gossip_post(const char *system, uint32_t id, RectifyMap *const map) {
   assert(gossip);
+  gossip->active_queue = rectify_array_push(gossip->active_queue, &(QueueItem){
+                                                                    .system = rectify_memory_alloc_copy(system, strnlen(system, 128) + 1),
+                                                                    .id = id,
+                                                                    .map = map,
+                                                                  });
 }
 
 void gossip_emit(uint32_t id, RectifyMap *const map) {
   assert(gossip);
-
   gossip->active_queue = rectify_array_push(gossip->active_queue, &(QueueItem){
+                                                                    .system = NULL,
                                                                     .id = id,
                                                                     .map = map,
                                                                   });
@@ -117,8 +114,17 @@ void gossip_update(void) {
   for (uintmax_t t = 0; t < queue_size; t++) {
     QueueItem *const item = &gossip->queue[t];
 
-    for (uint32_t u = 0; u < rectify_array_size(gossip->systems); u++) {
-      gossip->systems[u]->message(item->id, item->map);
+    if (item->system) {
+      for (uint32_t u = 0; u < rectify_array_size(gossip->systems); u++) {
+        if (strncmp(gossip->systems[u]->name, item->system, 128) == 0) {
+          gossip->systems[u]->message(item->id, item->map);
+          break;
+        }
+      }
+    } else {
+      for (uint32_t u = 0; u < rectify_array_size(gossip->systems); u++) {
+        gossip->systems[u]->message(item->id, item->map);
+      }
     }
 
     rectify_map_destroy(&item->map);

@@ -76,10 +76,6 @@ void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *e
     gossip_emit(MSG_GAME_KILL, NULL);
     return;
   }
-  if (event->key == PICASSO_KEY_P) {
-    gossip_emit(MSG_SOUND_PLAY, NULL);
-    return;
-  }
 
   //gossip_emit("input:keyboard", sizeof(PicassoWindowKeyboardEvent), (void *)event);
 }

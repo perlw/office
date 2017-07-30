@@ -140,35 +140,42 @@ void system_sound_message(uint32_t id, RectifyMap *const map) {
   }
 
   switch (id) {
-    case MSG_SOUND_PLAY:
-      boombox_cassette_play(system_sound_internal->drip_sound);
-      boombox_cassette_set_pitch(system_sound_internal->drip_sound, 0.8f + ((float)(rand() % 40) / 100.0f));
+    case MSG_SOUND_PLAY: {
+      char *const sound = (char *const)rectify_map_get(map, "sound");
+      if (!sound) {
+        break;
+      }
+
+      if (strncmp(sound, "tap", 128) == 0) {
+        boombox_cassette_play(system_sound_internal->tap_sound);
+        boombox_cassette_set_pitch(system_sound_internal->tap_sound, 0.9f + ((float)(rand() % 20) / 100.0f));
+      } else if (strncmp(sound, "boom", 128) == 0) {
+        boombox_cassette_play(system_sound_internal->boom_sound);
+      } else if (strncmp(sound, "drip", 128) == 0) {
+        boombox_cassette_play(system_sound_internal->drip_sound);
+        boombox_cassette_set_pitch(system_sound_internal->drip_sound, 0.8f + ((float)(rand() % 40) / 100.0f));
+      }
       break;
-  }
-}
-/*
-void system_sound_internal_sound_event(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
-  if (strncmp(id, "play_tap", 128) == 0) {
-    boombox_cassette_play(system_sound_internal->tap_sound);
-    boombox_cassette_set_pitch(system_sound_internal->tap_sound, 0.9f + ((float)(rand() % 20) / 100.0f));
-  } else if (strncmp(id, "play_boom", 128) == 0) {
-    boombox_cassette_play(system_sound_internal->boom_sound);
-  } else if (strncmp(id, "play_drip", 128) == 0) {
-    boombox_cassette_play(system_sound_internal->drip_sound);
-    boombox_cassette_set_pitch(system_sound_internal->drip_sound, 0.8f + ((float)(rand() % 40) / 100.0f));
-  } else if (strncmp(id, "play_water_footsteps", 128) == 0) {
-    boombox_cassette_play(system_sound_internal->water_footsteps_sound);
-    boombox_cassette_set_pitch(system_sound_internal->drip_sound, 0.8f + ((float)(rand() % 40) / 100.0f));
-  } else if (strncmp(id, "play_song", 128) == 0) {
-    uint32_t song = *(uint32_t *)userdata;
-    if (song == 0) {
-      boombox_cassette_play(system_sound_internal->song);
-    } else {
-      boombox_cassette_play(system_sound_internal->song2);
     }
-  } else if (strncmp(id, "stop_song", 128) == 0) {
-    boombox_cassette_stop(system_sound_internal->song);
-    boombox_cassette_stop(system_sound_internal->song2);
+
+    case MSG_SOUND_PLAY_SONG: {
+      uint32_t *const song = (uint32_t * const)rectify_map_get(map, "song");
+      if (!song) {
+        break;
+      }
+
+      if (song == 0) {
+        boombox_cassette_play(system_sound_internal->song);
+      } else {
+        boombox_cassette_play(system_sound_internal->song2);
+      }
+      break;
+    }
+
+    case MSG_SOUND_STOP_SONG: {
+      boombox_cassette_stop(system_sound_internal->song);
+      boombox_cassette_stop(system_sound_internal->song2);
+      break;
+    }
   }
 }
-*/

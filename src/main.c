@@ -19,12 +19,11 @@
 
 #include "system_game.h"
 
-#include "scene_dummy.h"
+#include "scene_drips.h"
 #include "scene_test.h"
-/*#include "scene_drips.h"
-#include "scene_game.h"
-#include "scene_sound-test.h"
-#include "scene_world-edit.h"*/
+//#include "scene_game.h"
+//#include "scene_sound-test.h"
+//#include "scene_world-edit.h"
 
 int main(int argc, char **argv) {
   srand(time(NULL));
@@ -62,12 +61,11 @@ int main(int argc, char **argv) {
   systems_init();
 
   Scenes *const scenes = scenes_create();
-  scenes_register(scenes, &scene_dummy);
   scenes_register(scenes, &scene_test);
-  /*scenes_register(scenes, &scene_drips);
-  scenes_register(scenes, &scene_sound_test);
-  scenes_register(scenes, &scene_game);
-  scenes_register(scenes, &scene_world_edit);*/
+  scenes_register(scenes, &scene_drips);
+  /*scenes_register(scenes, &scene_sound_test);
+  scenes_register(scenes, &scene_game);*/
+  //scenes_register(scenes, &scene_world_edit);
 
   scenes_goto(scenes, init_scene);
 
