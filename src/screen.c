@@ -20,7 +20,9 @@ typedef struct {
 
 Screen *screen_internal = NULL;
 void screen_init(void) {
-  assert(!screen_internal);
+  if (screen_internal) {
+    return;
+  }
 
   const Config *const config = config_get();
 
@@ -31,16 +33,21 @@ void screen_init(void) {
 }
 
 void screen_kill(void) {
-  assert(screen_internal);
+  if (!screen_internal) {
+    return;
+  }
 
   rectify_array_free(&screen_internal->hooks);
   ascii_buffer_destroy(screen_internal->ascii);
 
   free(screen_internal);
+  screen_internal = NULL;
 }
 
 void screen_hook_render(ScreenRender render_func, void *const userdata, uint32_t layer) {
-  assert(screen_internal);
+  if (!screen_internal) {
+    return;
+  }
 
   for (uint32_t t = 0; t < rectify_array_size(screen_internal->hooks); t++) {
     ScreenRenderHook *hook = &screen_internal->hooks[t];
@@ -77,7 +84,9 @@ void screen_hook_render(ScreenRender render_func, void *const userdata, uint32_t
 }
 
 void screen_unhook_render(ScreenRender render_func, void *const userdata) {
-  assert(screen_internal);
+  if (!screen_internal) {
+    return;
+  }
 
   for (uint32_t t = 0; t < rectify_array_size(screen_internal->hooks); t++) {
     ScreenRenderHook *hook = &screen_internal->hooks[t];
@@ -90,7 +99,9 @@ void screen_unhook_render(ScreenRender render_func, void *const userdata) {
 }
 
 void screen_render(void) {
-  assert(screen_internal);
+  if (!screen_internal) {
+    return;
+  }
 
   for (uint32_t t = 0; t < rectify_array_size(screen_internal->hooks); t++) {
     ScreenRenderHook *hook = &screen_internal->hooks[t];

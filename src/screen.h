@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ascii/ascii.h"
+
 typedef void (*ScreenRender)(AsciiBuffer *const screen, void *const userdata);
 
 void screen_init(void);

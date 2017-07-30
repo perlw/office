@@ -13,17 +13,12 @@
 
 #include "assets.h"
 #include "config.h"
+#include "messages.h"
 #include "scenes.h"
 #include "screen.h"
 #include "systems.h"
 
 #include "system_game.h"
-
-#include "scene_drips.h"
-#include "scene_test.h"
-//#include "scene_game.h"
-//#include "scene_sound-test.h"
-//#include "scene_world-edit.h"
 
 int main(int argc, char **argv) {
   srand(time(NULL));
@@ -47,6 +42,7 @@ int main(int argc, char **argv) {
 
   gossip_init();
   tome_init();
+  kronos_init();
 
   setup_asset_loaders();
 
@@ -58,16 +54,21 @@ int main(int argc, char **argv) {
   }
 
   screen_init();
-  systems_init();
 
-  Scenes *const scenes = scenes_create();
-  scenes_register(scenes, &scene_test);
-  scenes_register(scenes, &scene_drips);
-  /*scenes_register(scenes, &scene_sound_test);
-  scenes_register(scenes, &scene_game);*/
-  //scenes_register(scenes, &scene_world_edit);
+  kronos_register(&systems);
+  kronos_start_system("systems");
 
-  scenes_goto(scenes, init_scene);
+  kronos_register(&scenes);
+  kronos_start_system("scenes");
+
+  {
+    char buffer[128] = { 0 };
+    snprintf(buffer, 128, "scene_%s", init_scene);
+
+    RectifyMap *map = rectify_map_create();
+    rectify_map_set(map, "scene", sizeof(char) * (strnlen(buffer, 128) + 1), buffer);
+    gossip_post("scenes", MSG_SCENE_GOTO, map);
+  }
 
   const double frame_timing = (config->frame_lock > 0 ? 1.0 / (double)config->frame_lock : 0);
   double next_frame = frame_timing;
@@ -77,8 +78,7 @@ int main(int argc, char **argv) {
     double delta = tick - last_tick;
     last_tick = tick;
 
-    scenes_update(scenes, delta);
-    systems_update(delta);
+    kronos_update(delta);
     gossip_update();
 
     next_frame += delta;
@@ -92,11 +92,9 @@ int main(int argc, char **argv) {
     picasso_window_update();
   }
 
-  scenes_destroy(scenes);
-
-  systems_kill();
   screen_kill();
 
+  kronos_kill();
   tome_kill();
   gossip_kill();
   picasso_window_kill();

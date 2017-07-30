@@ -31,7 +31,6 @@ set (
   #"src/system_ui_window.c"
   #"src/system_lua_bridge.c"
   "src/scenes.c"
-  "src/scene_dummy.c"
   "src/scene_test.c"
   "src/scene_drips.c"
   #"src/scene_game.c"

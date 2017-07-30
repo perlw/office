@@ -16,13 +16,10 @@ typedef struct {
   float spectrum_left[78];
   float spectrum_right[78];
 
-  GossipHandle spectrum_handle;
-  GossipHandle input_handle;
-
   Surface *spectrum;
 } SceneSoundTest;
 
-void scene_sound_test_spectrum(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
+/*void scene_sound_test_spectrum(const char *group_id, const char *id, void *const subscriberdata, void *const userdata) {
   SceneSoundTest *scene = (SceneSoundTest *)subscriberdata;
   Spectrum *spectrum = (Spectrum *)userdata;
 
@@ -62,7 +59,7 @@ void scene_sound_test_keyboard(const char *group_id, const char *id, void *const
       gossip_emit("sound:play_song", sizeof(uint32_t), &scene->song);
     }
   }
-}
+}*/
 
 SceneSoundTest *scene_sound_test_create(void) {
   SceneSoundTest *scene = calloc(1, sizeof(SceneSoundTest));
@@ -87,17 +84,11 @@ SceneSoundTest *scene_sound_test_create(void) {
   scene->spectrum->buffer[base + 14].fore = (GlyphColor){ 255, 255, 255 };
   // -Spectrum UI
 
-  scene->spectrum_handle = gossip_subscribe("sound:spectrum", &scene_sound_test_spectrum, scene);
-  scene->input_handle = gossip_subscribe("input:keyboard", &scene_sound_test_keyboard, scene);
-
   return scene;
 }
 
 void scene_sound_test_destroy(SceneSoundTest *const scene) {
   assert(scene);
-
-  gossip_unsubscribe(scene->spectrum_handle);
-  gossip_unsubscribe(scene->input_handle);
 
   surface_destroy(scene->spectrum);
 

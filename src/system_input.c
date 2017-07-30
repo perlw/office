@@ -77,7 +77,10 @@ void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *e
     return;
   }
 
-  //gossip_emit("input:keyboard", sizeof(PicassoWindowKeyboardEvent), (void *)event);
+  // Temp
+  RectifyMap *map = rectify_map_create();
+  rectify_map_set(map, "event", sizeof(PicassoWindowKeyboardEvent), (PicassoWindowKeyboardEvent * const)event);
+  gossip_emit(MSG_INPUT_KEY, map);
 }
 
 void system_input_internal_mousemove_callback(const PicassoWindowMouseEvent *event) {

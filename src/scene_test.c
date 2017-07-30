@@ -4,79 +4,122 @@
 
 #include "ascii/ascii.h"
 #include "config.h"
+#include "messages.h"
+#include "screen.h"
+
+bool scene_test_start(void);
+void scene_test_stop(void);
+void scene_test_update(void);
+void scene_test_message(uint32_t id, RectifyMap *const map);
+
+KronosSystem scene_test = {
+  .name = "scene_test",
+  .frames = 30,
+  .start = &scene_test_start,
+  .stop = &scene_test_stop,
+  .update = &scene_test_update,
+  .message = &scene_test_message,
+};
 
 typedef struct {
-  double timing;
-  double since_update;
-
   double offset;
   Surface *surface;
 } SceneTest;
 
-SceneTest *scene_test_create(void) {
+void scene_test_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
+
+SceneTest *scene_test_internal = NULL;
+bool scene_test_start(void) {
+  if (scene_test_internal) {
+    return false;
+  }
+
   const Config *const config = config_get();
 
-  SceneTest *scene = calloc(1, sizeof(SceneTest));
-
-  *scene = (SceneTest){
-    .timing = 1.0 / 30.0,
-    .since_update = 0.0,
+  scene_test_internal = calloc(1, sizeof(SceneTest));
+  *scene_test_internal = (SceneTest){
     .offset = 0.0,
     .surface = surface_create(0, 0, config->ascii_width, config->ascii_height),
   };
 
-  return scene;
+  screen_hook_render(&scene_test_internal_render_hook, scene_test_internal, 0);
+
+  return true;
 }
 
-void scene_test_destroy(SceneTest *const scene) {
-  assert(scene);
-  surface_destroy(scene->surface);
-  free(scene);
+void scene_test_stop(void) {
+  if (!scene_test_internal) {
+    return;
+  }
+
+  screen_unhook_render(&scene_test_internal_render_hook, scene_test_internal);
+  surface_destroy(scene_test_internal->surface);
+
+  free(scene_test_internal);
+  scene_test_internal = NULL;
 }
 
-void scene_test_update(SceneTest *const scene, double delta) {
-  assert(scene);
+void scene_test_update(void) {
+  if (!scene_test_internal) {
+    return;
+  }
 
-  scene->since_update += delta;
-  while (scene->since_update >= scene->timing) {
-    scene->since_update -= scene->timing;
+  // Wave
+  {
+    scene_test_internal->offset += 0.1;
 
-    // Wave
-    {
-      scene->offset += 0.1;
+    double wave_depth = 0.25;
+    double wave_thickness = M_PI * 4.0;
+    double cx = scene_test_internal->surface->width / 2;
+    double cy = scene_test_internal->surface->height / 2;
+    for (uintmax_t y = 0; y < scene_test_internal->surface->height; y++) {
+      for (uintmax_t x = 0; x < scene_test_internal->surface->width; x++) {
+        double dx = fabs((double)x - cx);
+        double dy = fabs((double)y - cy);
+        double dist = sqrt(pow(dx, 2) + pow(dy, 2));
+        double ndist = dist / 50.0;
 
-      double wave_depth = 0.25;
-      double wave_thickness = M_PI * 4.0;
-      double cx = scene->surface->width / 2;
-      double cy = scene->surface->height / 2;
-      for (uintmax_t y = 0; y < scene->surface->height; y++) {
-        for (uintmax_t x = 0; x < scene->surface->width; x++) {
-          double dx = fabs((double)x - cx);
-          double dy = fabs((double)y - cy);
-          double dist = sqrt(pow(dx, 2) + pow(dy, 2));
-          double ndist = dist / 50.0;
+        double final_color = ((cos((ndist * wave_thickness) + scene_test_internal->offset) + 1.0) / 4.0) + wave_depth;
 
-          double final_color = ((cos((ndist * wave_thickness) + scene->offset) + 1.0) / 4.0) + wave_depth;
-
-          uintmax_t i = (y * scene->surface->width) + x;
-          uint8_t color = (uint8_t)(final_color * 255.0);
-          if (color < 96) {
-            scene->surface->buffer[i].rune = '.';
-          } else if (color < 178) {
-            scene->surface->buffer[i].rune = '+';
-          } else {
-            scene->surface->buffer[i].rune = '*';
-          }
-          scene->surface->buffer[i].fore.r = (uint8_t)(255.0 * (1.0 - final_color));
-          scene->surface->buffer[i].fore.g = (uint8_t)(255.0 * final_color);
-          scene->surface->buffer[i].fore.b = 255;
+        uint8_t color = (uint8_t)(final_color * 255.0);
+        Glyph glyph = {
+          .rune = 0,
+          .fore = 0,
+          .back = 0,
+        };
+        if (color < 96) {
+          glyph.rune = '.';
+        } else if (color < 178) {
+          glyph.rune = '+';
+        } else {
+          glyph.rune = '*';
         }
+        glyph.fore.r = (uint8_t)(255.0 * (1.0 - final_color));
+        glyph.fore.g = (uint8_t)(255.0 * final_color);
+        glyph.fore.b = 255;
+        surface_glyph(scene_test_internal->surface, x, y, glyph);
       }
     }
   }
 }
 
-void scene_test_draw(SceneTest *const scene, AsciiBuffer *const screen) {
-  assert(scene);
-  surface_draw(scene->surface, screen);
+void scene_test_message(uint32_t id, RectifyMap *const map) {
+  if (!scene_test_internal) {
+    return;
+  }
+
+  /*switch (id) {
+    case MSG_INPUT_KEY: {
+      PicassoWindowKeyboardEvent *const event = (PicassoWindowKeyboardEvent * const)rectify_map_get(map, "event");
+      printf("KEY %d\n", event->key);
+      break;
+    }
+  }*/
+}
+
+void scene_test_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
+  if (!scene_test_internal) {
+    return;
+  }
+  surface_draw(scene_test_internal->surface, screen);
 }

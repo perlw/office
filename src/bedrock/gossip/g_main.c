@@ -57,11 +57,17 @@ void gossip_kill(void) {
 
   for (uintmax_t t = 0; t < rectify_array_size(gossip->queue); t++) {
     QueueItem *const item = &gossip->queue[t];
+    if (item->system) {
+      free(item->system);
+    }
     rectify_map_destroy(&item->map);
   }
   rectify_array_free(&gossip->queue);
   for (uintmax_t t = 0; t < rectify_array_size(gossip->active_queue); t++) {
     QueueItem *const item = &gossip->active_queue[t];
+    if (item->system) {
+      free(item->system);
+    }
     rectify_map_destroy(&item->map);
   }
   rectify_array_free(&gossip->active_queue);
@@ -118,6 +124,8 @@ void gossip_update(void) {
       for (uint32_t u = 0; u < rectify_array_size(gossip->systems); u++) {
         if (strncmp(gossip->systems[u]->name, item->system, 128) == 0) {
           gossip->systems[u]->message(item->id, item->map);
+          free(item->system);
+          item->system = NULL;
           break;
         }
       }

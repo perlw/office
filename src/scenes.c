@@ -4,86 +4,93 @@
 
 #include "bedrock/bedrock.h"
 
-#include "ascii/ascii.h"
 #include "messages.h"
-#include "scenes.h"
-#include "screen.h"
+#include "scene_drips.h"
+#include "scene_test.h"
+//#include "scene_test.h"
+//#include "scene_game.h"
+//#include "scene_sound-test.h"
+//#include "scene_world-edit.h"
 
-struct Scenes {
-  Scene *scenes;
+bool scenes_start(void);
+void scenes_stop(void);
+void scenes_update(void);
+void scenes_message(uint32_t id, RectifyMap *const map);
 
-  Scene *current_scene;
-  void *current_scene_data;
-
-  bool pause_updates;
+KronosSystem scenes = {
+  .name = "scenes",
+  .frames = 30,
+  .prevent_stop = true,
+  .start = &scenes_start,
+  .stop = &scenes_stop,
+  .update = &scenes_update,
+  .message = &scenes_message,
 };
 
-void *scenes_dummy_create(void) {
-  return NULL;
-}
-
-void scenes_dummy_destroy(void *const scene) {
-}
-
-void scenes_dummy_update(void *const scene, double delta) {
-}
-
-void scenes_dummy_draw(void *const scene, AsciiBuffer *const screen) {
-}
-
-Scene scenes_dummy = {
-  .name = "dummy",
-  .create = &scenes_dummy_create,
-  .destroy = &scenes_dummy_destroy,
-  .update = &scenes_dummy_update,
-  .draw = &scenes_dummy_draw,
-};
-
-void scenes_internal_scene_event(const char *groupd_id, const char *id, void *const subscriberdata, void *const userdata);
-void scenes_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
-
-Scenes *scenes_create(void) {
-  Scenes *scenes = calloc(1, sizeof(Scenes));
-
-  scenes->scenes = rectify_array_alloc(10, sizeof(Scene));
-  scenes->current_scene = &scenes_dummy;
-  scenes->current_scene_data = NULL;
-  scenes->pause_updates = false;
-
-  screen_hook_render(&scenes_internal_render_hook, scenes, 0);
-
-  return scenes;
-}
-
-void scenes_destroy(Scenes *scenes) {
-  assert(scenes);
-
-  screen_unhook_render(&scenes_internal_render_hook, scenes);
-
-  if (scenes->current_scene) {
-    scenes->current_scene->destroy(scenes->current_scene_data);
+bool scenes_running = false;
+bool scenes_start(void) {
+  if (scenes_running) {
+    return false;
   }
 
-  for (uintmax_t t = 0; t < rectify_array_size(scenes->scenes); t++) {
-    free(scenes->scenes[t].name);
+  scenes_running = true;
+
+  kronos_register(&scene_test);
+  kronos_register(&scene_drips);
+
+  return true;
+}
+
+void scenes_stop(void) {
+  if (!scenes_running) {
+    return;
   }
-  rectify_array_free(&scenes->scenes);
-  free(scenes);
+  scenes_running = false;
 }
 
-void scenes_register(Scenes *scenes, Scene *scene) {
-  assert(scenes);
-
-  Scene scene_cpy = {
-    .name = rectify_memory_alloc_copy(scene->name, sizeof(char) * (strlen(scene->name) + 1)),
-    .create = scene->create,
-    .destroy = scene->destroy,
-    .update = scene->update,
-    .draw = scene->draw,
-  };
-  scenes->scenes = rectify_array_push(scenes->scenes, &scene_cpy);
+void scenes_update(void) {
+  if (!scenes_running) {
+    return;
+  }
 }
 
+void scenes_message(uint32_t id, RectifyMap *const map) {
+  if (!scenes_running) {
+    return;
+  }
+
+  // TODO: Next/prev, stopping
+  switch (id) {
+    case MSG_SCENE_GOTO:
+      char *const scene = (char *const)rectify_map_get(map, "scene");
+      if (!scene) {
+        return;
+      }
+
+      {
+        RectifyMap *map = rectify_map_create();
+        rectify_map_set(map, "system", sizeof(char) * (strnlen(scene, 128) + 1), scene);
+        gossip_post("systems", MSG_SYSTEM_START, map);
+      }
+      {
+        RectifyMap *map = rectify_map_create();
+        rectify_map_set(map, "scene", sizeof(char) * (strnlen(scene, 128) + 1), scene);
+        gossip_emit(MSG_SCENE_SETUP, map);
+      }
+      {
+        RectifyMap *map = rectify_map_create();
+        rectify_map_set(map, "scene", sizeof(char) * (strnlen(scene, 128) + 1), scene);
+        gossip_emit(MSG_SCENE_CHANGED, map);
+      }
+
+      break;
+    case MSG_SCENE_PREV:
+      break;
+    case MSG_SCENE_NEXT:
+      break;
+  }
+}
+/*
 void scenes_internal_go(Scenes *scenes, uint32_t index) {
   {
     RectifyMap *map = rectify_map_create();
@@ -156,9 +163,4 @@ void scenes_internal_scene_event(const char *groupd_id, const char *id, void *co
     scenes->pause_updates = !scenes->pause_updates;
   }
 }
-
-void scenes_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
-  Scenes *scenes = (Scenes *)userdata;
-
-  scenes->current_scene->draw(scenes->current_scene_data, screen);
-}
+*/
