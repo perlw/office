@@ -63,6 +63,10 @@ KronosResult kronos_register(KronosSystem *const system) {
                                                           .since_update = 0.0,
                                                         });
 
+  if (system->autostart) {
+    kronos_start_system(system->name);
+  }
+
   return KRONOS_OK;
 }
 

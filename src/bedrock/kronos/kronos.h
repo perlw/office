@@ -22,6 +22,7 @@ typedef struct {
   char *name;
   uint32_t frames;
   bool prevent_stop;
+  bool autostart;
   KronosSystemStart start;
   KronosSystemFunc stop;
   KronosSystemFunc update;

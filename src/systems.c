@@ -50,11 +50,6 @@ bool systems_start(void) {
   /*kronos_register(&system_ui);
   kronos_register(&system_lua_bridge);*/
 
-  systems_internal_start("debug");
-  systems_internal_start("input");
-  systems_internal_start("sound");
-  systems_internal_start("game");
-
   return true;
 }
 
@@ -84,6 +79,7 @@ void systems_message(uint32_t id, RectifyMap *const map) {
     case MSG_SYSTEM_START:
       systems_internal_start(system);
       break;
+
     case MSG_SYSTEM_STOP:
       systems_internal_stop(system);
       break;

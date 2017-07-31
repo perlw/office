@@ -15,6 +15,7 @@ void system_sound_message(uint32_t id, RectifyMap *const map);
 KronosSystem system_sound = {
   .name = "sound",
   .frames = 30,
+  .autostart = true,
   .start = &system_sound_start,
   .stop = &system_sound_stop,
   .update = &system_sound_update,

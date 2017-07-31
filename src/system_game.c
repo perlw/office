@@ -14,6 +14,7 @@ KronosSystem system_game = {
   .name = "game",
   .frames = 1,
   .prevent_stop = true,
+  .autostart = true,
   .start = &system_game_start,
   .stop = &system_game_stop,
   .update = &system_game_update,

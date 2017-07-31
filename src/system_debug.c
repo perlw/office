@@ -18,6 +18,7 @@ void system_debug_message(uint32_t id, RectifyMap *const map);
 KronosSystem system_debug = {
   .name = "debug",
   .frames = 1,
+  .autostart = true,
   .start = &system_debug_start,
   .stop = &system_debug_stop,
   .update = &system_debug_update,
