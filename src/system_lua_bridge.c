@@ -57,6 +57,11 @@ bool system_lua_bridge_start(void) {
     .listeners = rectify_array_alloc(4, sizeof(int32_t)),
   };
 
+  for (uint32_t t = 0; MSG_NAMES[t]; t++) {
+    lua_pushinteger(state, t + 1);
+    lua_setglobal(state, MSG_NAMES[t]);
+  }
+
   lua_bridge_internal_register_lua_module("lua_bridge", &lua_bridge_internal_lua_module_load);
 
   {

@@ -7,8 +7,6 @@ The actual game
   - Log to file aswell as log to console
   - Separate files for different systems
 * Lua bridge
-  - Allow systems to register own interface?
-  - Remove need for string.byte by simply taking first char of string in C
 * Sound
   - Ability to load and play sounds, won't need to define
 * Occulus
@@ -23,10 +21,6 @@ The actual game
     - File listing widget
       - Needs list widget
 * Lua UI
-  - Need to rebuild so widgets are part of windows instead of other way
-    - Really right way?
-  - List widget
-  - Ditch backend UI system, not necessary, run completely in lua?
 
 ## Bedrock
 Tests?
@@ -55,7 +49,6 @@ Asset management
 
 ### Kronos
 Systems management
-* Pausing?
 * Profiling
 
 ## Planned modules

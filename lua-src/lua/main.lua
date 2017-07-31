@@ -5,7 +5,13 @@ lua_bridge.message(function (msg, data)
   for key, val in pairs(data) do
     io.write(key .. "-" .. tostring(val) .. "\n")
   end
+
+  if msg == MSG_INPUT_KEY then
+    io.write("keyboard input...\n")
+  end
 end)
+
+
 --local gossip = require("lua_bridge/gossip")
 --[[local Window = require("ui/window")
 local RuneSelector = require("ui/widgets/rune_selector")

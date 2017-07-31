@@ -30,3 +30,5 @@ typedef enum {
   MSG_PLAYER_MOVE_DOWN,
   MSG_PLAYER_MOVE_DOWN_RIGHT,
 } Messages;
+
+extern char *MSG_NAMES[];

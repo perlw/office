@@ -22,6 +22,7 @@ set (
   "src/assets.c"
   "src/config.c"
   "src/screen.c"
+  "src/messages.c"
   "src/systems.c"
   "src/system_debug.c"
   "src/system_input.c"
