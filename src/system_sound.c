@@ -130,9 +130,9 @@ void system_sound_update(void) {
     }
 
     RectifyMap *map = rectify_map_create();
-    rectify_map_set(map, "song", sizeof(uint32_t), &song_id);
-    rectify_map_set(map, "left", sizeof(float) * 2048, left);
-    rectify_map_set(map, "right", sizeof(float) * 2048, right);
+    rectify_map_set(map, "song", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), &song_id);
+    rectify_map_set(map, "left", RECTIFY_MAP_TYPE_FLOAT, sizeof(float) * 2048, left);
+    rectify_map_set(map, "right", RECTIFY_MAP_TYPE_FLOAT, sizeof(float) * 2048, right);
     gossip_emit(MSG_SOUND_SPECTRUM, map);
   }
 }

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 
 // +array
@@ -18,13 +19,39 @@ uintmax_t rectify_array_size(const void *const ptr);
 // -array
 
 // +map
+typedef enum {
+  RECTIFY_MAP_TYPE_BYTE = 1,
+  RECTIFY_MAP_TYPE_BOOL,
+  RECTIFY_MAP_TYPE_UINT,
+  RECTIFY_MAP_TYPE_INT,
+  RECTIFY_MAP_TYPE_FLOAT,
+  RECTIFY_MAP_TYPE_DOUBLE,
+  RECTIFY_MAP_TYPE_STRING,
+  RECTIFY_MAP_TYPE_PTR,
+} RectifyMapType;
+
 typedef struct RectifyMap RectifyMap;
+
+typedef struct {
+  char *key;
+  void *val;
+  size_t size;
+  RectifyMapType type;
+} RectifyMapItem;
+
+typedef struct {
+  RectifyMap *map;
+  uint32_t index;
+} RectifyMapIter;
 
 RectifyMap *rectify_map_create(void);
 void rectify_map_destroy(RectifyMap **map);
 
-void rectify_map_set(RectifyMap *const map, const char *key, size_t value_size, void *const value);
+void rectify_map_set(RectifyMap *const map, const char *key, RectifyMapType type, size_t value_size, void *const value);
 void *const rectify_map_get(RectifyMap *const map, const char *key);
+
+RectifyMapIter rectify_map_iter(RectifyMap *const map);
+bool rectify_map_iter_next(RectifyMapIter *const iter, RectifyMapItem *item);
 
 void rectify_map_print(RectifyMap *const map);
 // -map

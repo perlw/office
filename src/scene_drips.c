@@ -120,7 +120,7 @@ void scene_drips_update(void) {
                                    });
 
       RectifyMap *map = rectify_map_create();
-      rectify_map_set(map, "sound", sizeof(char) * 5, "drip");
+      rectify_map_set(map, "sound", RECTIFY_MAP_TYPE_STRING, sizeof(char) * 5, "drip");
       gossip_post("sound", MSG_SOUND_PLAY, map);
       break;
     }

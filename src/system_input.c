@@ -54,6 +54,13 @@ void system_input_stop(void) {
 }
 
 void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
+  // Temp
+  RectifyMap *map = rectify_map_create();
+  rectify_map_set(map, "key", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & event->key);
+  rectify_map_set(map, "pressed", RECTIFY_MAP_TYPE_BOOL, sizeof(bool), (bool *const) & event->pressed);
+  rectify_map_set(map, "released", RECTIFY_MAP_TYPE_BOOL, sizeof(bool), (bool *const) & event->released);
+  gossip_emit(MSG_INPUT_KEY, map);
+
   if (event->released) {
     return;
   }
@@ -109,11 +116,6 @@ void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *e
       gossip_emit(MSG_PLAYER_MOVE_UP_RIGHT, NULL);
       return;
   }
-
-  // Temp
-  RectifyMap *map = rectify_map_create();
-  rectify_map_set(map, "event", sizeof(PicassoWindowKeyboardEvent), (PicassoWindowKeyboardEvent * const)event);
-  gossip_emit(MSG_INPUT_KEY, map);
 }
 
 void system_input_internal_mousemove_callback(const PicassoWindowMouseEvent *event) {

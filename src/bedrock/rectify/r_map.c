@@ -1,22 +1,18 @@
 #include <assert.h>
 #include <malloc.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "rectify.h"
 
-typedef struct {
-  char *key;
-  void *val;
-} RectifyMapKeyVal;
-
 struct RectifyMap {
-  RectifyMapKeyVal *key_vals;
+  RectifyMapItem *items;
 };
 
 RectifyMap *rectify_map_create(void) {
   RectifyMap *map = calloc(1, sizeof(RectifyMap));
-  map->key_vals = rectify_array_alloc(10, sizeof(RectifyMapKeyVal));
+  map->items = rectify_array_alloc(10, sizeof(RectifyMapItem));
   return map;
 }
 
@@ -26,34 +22,36 @@ void rectify_map_destroy(RectifyMap **map) {
   }
 
   RectifyMap *dereffed = *map;
-  for (uint32_t t = 0; t < rectify_array_size(dereffed->key_vals); t++) {
-    free(dereffed->key_vals[t].key);
-    free(dereffed->key_vals[t].val);
+  for (uint32_t t = 0; t < rectify_array_size(dereffed->items); t++) {
+    free(dereffed->items[t].key);
+    free(dereffed->items[t].val);
   }
-  rectify_array_free(&dereffed->key_vals);
+  rectify_array_free(&dereffed->items);
   free(*map);
   *map = NULL;
 }
 
-void rectify_map_set(RectifyMap *const map, const char *key, size_t value_size, void *const value) {
+void rectify_map_set(RectifyMap *const map, const char *key, RectifyMapType type, size_t value_size, void *const value) {
   if (!map) {
     return;
   }
 
-  for (uint32_t t = 0; t < rectify_array_size(map->key_vals); t++) {
-    if (strncmp(map->key_vals[t].key, key, 128) == 0) {
-      free(map->key_vals[t].val);
-      map->key_vals[t].val = rectify_memory_alloc_copy(value, value_size);
+  for (uint32_t t = 0; t < rectify_array_size(map->items); t++) {
+    if (strncmp(map->items[t].key, key, 128) == 0) {
+      free(map->items[t].val);
+      map->items[t].val = rectify_memory_alloc_copy(value, value_size);
       return;
     }
   }
-  RectifyMapKeyVal key_val = {
+  RectifyMapItem item = {
     .key = calloc(1, sizeof(char) * (strnlen(key, 128) + 1)),
     .val = calloc(1, value_size),
+    .size = value_size,
+    .type = type,
   };
-  memcpy(key_val.key, key, sizeof(char) * (strnlen(key, 128) + 1));
-  memcpy(key_val.val, value, value_size);
-  map->key_vals = rectify_array_push(map->key_vals, &key_val);
+  memcpy(item.key, key, sizeof(char) * (strnlen(key, 128) + 1));
+  memcpy(item.val, value, value_size);
+  map->items = rectify_array_push(map->items, &item);
 }
 
 void *const rectify_map_get(RectifyMap *const map, const char *key) {
@@ -61,13 +59,36 @@ void *const rectify_map_get(RectifyMap *const map, const char *key) {
     return NULL;
   }
 
-  for (uint32_t t = 0; t < rectify_array_size(map->key_vals); t++) {
-    if (strncmp(map->key_vals[t].key, key, 128) == 0) {
-      return map->key_vals[t].val;
+  for (uint32_t t = 0; t < rectify_array_size(map->items); t++) {
+    if (strncmp(map->items[t].key, key, 128) == 0) {
+      return map->items[t].val;
     }
   }
 
   return NULL;
+}
+
+RectifyMapIter rectify_map_iter(RectifyMap *const map) {
+  return (RectifyMapIter){
+    .map = map,
+    .index = 0,
+  };
+}
+
+bool rectify_map_iter_next(RectifyMapIter *const iter, RectifyMapItem *item) {
+  if (!iter || !iter->map || !item) {
+    return false;
+  }
+
+  if (iter->index >= rectify_array_size(iter->map->items)) {
+    return false;
+  }
+
+  RectifyMapItem *map_item = &iter->map->items[iter->index];
+  memcpy(item, map_item, sizeof(RectifyMapItem));
+  iter->index++;
+
+  return true;
 }
 
 void rectify_map_print(RectifyMap *const map) {
@@ -75,9 +96,61 @@ void rectify_map_print(RectifyMap *const map) {
     return;
   }
 
-  printf("RectifyMap: Debug\n");
-  for (uint32_t t = 0; t < rectify_array_size(map->key_vals); t++) {
-    printf("[%s], %.12s\n", map->key_vals[t].key, (char *)map->key_vals[t].val);
+  printf("RectifyMap {\n");
+  for (uint32_t t = 0; t < rectify_array_size(map->items); t++) {
+    RectifyMapItem *const item = &map->items[t];
+    printf("\t[%s] = ", item->key);
+    switch (item->type) {
+      case RECTIFY_MAP_TYPE_BYTE: {
+        uint8_t val = *(uint8_t *)item->val;
+        printf("%d|%c", val, val);
+        break;
+      }
+
+      case RECTIFY_MAP_TYPE_BOOL: {
+        bool val = *(bool *)item->val;
+        printf("%s", (val ? "true" : "false"));
+        break;
+      }
+
+      case RECTIFY_MAP_TYPE_UINT: {
+        uint32_t val = *(uint32_t *)item->val;
+        printf("%d", val);
+        break;
+      }
+
+      case RECTIFY_MAP_TYPE_INT: {
+        int32_t val = *(int32_t *)item->val;
+        printf("%d", val);
+        break;
+      }
+
+      case RECTIFY_MAP_TYPE_FLOAT: {
+        float val = *(float *)item->val;
+        printf("%f", val);
+        break;
+      }
+
+      case RECTIFY_MAP_TYPE_DOUBLE: {
+        double val = *(double *)item->val;
+        printf("%f", val);
+        break;
+      }
+
+      case RECTIFY_MAP_TYPE_STRING: {
+        char *val = (char *)item->val;
+        printf("%s", val);
+        break;
+      }
+
+      case RECTIFY_MAP_TYPE_PTR:
+      default: {
+        void *val = item->val;
+        printf("%p", val);
+        break;
+      }
+    }
+    printf("\n");
   }
-  printf("/End\n");
+  printf("}\n");
 }

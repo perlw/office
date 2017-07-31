@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     snprintf(buffer, 128, "scene_%s", init_scene);
 
     RectifyMap *map = rectify_map_create();
-    rectify_map_set(map, "scene", sizeof(char) * (strnlen(buffer, 128) + 1), buffer);
+    rectify_map_set(map, "scene", RECTIFY_MAP_TYPE_STRING, sizeof(char) * (strnlen(buffer, 128) + 1), buffer);
     gossip_post("scenes", MSG_SCENE_GOTO, map);
   }
 

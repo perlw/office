@@ -139,13 +139,14 @@ void scene_sound_test_message(uint32_t id, RectifyMap *const map) {
 
   switch (id) {
     case MSG_INPUT_KEY: {
-      PicassoWindowKeyboardEvent *const event = (PicassoWindowKeyboardEvent * const)rectify_map_get(map, "event");
+      PicassoKey key = *(uint32_t * const)rectify_map_get(map, "key");
+      bool pressed = *(bool *const)rectify_map_get(map, "pressed");
 
-      if (event->pressed) {
-        switch (event->key) {
+      if (pressed) {
+        switch (key) {
           case PICASSO_KEY_P: {
             RectifyMap *map = rectify_map_create();
-            rectify_map_set(map, "song", sizeof(uint32_t), &scene_sound_test_internal->song);
+            rectify_map_set(map, "song", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), &scene_sound_test_internal->song);
             gossip_emit(MSG_SOUND_PLAY_SONG, map);
             break;
           }
@@ -164,7 +165,7 @@ void scene_sound_test_message(uint32_t id, RectifyMap *const map) {
 
             scene_sound_test_internal->song = (scene_sound_test_internal->song == 0 ? 1 : 0);
             RectifyMap *map = rectify_map_create();
-            rectify_map_set(map, "song", sizeof(uint32_t), &scene_sound_test_internal->song);
+            rectify_map_set(map, "song", sizeof(uint32_t), RECTIFY_MAP_TYPE_UINT, &scene_sound_test_internal->song);
             gossip_emit(MSG_SOUND_PLAY_SONG, map);
             break;
           }

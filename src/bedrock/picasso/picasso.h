@@ -151,7 +151,7 @@ typedef enum {
 } PicassoWindowResult;
 
 typedef struct {
-  int32_t key;
+  PicassoKey key;
   int32_t scancode;
   bool pressed;
   bool released;

@@ -1,3 +1,11 @@
+local lua_bridge = require('lua_bridge')
+
+lua_bridge.message(function (msg, data)
+  io.write("GOT A MESSAGE, OMG, " .. msg .. " #" .. #data .. "\n")
+  for key, val in pairs(data) do
+    io.write(key .. "-" .. tostring(val) .. "\n")
+  end
+end)
 --local gossip = require("lua_bridge/gossip")
 --[[local Window = require("ui/window")
 local RuneSelector = require("ui/widgets/rune_selector")
@@ -15,12 +23,12 @@ gossip.subscribe("game:kill", function ()
 end)
 ]]
 
-local windows = {}
+--[[local windows = {}
 function setup_world()
-  --windows[#windows + 1] = Window("RuneSel", 141, 7, 18, 18)
-  --windows[#windows]:content(RuneSelector())
+  windows[#windows + 1] = Window("RuneSel", 141, 7, 18, 18)
+  windows[#windows]:content(RuneSelector())
 
---[[  windows[#windows + 1] = Window("ColorSel", 141, 26, 18, 18)
+  windows[#windows + 1] = Window("ColorSel", 141, 26, 18, 18)
   windows[#windows]:content(ColorSelector())
 
   windows[#windows + 1] = Window("List", 141, 45, 18, 18)
@@ -65,7 +73,6 @@ function setup_world()
     "q",
     "r",
   }))
-  ]]
 end
 
 function teardown_world()
@@ -85,4 +92,4 @@ gossip.subscribe("scene:teardown", function (group_id, id, scene)
   if scene == "world-edit" then
     teardown_world()
   end
-end)
+end)]]
