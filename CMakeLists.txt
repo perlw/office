@@ -29,7 +29,7 @@ set (
   "src/system_sound.c"
   #"src/system_ui.c"
   #"src/system_ui_window.c"
-  #"src/system_lua_bridge.c"
+  "src/system_lua_bridge.c"
   "src/scenes.c"
   "src/scene_test.c"
   "src/scene_drips.c"

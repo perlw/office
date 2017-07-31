@@ -78,7 +78,9 @@ KronosResult kronos_start_system(const char *name) {
 
     if (strncmp(state->system->name, name, 128) == 0) {
       if (state->system->start()) {
-        gossip_register_system(state->system);
+        if (state->system->message) {
+          gossip_register_system(state->system);
+        }
 
         state->since_update = (state->system->frames == 0 ? 0.0 : 1.0 / (double)((rand() % state->system->frames) + 1));
         state->running = true;
@@ -103,7 +105,9 @@ KronosResult kronos_stop_system(const char *name) {
       if (state->system->prevent_stop) {
         return KRONOS_SYSTEM_STOP_PREVENTED;
       } else {
-        gossip_unregister_system(state->system);
+        if (state->system->message) {
+          gossip_unregister_system(state->system);
+        }
         state->system->stop();
         state->running = false;
         return KRONOS_OK;
@@ -120,7 +124,7 @@ void kronos_update(double delta) {
   for (uintmax_t t = 0; t < rectify_array_size(kronos->systems); t++) {
     KronosState *state = &kronos->systems[t];
 
-    if (!state->running) {
+    if (!state->running || !state->system->update) {
       continue;
     }
 

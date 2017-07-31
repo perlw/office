@@ -7,7 +7,6 @@
 
 bool system_game_start(void);
 void system_game_stop(void);
-void system_game_update(void);
 void system_game_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem system_game = {
@@ -17,7 +16,7 @@ KronosSystem system_game = {
   .autostart = true,
   .start = &system_game_start,
   .stop = &system_game_stop,
-  .update = &system_game_update,
+  .update = NULL,
   .message = &system_game_message,
 };
 
@@ -43,12 +42,6 @@ void system_game_stop(void) {
 
   free(system_game_internal);
   system_game_internal = NULL;
-}
-
-void system_game_update(void) {
-  if (!system_game_internal) {
-    return;
-  }
 }
 
 void system_game_message(uint32_t id, RectifyMap *const map) {

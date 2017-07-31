@@ -110,7 +110,9 @@ void system_sound_stop(void) {
 }
 
 void system_sound_update(void) {
-  assert(system_sound_internal);
+  if (!system_sound_internal) {
+    return;
+  }
 
   boombox_update();
 

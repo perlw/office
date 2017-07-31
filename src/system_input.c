@@ -7,8 +7,6 @@
 
 bool system_input_start(void);
 void system_input_stop(void);
-void system_input_update(void);
-void system_input_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem system_input = {
   .name = "input",
@@ -17,8 +15,8 @@ KronosSystem system_input = {
   .autostart = true,
   .start = &system_input_start,
   .stop = &system_input_stop,
-  .update = &system_input_update,
-  .message = &system_input_message,
+  .update = NULL,
+  .message = NULL,
 };
 
 void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *event);
@@ -53,18 +51,6 @@ void system_input_stop(void) {
 
   free(system_input_internal);
   system_input_internal = NULL;
-}
-
-void system_input_update(void) {
-  if (!system_input_internal) {
-    return;
-  }
-}
-
-void system_input_message(uint32_t id, RectifyMap *const map) {
-  if (!system_input_internal) {
-    return;
-  }
 }
 
 void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *event) {

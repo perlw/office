@@ -8,9 +8,9 @@
 #include "system_debug.h"
 #include "system_game.h"
 #include "system_input.h"
+#include "system_lua_bridge.h"
 #include "system_sound.h"
-/*#include "system_lua_bridge.h"
-#include "system_ui.h"*/
+//#include "system_ui.h"
 
 bool systems_start(void);
 void systems_stop(void);
@@ -47,8 +47,8 @@ bool systems_start(void) {
   kronos_register(&system_input);
   kronos_register(&system_game);
   kronos_register(&system_sound);
-  /*kronos_register(&system_ui);
-  kronos_register(&system_lua_bridge);*/
+  kronos_register(&system_lua_bridge);
+  //kronos_register(&system_ui);
 
   return true;
 }
