@@ -108,7 +108,7 @@ void system_lua_bridge_message(uint32_t id, RectifyMap *const map) {
     int32_t func_ref = system_lua_bridge_internal->listeners[t];
     lua_rawgeti(system_lua_bridge_internal->state, LUA_REGISTRYINDEX, func_ref);
 
-    lua_pushinteger(system_lua_bridge_internal->state, (lua_Number)id);
+    lua_pushinteger(system_lua_bridge_internal->state, (lua_Integer)id);
     lua_newtable(system_lua_bridge_internal->state);
 
     RectifyMapIter iter = rectify_map_iter(map);
