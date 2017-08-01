@@ -31,9 +31,12 @@ typedef struct {
 } SystemLuaBridge;
 
 typedef int (*LuaBridgeModuleLoadFunc)(lua_State *);
-void lua_bridge_internal_register_lua_module(const char *name, LuaBridgeModuleLoadFunc load_func);
-int lua_bridge_internal_lua_module_load(lua_State *state);
-int lua_bridge_internal_lua_module_message(lua_State *state);
+void system_lua_bridge_internal_register_lua_module(const char *name, LuaBridgeModuleLoadFunc load_func);
+int system_lua_bridge_internal_lua_module_load(lua_State *state);
+int system_lua_bridge_internal_lua_module_on_message(lua_State *state);
+int system_lua_bridge_internal_lua_module_post_message(lua_State *state);
+int system_lua_bridge_internal_lua_module_emit_message(lua_State *state);
+RectifyMap *system_lua_bridge_internal_table_to_map(lua_State *state, int32_t index);
 
 SystemLuaBridge *system_lua_bridge_internal = NULL;
 bool system_lua_bridge_start(void) {
@@ -58,11 +61,11 @@ bool system_lua_bridge_start(void) {
   };
 
   for (uint32_t t = 0; MSG_NAMES[t]; t++) {
-    lua_pushinteger(state, t + 1);
+    lua_pushinteger(state, t);
     lua_setglobal(state, MSG_NAMES[t]);
   }
 
-  lua_bridge_internal_register_lua_module("lua_bridge", &lua_bridge_internal_lua_module_load);
+  system_lua_bridge_internal_register_lua_module("lua_bridge", &system_lua_bridge_internal_lua_module_load);
 
   {
     luaL_loadfile(state, "./lua/main.lua");
@@ -91,11 +94,15 @@ void system_lua_bridge_stop(void) {
   system_lua_bridge_internal = NULL;
 }
 
-// TODO: Queue up for next iteration instead of instant
 void system_lua_bridge_message(uint32_t id, RectifyMap *const map) {
   if (!system_lua_bridge_internal) {
     return;
   }
+
+#ifdef LUA_BRIDGE_DEBUG
+  printf("LuaBridge: Pushing to lua, %s%s\n", MSG_NAMES[id], (!map ? ", no data" : ""));
+  rectify_map_print(map);
+#endif // LUA_BRIDGE_DEBUG
 
   for (uint32_t t = 0; t < rectify_array_size(system_lua_bridge_internal->listeners); t++) {
     int32_t func_ref = system_lua_bridge_internal->listeners[t];
@@ -103,8 +110,6 @@ void system_lua_bridge_message(uint32_t id, RectifyMap *const map) {
 
     lua_pushinteger(system_lua_bridge_internal->state, (lua_Number)id);
     lua_newtable(system_lua_bridge_internal->state);
-
-    rectify_map_print(map);
 
     RectifyMapIter iter = rectify_map_iter(map);
     for (RectifyMapItem item; rectify_map_iter_next(&iter, &item);) {
@@ -170,7 +175,7 @@ void system_lua_bridge_message(uint32_t id, RectifyMap *const map) {
   }
 }
 
-void lua_bridge_internal_register_lua_module(const char *name, LuaBridgeModuleLoadFunc load_func) {
+void system_lua_bridge_internal_register_lua_module(const char *name, LuaBridgeModuleLoadFunc load_func) {
   lua_getglobal(system_lua_bridge_internal->state, "package");
   lua_pushstring(system_lua_bridge_internal->state, "preload");
   lua_gettable(system_lua_bridge_internal->state, -2);
@@ -180,23 +185,27 @@ void lua_bridge_internal_register_lua_module(const char *name, LuaBridgeModuleLo
   lua_settop(system_lua_bridge_internal->state, 0);
 }
 
-int lua_bridge_internal_lua_module_load(lua_State *state) {
+int system_lua_bridge_internal_lua_module_load(lua_State *state) {
   lua_newtable(state);
 
-  lua_pushcclosure(state, &lua_bridge_internal_lua_module_message, 0);
-  lua_setfield(state, -2, "message");
+  lua_pushcclosure(state, &system_lua_bridge_internal_lua_module_on_message, 0);
+  lua_setfield(state, -2, "on_message");
+  lua_pushcclosure(state, &system_lua_bridge_internal_lua_module_post_message, 0);
+  lua_setfield(state, -2, "post_message");
+  lua_pushcclosure(state, &system_lua_bridge_internal_lua_module_emit_message, 0);
+  lua_setfield(state, -2, "emit_message");
 
   return 1;
 }
 
-int lua_bridge_internal_lua_module_message(lua_State *state) {
+int system_lua_bridge_internal_lua_module_on_message(lua_State *state) {
   if (lua_gettop(state) < 1) {
-    printf("LuaBridge: Too few arguments to function \"lua_bridge.message\".\n");
+    printf("LuaBridge: Too few arguments to function \"lua_bridge.on_message\".\n");
     return 0;
   }
 
   if (lua_isfunction(state, 1) != 1) {
-    printf("LuaBridge: Incorrect argument type, expected function, \"lua_bridge.message\".\n");
+    printf("LuaBridge: Incorrect argument type, expected function, \"lua_bridge.on_message\".\n");
     return 0;
   }
 
@@ -204,4 +213,95 @@ int lua_bridge_internal_lua_module_message(lua_State *state) {
   system_lua_bridge_internal->listeners = rectify_array_push(system_lua_bridge_internal->listeners, &func_ref);
 
   return 1;
+}
+
+int system_lua_bridge_internal_lua_module_post_message(lua_State *state) {
+  if (lua_gettop(state) < 2) {
+    printf("LuaBridge: Too few arguments to function \"lua_bridge.post_message\".\n");
+    return 0;
+  }
+
+  if (lua_isstring(state, 1) != 1) {
+    printf("LuaBridge: Incorrect type for argument 1, expected string, \"lua_bridge.post_message\".\n");
+    return 0;
+  }
+  if (lua_isinteger(state, 2) != 1) {
+    printf("LuaBridge: Incorrect type for argument 2, expected integer, \"lua_bridge.post_message\".\n");
+    return 0;
+  }
+  if (lua_istable(state, 3) != 1 && lua_isnoneornil(state, 3) != 1) {
+    printf("LuaBridge: Incorrect type for argument 3, expected table, \"lua_bridge.post_message\".\n");
+    return 0;
+  }
+
+  const char *system = lua_tostring(state, 1);
+  uint32_t id = lua_tointeger(state, 2);
+  RectifyMap *map = NULL;
+
+  if (lua_isnoneornil(state, 3) != 1) {
+    map = system_lua_bridge_internal_table_to_map(state, 3);
+  }
+
+  gossip_post(system, id, map);
+
+  return 1;
+}
+
+int system_lua_bridge_internal_lua_module_emit_message(lua_State *state) {
+  if (lua_gettop(state) < 1) {
+    printf("LuaBridge: Too few arguments to function \"lua_bridge.emit_message\".\n");
+    return 0;
+  }
+
+  if (lua_isinteger(state, 1) != 1) {
+    printf("LuaBridge: Incorrect type for argument 1, expected integer, \"lua_bridge.emit_message\".\n");
+    return 0;
+  }
+  if (lua_istable(state, 2) != 1 && lua_isnoneornil(state, 2) != 1) {
+    printf("LuaBridge: Incorrect type for argument 2, expected table, \"lua_bridge.emit_message\".\n");
+    return 0;
+  }
+
+  uint32_t id = lua_tointeger(state, 1);
+  RectifyMap *map = NULL;
+
+  if (lua_isnoneornil(state, 2) != 1) {
+    map = system_lua_bridge_internal_table_to_map(state, 2);
+  }
+
+  gossip_emit(id, map);
+
+  return 1;
+}
+
+RectifyMap *system_lua_bridge_internal_table_to_map(lua_State *state, int32_t index) {
+  RectifyMap *map = rectify_map_create();
+
+  lua_pushvalue(state, index);
+  lua_pushnil(state);
+  while (lua_next(state, -2)) {
+    lua_pushvalue(state, -2);
+
+    const char *key = lua_tostring(state, -1);
+    if (lua_isboolean(state, -2) == 1) {
+      rectify_map_set_bool(map, key, (bool)lua_toboolean(state, -2));
+    } else if (lua_isinteger(state, -2) == 1) {
+      rectify_map_set_int(map, key, (int32_t)lua_tointeger(state, -2));
+    } else if (lua_isnumber(state, -2) == 1) {
+      rectify_map_set_double(map, key, (double)lua_tonumber(state, -2));
+    } else if (lua_isstring(state, -2) == 1) {
+      size_t len = 0;
+      const char *val = lua_tolstring(state, -2, &len);
+      if (len == 1) {
+        rectify_map_set_byte(map, key, (uint8_t)val[0]);
+      } else {
+        rectify_map_set_string(map, key, (char *const)val);
+      }
+    }
+
+    lua_pop(state, 2);
+  }
+  lua_pop(state, 1);
+
+  return map;
 }

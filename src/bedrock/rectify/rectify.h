@@ -48,6 +48,14 @@ RectifyMap *rectify_map_create(void);
 void rectify_map_destroy(RectifyMap **map);
 
 void rectify_map_set(RectifyMap *const map, const char *key, RectifyMapType type, size_t value_size, void *const value);
+void rectify_map_set_byte(RectifyMap *const map, const char *key, uint8_t value);
+void rectify_map_set_bool(RectifyMap *const map, const char *key, bool value);
+void rectify_map_set_uint(RectifyMap *const map, const char *key, uint32_t value);
+void rectify_map_set_int(RectifyMap *const map, const char *key, int32_t value);
+void rectify_map_set_float(RectifyMap *const map, const char *key, float value);
+void rectify_map_set_double(RectifyMap *const map, const char *key, double value);
+void rectify_map_set_string(RectifyMap *const map, const char *key, char *const value);
+
 void *const rectify_map_get(RectifyMap *const map, const char *key);
 uint8_t rectify_map_get_byte(RectifyMap *const map, const char *key);
 bool rectify_map_get_bool(RectifyMap *const map, const char *key);

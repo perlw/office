@@ -1,6 +1,6 @@
 local lua_bridge = require('lua_bridge')
 
-lua_bridge.message(function (msg, data)
+lua_bridge.on_message(function (msg, data)
   if msg == MSG_INPUT_KEY then
     io.write("GOT A MESSAGE, OMG, " .. msg .. " #" .. #data .. "\n")
     for key, val in pairs(data) do
@@ -9,6 +9,20 @@ lua_bridge.message(function (msg, data)
   end
 end)
 
+lua_bridge.post_message("lua_bridge", MSG_DEBUG_TEST, nil)
+lua_bridge.post_message("lua_bridge", MSG_DEBUG_TEST, {
+  ["byte"] = "a",
+  ["bool"] = true,
+  ["uint"] = 1337,
+  ["int"] = -42,
+  ["float"] = 133.7,
+  ["double"] = 1.3333333333333333333333337,
+  ["string"] = "foobar",
+  ["ptr"] = 0xdeadbeef,
+})
+lua_bridge.emit_message(MSG_DEBUG_TEST, {
+  ["foo"] = "bar",
+})
 
 --local gossip = require("lua_bridge/gossip")
 --[[local Window = require("ui/window")

@@ -12,7 +12,7 @@ file(GLOB LUA_SRCS "${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src/*.c")
 add_library (lua STATIC ${LUA_SRCS})
 
 option (OCCULUS_LOG_MEM "Log memory allocations to file" OFF)
-option (GOSSIP_DEBUG "Use gossip debug output" OFF)
+option (LUA_BRIDGE_DEBUG "Use lua bridge debug output" OFF)
 
 add_subdirectory (src/bedrock)
 
@@ -22,7 +22,6 @@ set (
   "src/assets.c"
   "src/config.c"
   "src/screen.c"
-  "src/messages.c"
   "src/systems.c"
   "src/system_debug.c"
   "src/system_input.c"
@@ -52,9 +51,9 @@ endif (WIN32)
 if (OCCULUS_LOG_MEM)
   target_compile_definitions (office PRIVATE OCCULUS_LOG_MEM)
 endif (OCCULUS_LOG_MEM)
-if (GOSSIP_DEBUG)
-  target_compile_definitions (office PRIVATE GOSSIP_DEBUG)
-endif (GOSSIP_DEBUG)
+if (LUA_BRIDGE_DEBUG)
+  target_compile_definitions (office PRIVATE LUA_BRIDGE_DEBUG)
+endif (LUA_BRIDGE_DEBUG)
 
 target_link_libraries (office bedrock lua)
 add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets "${CMAKE_BINARY_DIR}/bin")

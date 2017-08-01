@@ -54,6 +54,34 @@ void rectify_map_set(RectifyMap *const map, const char *key, RectifyMapType type
   map->items = rectify_array_push(map->items, &item);
 }
 
+void rectify_map_set_byte(RectifyMap *const map, const char *key, uint8_t value) {
+  rectify_map_set(map, key, RECTIFY_MAP_TYPE_BYTE, sizeof(uint8_t), &value);
+}
+
+void rectify_map_set_bool(RectifyMap *const map, const char *key, bool value) {
+  rectify_map_set(map, key, RECTIFY_MAP_TYPE_BOOL, sizeof(bool), &value);
+}
+
+void rectify_map_set_uint(RectifyMap *const map, const char *key, uint32_t value) {
+  rectify_map_set(map, key, RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), &value);
+}
+
+void rectify_map_set_int(RectifyMap *const map, const char *key, int32_t value) {
+  rectify_map_set(map, key, RECTIFY_MAP_TYPE_INT, sizeof(int32_t), &value);
+}
+
+void rectify_map_set_float(RectifyMap *const map, const char *key, float value) {
+  rectify_map_set(map, key, RECTIFY_MAP_TYPE_FLOAT, sizeof(float), &value);
+}
+
+void rectify_map_set_double(RectifyMap *const map, const char *key, double value) {
+  rectify_map_set(map, key, RECTIFY_MAP_TYPE_DOUBLE, sizeof(double), &value);
+}
+
+void rectify_map_set_string(RectifyMap *const map, const char *key, char *const value) {
+  rectify_map_set(map, key, RECTIFY_MAP_TYPE_STRING, sizeof(char) * (strnlen(value, 128) + 1), value);
+}
+
 void *const rectify_map_get(RectifyMap *const map, const char *key) {
   if (!map) {
     return NULL;

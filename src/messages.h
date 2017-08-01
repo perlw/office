@@ -1,37 +1,50 @@
 #pragma once
 
+#include <stdio.h>
+
+#define FOREACH_MESSAGE(MSG)      \
+  MSG(MSG_SYSTEM_START)           \
+  MSG(MSG_SYSTEM_STOP)            \
+                                  \
+  MSG(MSG_GAME_INIT)              \
+  MSG(MSG_GAME_KILL)              \
+                                  \
+  MSG(MSG_INPUT_KEY)              \
+  MSG(MSG_INPUT_MOUSEMOVE)        \
+  MSG(MSG_INPUT_CLICK)            \
+  MSG(MSG_INPUT_SCROLL)           \
+                                  \
+  MSG(MSG_SCENE_GOTO)             \
+  MSG(MSG_SCENE_PREV)             \
+  MSG(MSG_SCENE_NEXT)             \
+  MSG(MSG_SCENE_SETUP)            \
+  MSG(MSG_SCENE_TEARDOWN)         \
+  MSG(MSG_SCENE_CHANGED)          \
+                                  \
+  MSG(MSG_SOUND_PLAY)             \
+  MSG(MSG_SOUND_PLAY_SONG)        \
+  MSG(MSG_SOUND_STOP_SONG)        \
+  MSG(MSG_SOUND_SPECTRUM)         \
+                                  \
+  MSG(MSG_PLAYER_MOVE_UP_LEFT)    \
+  MSG(MSG_PLAYER_MOVE_UP)         \
+  MSG(MSG_PLAYER_MOVE_UP_RIGHT)   \
+  MSG(MSG_PLAYER_MOVE_LEFT)       \
+  MSG(MSG_PLAYER_MOVE_RIGHT)      \
+  MSG(MSG_PLAYER_MOVE_DOWN_LEFT)  \
+  MSG(MSG_PLAYER_MOVE_DOWN)       \
+  MSG(MSG_PLAYER_MOVE_DOWN_RIGHT) \
+                                  \
+  MSG(MSG_DEBUG_TEST)
+
+#define GENERATE_ENUM(ENUM) ENUM,
+#define GENERATE_STRING(STRING) #STRING,
+
 typedef enum {
-  MSG_SYSTEM_START = 1,
-  MSG_SYSTEM_STOP,
-
-  MSG_GAME_INIT,
-  MSG_GAME_KILL,
-
-  MSG_INPUT_KEY,
-  MSG_INPUT_MOUSEMOVE,
-  MSG_INPUT_CLICK,
-  MSG_INPUT_SCROLL,
-
-  MSG_SCENE_GOTO,
-  MSG_SCENE_PREV,
-  MSG_SCENE_NEXT,
-  MSG_SCENE_SETUP,
-  MSG_SCENE_TEARDOWN,
-  MSG_SCENE_CHANGED,
-
-  MSG_SOUND_PLAY,
-  MSG_SOUND_PLAY_SONG,
-  MSG_SOUND_STOP_SONG,
-  MSG_SOUND_SPECTRUM,
-
-  MSG_PLAYER_MOVE_UP_LEFT,
-  MSG_PLAYER_MOVE_UP,
-  MSG_PLAYER_MOVE_UP_RIGHT,
-  MSG_PLAYER_MOVE_LEFT,
-  MSG_PLAYER_MOVE_RIGHT,
-  MSG_PLAYER_MOVE_DOWN_LEFT,
-  MSG_PLAYER_MOVE_DOWN,
-  MSG_PLAYER_MOVE_DOWN_RIGHT,
+  FOREACH_MESSAGE(GENERATE_ENUM)
 } Messages;
 
-extern char *MSG_NAMES[];
+static char *MSG_NAMES[] = {
+  FOREACH_MESSAGE(GENERATE_STRING)
+    NULL,
+};
