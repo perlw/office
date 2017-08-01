@@ -28,15 +28,13 @@ set (
   "src/system_input.c"
   "src/system_game.c"
   "src/system_sound.c"
-  #"src/system_ui.c"
-  #"src/system_ui_window.c"
   "src/system_lua_bridge.c"
   "src/scenes.c"
   "src/scene_test.c"
   "src/scene_drips.c"
   "src/scene_sound-test.c"
   "src/scene_game.c"
-  #"src/scene_world-edit.c"
+  "src/scene_world-edit.c"
 )
 add_subdirectory (src/ascii)
 add_executable (office ${SOURCES})

@@ -1,13 +1,11 @@
 local lua_bridge = require('lua_bridge')
 
 lua_bridge.message(function (msg, data)
-  io.write("GOT A MESSAGE, OMG, " .. msg .. " #" .. #data .. "\n")
-  for key, val in pairs(data) do
-    io.write(key .. "-" .. tostring(val) .. "\n")
-  end
-
   if msg == MSG_INPUT_KEY then
-    io.write("keyboard input...\n")
+    io.write("GOT A MESSAGE, OMG, " .. msg .. " #" .. #data .. "\n")
+    for key, val in pairs(data) do
+      io.write(key .. "-" .. tostring(val) .. "\n")
+    end
   end
 end)
 

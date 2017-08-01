@@ -127,9 +127,11 @@ void system_input_internal_mousemove_callback(const PicassoWindowMouseEvent *eve
   static uint32_t o_y = 0;
 
   if (m_x != o_x || m_y != o_y) {
-    /*gossip_emit("input:mousemove", sizeof(InputMouseMoveEvent), &(InputMouseMoveEvent){
-                                                                  .x = m_x, .y = m_y,
-                                                                });*/
+    RectifyMap *map = rectify_map_create();
+    rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_x);
+    rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_y);
+    gossip_emit(MSG_INPUT_MOUSEMOVE, map);
+
     o_x = m_x;
     o_y = m_y;
   }
@@ -137,15 +139,21 @@ void system_input_internal_mousemove_callback(const PicassoWindowMouseEvent *eve
 
 void system_input_internal_click_callback(const PicassoWindowMouseEvent *event) {
   const Config *const config = config_get();
+
   uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
   uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
   static uint32_t o_x = 0;
   static uint32_t o_y = 0;
 
   if (m_x != o_x || m_y != o_y) {
-    /*gossip_emit("input:click", sizeof(InputClickEvent), &(InputClickEvent){
-                                                          .button = event->button, .x = m_x, .y = m_y, .pressed = event->pressed, .released = event->released,
-                                                        });*/
+    RectifyMap *map = rectify_map_create();
+    rectify_map_set(map, "button", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & event->button);
+    rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_x);
+    rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_y);
+    rectify_map_set(map, "pressed", RECTIFY_MAP_TYPE_BOOL, sizeof(bool), (bool *const) & event->pressed);
+    rectify_map_set(map, "released", RECTIFY_MAP_TYPE_BOOL, sizeof(bool), (bool *const) & event->released);
+    gossip_emit(MSG_INPUT_CLICK, map);
+
     o_x = m_x;
     o_y = m_y;
   }
@@ -153,11 +161,16 @@ void system_input_internal_click_callback(const PicassoWindowMouseEvent *event) 
 
 void system_input_internal_mousescroll_callback(const PicassoWindowMouseScrollEvent *event) {
   const Config *const config = config_get();
+
   uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
   uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
-  int32_t o_x = (int32_t)(event->offset_x < 0.0 ? event->offset_x - 0.5 : event->offset_x + 0.5);
-  int32_t o_y = (int32_t)(event->offset_y < 0.0 ? event->offset_y - 0.5 : event->offset_y + 0.5);
-  /*gossip_emit("input:mousescroll", sizeof(InputMouseScrollEvent), &(InputMouseScrollEvent){
-                                                                    .scroll_x = o_x, .scroll_y = o_y, .x = m_x, .y = m_y,
-                                                                  });*/
+  int32_t scroll_x = (int32_t)(event->offset_x < 0.0 ? event->offset_x - 0.5 : event->offset_x + 0.5);
+  int32_t scroll_y = (int32_t)(event->offset_y < 0.0 ? event->offset_y - 0.5 : event->offset_y + 0.5);
+
+  RectifyMap *map = rectify_map_create();
+  rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_x);
+  rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_y);
+  rectify_map_set(map, "scroll_x", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t * const) & scroll_x);
+  rectify_map_set(map, "scroll_y", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t * const) & scroll_y);
+  gossip_emit(MSG_INPUT_SCROLL, map);
 }

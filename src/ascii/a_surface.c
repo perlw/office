@@ -171,6 +171,40 @@ void surface_rect(Surface *const surface, uint32_t x, uint32_t y, uint32_t width
   }
 }
 
+void surface_line(Surface *const surface, uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, Glyph glyph) {
+  assert(surface);
+
+  int32_t ax = (uint32_t)x1;
+  int32_t ay = (uint32_t)y1;
+  int32_t bx = (uint32_t)x2;
+  int32_t by = (uint32_t)y2;
+
+  int32_t dx = abs(bx - ax);
+  int32_t dy = abs(by - ay);
+  int32_t sx = (ax < bx ? 1 : -1);
+  int32_t sy = (ay < by ? 1 : -1);
+  int32_t err = (dx > dy ? dx : -dy) / 2;
+  int32_t e2 = 0;
+
+  int32_t x = ax;
+  int32_t y = ay;
+  for (;;) {
+    surface_glyph(surface, x, y, glyph);
+    if (x == bx && y == by) {
+      break;
+    }
+    e2 = err;
+    if (e2 > -dx) {
+      err -= dy;
+      x += sx;
+    }
+    if (e2 < dy) {
+      err += dx;
+      y += sy;
+    }
+  }
+}
+
 float lerp(float a, float b, float t) {
   return ((1.0f - t) * a) + (t * b);
 }

@@ -68,6 +68,34 @@ void *const rectify_map_get(RectifyMap *const map, const char *key) {
   return NULL;
 }
 
+uint8_t rectify_map_get_byte(RectifyMap *const map, const char *key) {
+  return *(uint8_t *)rectify_map_get(map, key);
+}
+
+bool rectify_map_get_bool(RectifyMap *const map, const char *key) {
+  return *(bool *)rectify_map_get(map, key);
+}
+
+uint32_t rectify_map_get_uint(RectifyMap *const map, const char *key) {
+  return *(uint32_t *)rectify_map_get(map, key);
+}
+
+int32_t rectify_map_get_int(RectifyMap *const map, const char *key) {
+  return *(int32_t *)rectify_map_get(map, key);
+}
+
+float rectify_map_get_float(RectifyMap *const map, const char *key) {
+  return *(float *)rectify_map_get(map, key);
+}
+
+double rectify_map_get_double(RectifyMap *const map, const char *key) {
+  return *(double *)rectify_map_get(map, key);
+}
+
+char *const rectify_map_get_string(RectifyMap *const map, const char *key) {
+  return (char *const)rectify_map_get(map, key);
+}
+
 RectifyMapIter rectify_map_iter(RectifyMap *const map) {
   return (RectifyMapIter){
     .map = map,

@@ -10,7 +10,6 @@
 bool scene_test_start(void);
 void scene_test_stop(void);
 void scene_test_update(void);
-void scene_test_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem scene_test = {
   .name = "scene_test",
@@ -18,7 +17,7 @@ KronosSystem scene_test = {
   .start = &scene_test_start,
   .stop = &scene_test_stop,
   .update = &scene_test_update,
-  .message = &scene_test_message,
+  .message = NULL,
 };
 
 typedef struct {
@@ -101,20 +100,6 @@ void scene_test_update(void) {
       }
     }
   }
-}
-
-void scene_test_message(uint32_t id, RectifyMap *const map) {
-  if (!scene_test_internal) {
-    return;
-  }
-
-  /*switch (id) {
-    case MSG_INPUT_KEY: {
-      PicassoWindowKeyboardEvent *const event = (PicassoWindowKeyboardEvent * const)rectify_map_get(map, "event");
-      printf("KEY %d\n", event->key);
-      break;
-    }
-  }*/
 }
 
 void scene_test_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
