@@ -22,6 +22,7 @@ The actual game
     - File listing widget
       - Needs list widget
 * Lua UI
+* Lua defined tiles, properties, tags, flags, special actions
 
 ## Bedrock
 Tests?
