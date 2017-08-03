@@ -1,5 +1,9 @@
+math.randomseed(os.time())
+
 local lua_bridge = require("lua_bridge")
 local load_tiledefs = require("tiledefs")
+
+local windows = {}
 
 local player_moves = {
   ["plr_move_dnlt"] = MSG_PLAYER_MOVE_DOWN_LEFT,
@@ -45,6 +49,33 @@ local events = {
       lua_bridge.post_message("systems", MSG_SYSTEM_STOP, {
         ["system"] = "ui",
       })
+    end
+  end,
+
+  [MSG_SYSTEM_SPUN_UP] = function (data)
+    if data.system == "ui" then
+      windows[#windows + 1] = os.time() + math.random()
+      lua_bridge.post_message("ui", MSG_UI_WINDOW_CREATE, {
+        ["title"] = "Test window",
+        ["x"] = 141,
+        ["y"] = 7,
+        ["width"] = 18,
+        ["height"] = 18,
+        ["window_id"] = windows[#windows],
+      })
+    end
+  end,
+  [MSG_SYSTEM_SHUT_DOWN] = function (data)
+    if data.system == "ui" then
+      windows = {}
+    end
+  end,
+
+  [MSG_UI_WINDOW_CREATED] = function (data)
+    for _, id in ipairs(windows) do
+      if data.window_id == id then
+        io.write("found window\n")
+      end
     end
   end,
 }

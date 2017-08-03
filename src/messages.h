@@ -5,6 +5,8 @@
 #define FOREACH_MESSAGE(MSG)      \
   MSG(MSG_SYSTEM_START)           \
   MSG(MSG_SYSTEM_STOP)            \
+  MSG(MSG_SYSTEM_SPUN_UP)         \
+  MSG(MSG_SYSTEM_SHUT_DOWN)       \
                                   \
   MSG(MSG_GAME_INIT)              \
   MSG(MSG_GAME_KILL)              \
@@ -27,6 +29,10 @@
   MSG(MSG_SOUND_PLAY_SONG)        \
   MSG(MSG_SOUND_STOP_SONG)        \
   MSG(MSG_SOUND_SPECTRUM)         \
+                                  \
+  MSG(MSG_UI_WINDOW_CREATE)       \
+  MSG(MSG_UI_WINDOW_CREATED)      \
+  MSG(MSG_UI_WINDOW_DESTROY)      \
                                   \
   MSG(MSG_PLAYER_MOVE_UP_LEFT)    \
   MSG(MSG_PLAYER_MOVE_UP)         \

@@ -83,6 +83,10 @@ void systems_internal_start(const char *system) {
   printf("System: attempting to spin up \"%s\"...\n", system);
   KronosResult result = kronos_start_system(system);
   if (result == KRONOS_OK) {
+    RectifyMap *map = rectify_map_create();
+    rectify_map_set_string(map, "system", (char *const)system);
+    gossip_emit(MSG_SYSTEM_SPUN_UP, map);
+
     printf("System: \"%s\" spun up!\n", system);
   } else {
     printf("System: \"%s\" %s\n", system, (result == KRONOS_SYSTEM_NOT_FOUND ? "does not exist" : "failed to spin up"));
@@ -93,6 +97,10 @@ void systems_internal_stop(const char *system) {
   printf("Systems: attempting to stop \"%s\"\n", system);
   KronosResult result = kronos_stop_system(system);
   if (result == KRONOS_OK) {
+    RectifyMap *map = rectify_map_create();
+    rectify_map_set_string(map, "system", (char *const)system);
+    gossip_emit(MSG_SYSTEM_SHUT_DOWN, map);
+
     printf("System: \"%s\" shut down!\n", system);
   } else {
     printf("System: \"%s\" %s\n", system, (result == KRONOS_SYSTEM_NOT_FOUND ? "does not exist" : "stop prevented"));
