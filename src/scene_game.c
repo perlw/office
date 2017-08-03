@@ -215,22 +215,42 @@ void scene_game_message(uint32_t id, RectifyMap *const map) {
     }
 
     case MSG_MATERIAL_REGISTER: {
-      rectify_map_print(map);
-      /*
-                                  typedef struct {
-                                    char *id;
-                                    Glyph glyph;
-                                    bool collides;
-                                  } TileDef;
-                                  */
-
-      /*char *const id = rectify_map_get_string(map, "id");
+      char *const id = rectify_map_get_string(map, "id");
       uint8_t rune = rectify_map_get_byte(map, "rune");
       GlyphColor fore = glyphcolor_hex(rectify_map_get_uint(map, "fore_color"));
-      GlyphColor back = glyphcolor_hex(rectify_map_get_uint(map, "back_color"));*/
-      //if (strncmp(id,
+      GlyphColor back = glyphcolor_hex(rectify_map_get_uint(map, "back_color"));
+      RectifyMap *tags = rectify_map_get_map(map, "tags");
+
+      TileDef def = {
+        .id = rectify_memory_alloc_copy(id, sizeof(char) * (strnlen(id, 128) + 1)),
+        .glyph = (Glyph){
+          .rune = rune,
+          .fore = fore,
+          .back = back,
+        },
+        .collides = false,
+      };
+
+      printf("%s => { %d|%c, (%d %d %d) (%d %d %d)}\n", id, rune, rune, fore.r, fore.g, fore.b, back.r, back.g, back.b);
+      RectifyMapIter iter = rectify_map_iter(tags);
+      for (RectifyMapItem item; rectify_map_iter_next(&iter, &item);) {
+        switch (item.type) {
+          case RECTIFY_MAP_TYPE_STRING: {
+            char *const tag = (char *const)item.val;
+            if (strncmp(tag, "wall", 128) == 0) {
+              def.collides = true;
+            }
+          }
+        }
+      }
+
+      scene_game_internal->tiledefs = rectify_array_push(scene_game_internal->tiledefs, &def);
       break;
     }
+
+    case MSG_MATERIALS_LOADED:
+      scene_game_internal_build_map();
+      break;
   }
 
   Tile *current = &scene_game_internal->tilemap[(scene_game_internal->p_y * MAP_X) + scene_game_internal->p_x];

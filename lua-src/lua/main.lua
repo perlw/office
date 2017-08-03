@@ -1,4 +1,5 @@
 local lua_bridge = require("lua_bridge")
+local load_tiledefs = require("tiledefs")
 
 local player_moves = {
   ["plr_move_dnlt"] = MSG_PLAYER_MOVE_DOWN_LEFT,
@@ -29,7 +30,7 @@ local events = {
   end,
 
   [MSG_MATERIALS_LOAD] = function (data)
-    require("tiledefs")
+    load_tiledefs()
   end,
 }
 lua_bridge.on_message(function (msg, data)

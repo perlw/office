@@ -156,6 +156,11 @@ void system_lua_bridge_message(uint32_t id, RectifyMap *const map) {
           break;
         }
 
+        case RECTIFY_MAP_TYPE_MAP: {
+          printf("LuaBridge: Sending submaps to Lua is not yet implemented.\n");
+          break;
+        }
+
         case RECTIFY_MAP_TYPE_PTR:
         default: {
           uintptr_t ptr = (uintptr_t)item.val;
