@@ -32,6 +32,21 @@ local events = {
   [MSG_MATERIALS_LOAD] = function (data)
     load_tiledefs()
   end,
+
+  [MSG_SCENE_SETUP] = function (data)
+    if data.scene == "scene_world-edit" then
+      lua_bridge.post_message("systems", MSG_SYSTEM_START, {
+        ["system"] = "ui",
+      })
+    end
+  end,
+  [MSG_SCENE_TEARDOWN] = function (data)
+    if data.scene == "scene_world-edit" then
+      lua_bridge.post_message("systems", MSG_SYSTEM_STOP, {
+        ["system"] = "ui",
+      })
+    end
+  end,
 }
 lua_bridge.on_message(function (msg, data)
   if events[msg] ~= nil then

@@ -10,7 +10,7 @@
 #include "system_input.h"
 #include "system_lua_bridge.h"
 #include "system_sound.h"
-//#include "system_ui.h"
+#include "system_ui.h"
 
 bool systems_start(void);
 void systems_stop(void);
@@ -47,7 +47,7 @@ bool systems_start(void) {
   kronos_register(&system_game);
   kronos_register(&system_sound);
   kronos_register(&system_lua_bridge);
-  //kronos_register(&system_ui);
+  kronos_register(&system_ui);
 
   return true;
 }
@@ -64,7 +64,7 @@ void systems_message(uint32_t id, RectifyMap *const map) {
     return;
   }
 
-  char *const system = (char *const)rectify_map_get(map, "system");
+  char *const system = rectify_map_get_string(map, "system");
   if (!system) {
     return;
   }
