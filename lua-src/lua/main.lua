@@ -1,7 +1,9 @@
 math.randomseed(os.time())
 
 local lua_bridge = require("lua_bridge")
+local ui = require("ui")
 local load_tiledefs = require("tiledefs")
+local Window = require("window")
 
 local windows = {}
 
@@ -54,29 +56,8 @@ local events = {
 
   [MSG_SYSTEM_SPUN_UP] = function (data)
     if data.system == "ui" then
-      windows[#windows + 1] = {
-        ["handle"] = os.time() + math.random(),
-      }
-      lua_bridge.post_message("ui", MSG_UI_WINDOW_CREATE, {
-        ["title"] = "Test wnd",
-        ["x"] = 141,
-        ["y"] = 7,
-        ["width"] = 18,
-        ["height"] = 18,
-        ["msg_id"] = windows[#windows].handle,
-      })
-
-      windows[#windows + 1] = {
-        ["handle"] = os.time() + math.random(),
-      }
-      lua_bridge.post_message("ui", MSG_UI_WINDOW_CREATE, {
-        ["title"] = "Test wnd 2",
-        ["x"] = 141,
-        ["y"] = 26,
-        ["width"] = 18,
-        ["height"] = 18,
-        ["msg_id"] = windows[#windows].handle,
-      })
+      windows[#windows + 1] = Window("Test Wnd 1", 141, 7, 18, 18)
+      windows[#windows + 1] = Window("Test Wnd 2", 141, 26, 18, 18)
     end
   end,
   [MSG_SYSTEM_SHUT_DOWN] = function (data)
@@ -84,48 +65,13 @@ local events = {
       windows = {}
     end
   end,
-
-  [MSG_UI_WINDOW_CREATED] = function (data)
-    for t, window in ipairs(windows) do
-      if data.handle == window.handle then
-        windows[t].handle = data.handle
-
-        for y = 0, 15 do
-          for x = 0, 15 do
-            local rune = (y * 16) + x
-            local fore = 0x808080
-            local back = 0x0
-
-            --[[if math.floor(rune / 16) == math.floor(self.chosen_rune / 16)
-              or math.floor(rune % 16) == math.floor(self.chosen_rune % 16) then
-              fore = 0xc8c8c8
-              back = 0x666666
-            end
-            if rune == self.chosen_rune then
-              fore = 0xffffff
-              back = 0x999999
-            end]]
-
-            --self.window:glyph(rune, x, y, fore, back)
-            lua_bridge.post_message("ui", MSG_UI_WINDOW_GLYPH, {
-              ["handle"] = windows[t].handle,
-              ["rune"] = rune,
-              ["x"] = x,
-              ["y"] = y,
-              ["fore_color"] = fore,
-              ["back_color"] = back,
-            })
-          end
-        end
-
-      end
-    end
-  end,
 }
 lua_bridge.on_message(function (msg, data)
   if events[msg] ~= nil then
     events[msg](data)
   end
+
+  ui.handle_message(msg, data)
 end)
 
 lua_bridge.post_message("lua_bridge", MSG_DEBUG_TEST, nil)

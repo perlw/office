@@ -150,17 +150,15 @@ void scene_world_edit_message(uint32_t id, RectifyMap *const map) {
       }
       break;
     }
+
+    case MSG_WORLD_EDIT_RUNE_SELECTED:
+      scene_world_edit_internal->chosen_rune = rectify_map_get_byte(map, "rune");
+      break;
+
+    case MSG_WORLD_EDIT_COLOR_SELECTED:
+      scene_world_edit_internal->chosen_color = rectify_map_get_uint(map, "color");
+      break;
   }
-
-  /*
-  SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
-  scene->chosen_rune = *(uint32_t *)userdata;
-  */
-
-  /*
-  SceneWorldEdit *scene = (SceneWorldEdit *)subscriberdata;
-  scene->chosen_color = *(uint32_t *)userdata;
-  */
 }
 
 void scene_world_edit_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {

@@ -27,7 +27,7 @@ typedef struct {
   uint32_t y;
   uint32_t width;
   uint32_t height;
-  double handle;
+  uint32_t handle;
 
   Surface *surface;
 } UIWindow;
@@ -87,7 +87,7 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
       uint32_t y = rectify_map_get_uint(map, "y");
       uint32_t width = rectify_map_get_uint(map, "width");
       uint32_t height = rectify_map_get_uint(map, "height");
-      double msg_id = rectify_map_get_double(map, "msg_id");
+      uint32_t handle = rectify_map_get_uint(map, "handle");
 
       if (!title) {
         printf("UI: Missing title when creating window\n");
@@ -100,7 +100,7 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
         .y = y,
         .width = width,
         .height = height,
-        .handle = msg_id,
+        .handle = handle,
         .surface = surface_create(x, y, width, height),
       };
       system_ui_internal_window_draw_border(&window);
@@ -109,7 +109,7 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
 
       {
         RectifyMap *map = rectify_map_create();
-        rectify_map_set_double(map, "handle", msg_id);
+        rectify_map_set_uint(map, "handle", handle);
         gossip_emit(MSG_UI_WINDOW_CREATED, map);
       }
 
@@ -122,7 +122,7 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
     }
 
     case MSG_UI_WINDOW_GLYPH: {
-      double handle = rectify_map_get_double(map, "handle");
+      uint32_t handle = rectify_map_get_uint(map, "handle");
       for (uint32_t t = 0; t < rectify_array_size(system_ui_internal->windows); t++) {
         UIWindow *window = &system_ui_internal->windows[t];
 
@@ -147,6 +147,76 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
           };
 
           break;
+        }
+      }
+
+      break;
+    }
+
+    case MSG_INPUT_MOUSEMOVE: {
+      uint32_t x = rectify_map_get_uint(map, "x");
+      uint32_t y = rectify_map_get_uint(map, "y");
+
+      for (uint32_t t = 0; t < rectify_array_size(system_ui_internal->windows); t++) {
+        UIWindow *window = &system_ui_internal->windows[t];
+
+        if (x > window->x && x < window->x + window->width - 1
+            && y > window->y && y < window->y + window->width - 1) {
+          RectifyMap *map = rectify_map_create();
+          rectify_map_set_uint(map, "handle", window->handle);
+          rectify_map_set_uint(map, "x", x - window->x - 1);
+          rectify_map_set_uint(map, "y", y - window->y - 1);
+          gossip_emit(MSG_UI_WINDOW_MOUSEMOVE, map);
+        }
+      }
+
+      break;
+    }
+
+    case MSG_INPUT_CLICK: {
+      uint32_t button = rectify_map_get_uint(map, "button");
+      uint32_t x = rectify_map_get_uint(map, "x");
+      uint32_t y = rectify_map_get_uint(map, "y");
+      bool pressed = rectify_map_get_bool(map, "pressed");
+      bool released = rectify_map_get_bool(map, "released");
+
+      for (uint32_t t = 0; t < rectify_array_size(system_ui_internal->windows); t++) {
+        UIWindow *window = &system_ui_internal->windows[t];
+
+        if (x > window->x && x < window->x + window->width - 1
+            && y > window->y && y < window->y + window->width - 1) {
+          RectifyMap *map = rectify_map_create();
+          rectify_map_set_uint(map, "handle", window->handle);
+          rectify_map_set_uint(map, "button", button);
+          rectify_map_set_uint(map, "x", x - window->x - 1);
+          rectify_map_set_uint(map, "y", y - window->y - 1);
+          rectify_map_set_bool(map, "pressed", pressed);
+          rectify_map_set_bool(map, "released", released);
+          gossip_emit(MSG_UI_WINDOW_CLICK, map);
+        }
+      }
+
+      break;
+    }
+
+    case MSG_INPUT_SCROLL: {
+      uint32_t x = rectify_map_get_uint(map, "x");
+      uint32_t y = rectify_map_get_uint(map, "y");
+      int32_t scroll_x = rectify_map_get_int(map, "scroll_x");
+      int32_t scroll_y = rectify_map_get_int(map, "scroll_y");
+
+      for (uint32_t t = 0; t < rectify_array_size(system_ui_internal->windows); t++) {
+        UIWindow *window = &system_ui_internal->windows[t];
+
+        if (x > window->x && x < window->x + window->width - 1
+            && y > window->y && y < window->y + window->width - 1) {
+          RectifyMap *map = rectify_map_create();
+          rectify_map_set_uint(map, "handle", window->handle);
+          rectify_map_set_uint(map, "x", x - window->x - 1);
+          rectify_map_set_uint(map, "y", y - window->y - 1);
+          rectify_map_set_uint(map, "scroll_x", scroll_x);
+          rectify_map_set_uint(map, "scroll_y", scroll_y);
+          gossip_emit(MSG_UI_WINDOW_SCROLL, map);
         }
       }
 
