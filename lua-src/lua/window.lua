@@ -13,8 +13,6 @@ setmetatable(Window, {
 })
 
 function Window:create(title, x, y, width, height)
-  self.handle = os.time() + math.random(1000000)
-
   self.chosen_rune = 1
 
   self.events = {

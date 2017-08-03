@@ -30,6 +30,7 @@ module.events = {
 }
 
 function module.window_create(window, title, x, y, width, height)
+  window.handle = os.time() + math.random(1000000)
   module.windows[#module.windows + 1] = window
   lua_bridge.post_message("ui", MSG_UI_WINDOW_CREATE, {
     ["title"] = title,
