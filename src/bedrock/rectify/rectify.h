@@ -27,6 +27,7 @@ typedef enum {
   RECTIFY_MAP_TYPE_FLOAT,
   RECTIFY_MAP_TYPE_DOUBLE,
   RECTIFY_MAP_TYPE_STRING,
+  RECTIFY_MAP_TYPE_MAP,
   RECTIFY_MAP_TYPE_PTR,
 } RectifyMapType;
 
@@ -55,6 +56,7 @@ void rectify_map_set_int(RectifyMap *const map, const char *key, int32_t value);
 void rectify_map_set_float(RectifyMap *const map, const char *key, float value);
 void rectify_map_set_double(RectifyMap *const map, const char *key, double value);
 void rectify_map_set_string(RectifyMap *const map, const char *key, char *const value);
+void rectify_map_set_map(RectifyMap *const map, const char *key, RectifyMap *const value);
 
 void *const rectify_map_get(RectifyMap *const map, const char *key);
 uint8_t rectify_map_get_byte(RectifyMap *const map, const char *key);
@@ -64,6 +66,7 @@ int32_t rectify_map_get_int(RectifyMap *const map, const char *key);
 float rectify_map_get_float(RectifyMap *const map, const char *key);
 double rectify_map_get_double(RectifyMap *const map, const char *key);
 char *const rectify_map_get_string(RectifyMap *const map, const char *key);
+RectifyMap *const rectify_map_get_map(RectifyMap *const map, const char *key);
 
 RectifyMapIter rectify_map_iter(RectifyMap *const map);
 bool rectify_map_iter_next(RectifyMapIter *const iter, RectifyMapItem *item);

@@ -23,8 +23,12 @@ void rectify_map_destroy(RectifyMap **map) {
 
   RectifyMap *dereffed = *map;
   for (uint32_t t = 0; t < rectify_array_size(dereffed->items); t++) {
+    if (dereffed->items[t].type == RECTIFY_MAP_TYPE_MAP) {
+      rectify_map_destroy((RectifyMap **)&dereffed->items[t].val);
+    } else {
+      free(dereffed->items[t].val);
+    }
     free(dereffed->items[t].key);
-    free(dereffed->items[t].val);
   }
   rectify_array_free(&dereffed->items);
   free(*map);
@@ -82,6 +86,10 @@ void rectify_map_set_string(RectifyMap *const map, const char *key, char *const 
   rectify_map_set(map, key, RECTIFY_MAP_TYPE_STRING, sizeof(char) * (strnlen(value, 128) + 1), value);
 }
 
+void rectify_map_set_map(RectifyMap *const map, const char *key, RectifyMap *const value) {
+  rectify_map_set(map, key, RECTIFY_MAP_TYPE_MAP, sizeof(RectifyMap *), value);
+}
+
 void *const rectify_map_get(RectifyMap *const map, const char *key) {
   if (!map) {
     return NULL;
@@ -122,6 +130,10 @@ double rectify_map_get_double(RectifyMap *const map, const char *key) {
 
 char *const rectify_map_get_string(RectifyMap *const map, const char *key) {
   return (char *const)rectify_map_get(map, key);
+}
+
+RectifyMap *const rectify_map_get_map(RectifyMap *const map, const char *key) {
+  return (RectifyMap *)rectify_map_get(map, key);
 }
 
 RectifyMapIter rectify_map_iter(RectifyMap *const map) {
@@ -196,6 +208,12 @@ void rectify_map_print(RectifyMap *const map) {
       case RECTIFY_MAP_TYPE_STRING: {
         char *val = (char *)item->val;
         printf("%s", val);
+        break;
+      }
+
+      case RECTIFY_MAP_TYPE_MAP: {
+        RectifyMap *val = (RectifyMap *)item->val;
+        rectify_map_print(val);
         break;
       }
 

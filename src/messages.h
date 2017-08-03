@@ -37,6 +37,9 @@
   MSG(MSG_PLAYER_MOVE_DOWN)       \
   MSG(MSG_PLAYER_MOVE_DOWN_RIGHT) \
                                   \
+  MSG(MSG_MATERIALS_LOAD)         \
+  MSG(MSG_MATERIAL_REGISTER)      \
+                                  \
   MSG(MSG_DEBUG_TEST)
 
 #define GENERATE_ENUM(ENUM) ENUM,

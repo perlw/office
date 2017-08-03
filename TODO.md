@@ -24,6 +24,9 @@ The actual game
   * Bridge
   * Tiles, properties, tags, flags, special actions
   * UI
+* World file/data format
+  - Header with all used ids
+  - Map data should be 0-based references to mentioned ids
 
 ## Bedrock
 Tests?

@@ -297,6 +297,9 @@ RectifyMap *system_lua_bridge_internal_table_to_map(lua_State *state, int32_t in
       } else {
         rectify_map_set_string(map, key, (char *const)val);
       }
+    } else if (lua_istable(state, -2) == 1) {
+      RectifyMap *submap = system_lua_bridge_internal_table_to_map(state, -2);
+      rectify_map_set_map(map, key, submap);
     }
 
     lua_pop(state, 2);
