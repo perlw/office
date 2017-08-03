@@ -212,7 +212,7 @@ int system_lua_bridge_internal_lua_module_on_message(lua_State *state) {
   int32_t func_ref = (int32_t)luaL_ref(state, LUA_REGISTRYINDEX);
   system_lua_bridge_internal->listeners = rectify_array_push(system_lua_bridge_internal->listeners, &func_ref);
 
-  return 1;
+  return 0;
 }
 
 int system_lua_bridge_internal_lua_module_post_message(lua_State *state) {
@@ -244,7 +244,7 @@ int system_lua_bridge_internal_lua_module_post_message(lua_State *state) {
 
   gossip_post(system, id, map);
 
-  return 1;
+  return 0;
 }
 
 int system_lua_bridge_internal_lua_module_emit_message(lua_State *state) {
@@ -271,7 +271,7 @@ int system_lua_bridge_internal_lua_module_emit_message(lua_State *state) {
 
   gossip_emit(id, map);
 
-  return 1;
+  return 0;
 }
 
 RectifyMap *system_lua_bridge_internal_table_to_map(lua_State *state, int32_t index) {

@@ -11,7 +11,7 @@
 
 bool scene_sound_test_start(void);
 void scene_sound_test_stop(void);
-void scene_sound_test_update(void);
+void scene_sound_test_update(double delta);
 void scene_sound_test_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem scene_sound_test = {
@@ -74,7 +74,7 @@ void scene_sound_test_stop(void) {
   scene_sound_test_internal = NULL;
 }
 
-void scene_sound_test_update(void) {
+void scene_sound_test_update(double delta) {
   if (!scene_sound_test_internal) {
     return;
   }

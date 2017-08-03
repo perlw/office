@@ -9,7 +9,7 @@
 
 bool scene_test_start(void);
 void scene_test_stop(void);
-void scene_test_update(void);
+void scene_test_update(double delta);
 
 KronosSystem scene_test = {
   .name = "scene_test",
@@ -58,7 +58,7 @@ void scene_test_stop(void) {
   scene_test_internal = NULL;
 }
 
-void scene_test_update(void) {
+void scene_test_update(double delta) {
   if (!scene_test_internal) {
     return;
   }

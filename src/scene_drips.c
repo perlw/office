@@ -16,7 +16,7 @@
 
 bool scene_drips_start(void);
 void scene_drips_stop(void);
-void scene_drips_update(void);
+void scene_drips_update(double delta);
 void scene_drips_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem scene_drips = {
@@ -96,12 +96,12 @@ void scene_drips_stop(void) {
   scene_drips_internal = NULL;
 }
 
-void scene_drips_update(void) {
+void scene_drips_update(double delta) {
   if (!scene_drips_internal) {
     return;
   }
 
-  scene_drips_internal->next_drip -= 1.0 / 30.0;
+  scene_drips_internal->next_drip -= delta;
   if (scene_drips_internal->next_drip <= 0.0) {
     for (uint32_t t = 0; t < scene_drips_internal->num_drips; t++) {
       Drip *drip = &scene_drips_internal->drips[t];

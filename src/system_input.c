@@ -7,6 +7,7 @@
 
 bool system_input_start(void);
 void system_input_stop(void);
+void system_input_message(double delta);
 
 KronosSystem system_input = {
   .name = "input",
@@ -15,7 +16,7 @@ KronosSystem system_input = {
   .autostart = true,
   .start = &system_input_start,
   .stop = &system_input_stop,
-  .update = NULL,
+  .update = &system_input_message,
   .message = NULL,
 };
 
@@ -51,6 +52,12 @@ void system_input_stop(void) {
 
   free(system_input_internal);
   system_input_internal = NULL;
+}
+
+void system_input_message(double delta) {
+  if (!system_input_internal) {
+    return;
+  }
 }
 
 void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *event) {

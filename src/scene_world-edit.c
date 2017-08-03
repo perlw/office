@@ -9,7 +9,7 @@
 
 bool scene_world_edit_start(void);
 void scene_world_edit_stop(void);
-void scene_world_edit_update(void);
+void scene_world_edit_update(double delta);
 void scene_world_edit_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem scene_world_edit = {
@@ -84,7 +84,7 @@ void scene_world_edit_stop(void) {
   scene_world_edit_internal = NULL;
 }
 
-void scene_world_edit_update(void) {
+void scene_world_edit_update(double delta) {
   if (!scene_world_edit_internal) {
     return;
   }

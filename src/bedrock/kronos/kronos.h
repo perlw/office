@@ -16,6 +16,7 @@ typedef enum {
 
 typedef bool (*KronosSystemStart)(void);
 typedef void (*KronosSystemMessage)(uint32_t id, RectifyMap *const map);
+typedef void (*KronosSystemUpdate)(double delta);
 typedef void (*KronosSystemFunc)(void);
 
 typedef struct {
@@ -25,7 +26,7 @@ typedef struct {
   bool autostart;
   KronosSystemStart start;
   KronosSystemFunc stop;
-  KronosSystemFunc update;
+  KronosSystemUpdate update;
   KronosSystemMessage message;
 } KronosSystem;
 

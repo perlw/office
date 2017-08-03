@@ -14,7 +14,7 @@
 
 bool scenes_start(void);
 void scenes_stop(void);
-void scenes_update(void);
+void scenes_update(double delta);
 void scenes_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem scenes = {
@@ -64,7 +64,7 @@ void scenes_stop(void) {
   scenes_internal = NULL;
 }
 
-void scenes_update(void) {
+void scenes_update(double delta) {
   if (!scenes_internal) {
     return;
   }

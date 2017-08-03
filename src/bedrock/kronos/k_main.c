@@ -129,13 +129,13 @@ void kronos_update(double delta) {
     }
 
     if (state->system->frames == 0) {
-      state->system->update();
+      state->system->update(state->timing);
     } else {
       state->since_update += delta;
       while (state->since_update >= state->timing) {
         state->since_update -= state->timing;
 
-        state->system->update();
+        state->system->update(state->timing);
       }
     }
   }

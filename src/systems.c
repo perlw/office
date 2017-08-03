@@ -14,7 +14,6 @@
 
 bool systems_start(void);
 void systems_stop(void);
-void systems_update(void);
 void systems_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem systems = {
@@ -23,7 +22,7 @@ KronosSystem systems = {
   .prevent_stop = true,
   .start = &systems_start,
   .stop = &systems_stop,
-  .update = &systems_update,
+  .update = NULL,
   .message = &systems_message,
 };
 
@@ -58,12 +57,6 @@ void systems_stop(void) {
     return;
   }
   free(systems_internal);
-}
-
-void systems_update(void) {
-  if (!systems_internal) {
-    return;
-  }
 }
 
 void systems_message(uint32_t id, RectifyMap *const map) {

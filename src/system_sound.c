@@ -9,7 +9,7 @@
 
 bool system_sound_start(void);
 void system_sound_stop(void);
-void system_sound_update(void);
+void system_sound_update(double delta);
 void system_sound_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem system_sound = {
@@ -109,7 +109,7 @@ void system_sound_stop(void) {
   system_sound_internal = NULL;
 }
 
-void system_sound_update(void) {
+void system_sound_update(double delta) {
   if (!system_sound_internal) {
     return;
   }

@@ -5,6 +5,8 @@ resolution(1280, 720)
 ascii_resolution(160, 90);
 --frame_lock(60);
 
+bind(KEY_F1, "dummy")
+--[[
 bind("game:kill", KEY_ESCAPE)
 bind("scene:prev", KEY_LEFT)
 bind("scene:next", KEY_RIGHT)
@@ -19,3 +21,4 @@ bind("player:move_down", KEY_KP_2)
 bind("player:move_down_right", KEY_KP_3)
 
 bind("scene:pause_updates", KEY_PAUSE);
+]]

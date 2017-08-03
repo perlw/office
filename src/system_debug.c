@@ -12,7 +12,7 @@
 
 bool system_debug_start(void);
 void system_debug_stop(void);
-void system_debug_update(void);
+void system_debug_update(double delta);
 void system_debug_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem system_debug = {
@@ -79,7 +79,7 @@ void system_debug_stop(void) {
   debugoverlay = NULL;
 }
 
-void system_debug_update(void) {
+void system_debug_update(double delta) {
   if (!debugoverlay) {
     return;
   }

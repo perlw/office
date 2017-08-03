@@ -9,6 +9,7 @@
   MSG(MSG_GAME_INIT)              \
   MSG(MSG_GAME_KILL)              \
                                   \
+  MSG(MSG_INPUT_BIND)             \
   MSG(MSG_INPUT_KEY)              \
   MSG(MSG_INPUT_MOUSEMOVE)        \
   MSG(MSG_INPUT_CLICK)            \

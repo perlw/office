@@ -12,7 +12,7 @@
 
 bool scene_game_start(void);
 void scene_game_stop(void);
-void scene_game_update(void);
+void scene_game_update(double delta);
 void scene_game_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem scene_game = {
@@ -195,7 +195,7 @@ void scene_game_stop(void) {
   scene_game_internal = NULL;
 }
 
-void scene_game_update(void) {
+void scene_game_update(double delta) {
   if (!scene_game_internal) {
     return;
   }
@@ -228,7 +228,7 @@ void scene_game_update(void) {
 
   // +Temporary animated tile
   for (uint32_t t = 0; t < MAP_SIZE; t++) {
-    scene_game_internal->map[t].next_update -= 1.0 / 30.0;
+    scene_game_internal->map[t].next_update -= delta;
     if (scene_game_internal->map[t].next_update <= 0.0) {
       scene_game_internal->map[t].next_update = 1.0 / 2.0;
 

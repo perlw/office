@@ -8,6 +8,7 @@
 #include "bedrock/bedrock.h"
 
 #include "config.h"
+#include "messages.h"
 
 struct {
   char *name;
@@ -567,20 +568,30 @@ int config_internal_bind(lua_State *state) {
     return 0;
   }
 
-  /*InputActionBinding binding = (InputActionBinding){
-    .action = (char *)lua_tolstring(state, 1, NULL),
-    .key = (int32_t)lua_tonumber(state, 2),
-  };
-  input_action_add_binding(&binding);*/
+  if (lua_isinteger(state, 1) != 1) {
+    printf("Config: Incorrect argument type, expected integer, \"bind\".\n");
+    return 0;
+  }
 
-  const char *dummy_name = lua_tostring(state, 1);
-  int32_t dummy_key = (int32_t)lua_tonumber(state, 2);
+  if (lua_isstring(state, 2) != 1) {
+    printf("Config: Incorrect argument type, expected string, \"bind\".\n");
+    return 0;
+  }
+
+  int32_t key = (int32_t)lua_tointeger(state, 1);
+  const char *action = lua_tostring(state, 2);
+  RectifyMap *map = rectify_map_create();
+  rectify_map_set_int(map, "key", key);
+  rectify_map_set_string(map, "action", (char *)action);
+
   for (uint32_t t = 0; key_names[t].name; t++) {
-    if (key_names[t].val == dummy_key) {
-      printf("NOT IMPLEMENTED! Config: Bound %s to %s\n", key_names[t].name, dummy_name);
+    if (key == key_names[t].val) {
+      printf("Config: Binding %s to %s\n", key_names[t].name, action);
       break;
     }
   }
+
+  gossip_post("input", MSG_INPUT_BIND, map);
 
   return 0;
 }
@@ -625,7 +636,7 @@ const Config *const config_init(void) {
   lua_setglobal(state, "bind");
 
   for (uint32_t t = 0; key_names[t].name; t++) {
-    lua_pushnumber(state, key_names[t].val);
+    lua_pushinteger(state, key_names[t].val);
     lua_setglobal(state, key_names[t].name);
   }
 
