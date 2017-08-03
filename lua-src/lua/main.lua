@@ -58,9 +58,21 @@ local events = {
         ["handle"] = os.time() + math.random(),
       }
       lua_bridge.post_message("ui", MSG_UI_WINDOW_CREATE, {
-        ["title"] = "Test window",
+        ["title"] = "Test wnd",
         ["x"] = 141,
         ["y"] = 7,
+        ["width"] = 18,
+        ["height"] = 18,
+        ["msg_id"] = windows[#windows].handle,
+      })
+
+      windows[#windows + 1] = {
+        ["handle"] = os.time() + math.random(),
+      }
+      lua_bridge.post_message("ui", MSG_UI_WINDOW_CREATE, {
+        ["title"] = "Test wnd 2",
+        ["x"] = 141,
+        ["y"] = 26,
         ["width"] = 18,
         ["height"] = 18,
         ["msg_id"] = windows[#windows].handle,
