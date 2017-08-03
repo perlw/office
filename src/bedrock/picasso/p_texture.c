@@ -64,11 +64,11 @@ PicassoTexture *picasso_texture_load(PicassoTextureTarget target, PicassoTexture
   return texture;
 }
 
-void picasso_texture_destroy(PicassoTexture *const texture) {
-  assert(texture);
-
-  glDeleteTextures(1, &texture->id);
-  free(texture);
+void picasso_texture_destroy(PicassoTexture **texture) {
+  assert(texture && *texture);
+  glDeleteTextures(1, &(*texture)->id);
+  free(*texture);
+  *texture = NULL;
 }
 
 PicassoTextureResult picasso_texture_set_data(PicassoTexture *const texture, uintmax_t offset_x, uintmax_t offset_y, uintmax_t width, uintmax_t height, const void *data) {

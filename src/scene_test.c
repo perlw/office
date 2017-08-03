@@ -52,7 +52,7 @@ void scene_test_stop(void) {
   }
 
   screen_unhook_render(&scene_test_internal_render_hook, NULL);
-  surface_destroy(scene_test_internal->surface);
+  surface_destroy(&scene_test_internal->surface);
 
   free(scene_test_internal);
   scene_test_internal = NULL;

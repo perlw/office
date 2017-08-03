@@ -203,11 +203,11 @@ typedef struct PicassoShader PicassoShader;
 typedef struct PicassoProgram PicassoProgram;
 
 PicassoShader *picasso_shader_create(PicassoShaderType type);
-void picasso_shader_destroy(PicassoShader *const shader);
+void picasso_shader_destroy(PicassoShader **shader);
 PicassoResult picasso_shader_compile(PicassoShader *const shader, uintmax_t length, const uint8_t *const source);
 
 PicassoProgram *picasso_program_create(void);
-void picasso_program_destroy(PicassoProgram *const program);
+void picasso_program_destroy(PicassoProgram **program);
 PicassoResult picasso_program_link_shaders(PicassoProgram *const program, uintmax_t num_shaders, const PicassoShader **shaders);
 void picasso_program_use(PicassoProgram *const program);
 int32_t picasso_program_attrib_location(PicassoProgram *const program, const char *name);
@@ -244,7 +244,7 @@ typedef struct PicassoBufferGroup PicassoBufferGroup;
 typedef struct PicassoBuffer PicassoBuffer;
 
 PicassoBufferGroup *picasso_buffergroup_create(void);
-void picasso_buffergroup_destroy(PicassoBufferGroup *const buffergroup);
+void picasso_buffergroup_destroy(PicassoBufferGroup **buffergroup);
 void picasso_buffergroup_draw(PicassoBufferGroup *const buffergroup, PicassoBufferMode mode, uintmax_t num_vertices);
 
 PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *const buffergroup, PicassoBufferType type, PicassoBufferUsage usage);
@@ -275,7 +275,7 @@ typedef struct PicassoTexture PicassoTexture;
 
 PicassoTexture *picasso_texture_create(PicassoTextureTarget target, uintmax_t width, uintmax_t height, PicassoTextureChannels channels, bool filtered);
 PicassoTexture *picasso_texture_load(PicassoTextureTarget target, PicassoTextureChannels channels, uintmax_t size, const uint8_t *data);
-void picasso_texture_destroy(PicassoTexture *const texture);
+void picasso_texture_destroy(PicassoTexture **texture);
 
 PicassoTextureResult picasso_texture_set_data(PicassoTexture *const texture, uintmax_t offset_x, uintmax_t offset_y, uintmax_t width, uintmax_t height, const void *data);
 void picasso_texture_bind_to(PicassoTexture *const texture, uint32_t index);
@@ -290,7 +290,7 @@ typedef enum {
 typedef struct PicassoFramebuffer PicassoFramebuffer;
 
 PicassoFramebuffer *picasso_framebuffer_create(void);
-void picasso_framebuffer_destroy(PicassoFramebuffer *const buffer);
+void picasso_framebuffer_destroy(PicassoFramebuffer **buffer);
 
 PicassoFramebufferResult picasso_framebuffer_attach_texture(PicassoFramebuffer *const buffer, PicassoTexture *const texture);
 

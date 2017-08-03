@@ -25,11 +25,11 @@ PicassoShader *picasso_shader_create(PicassoShaderType type) {
   return shader;
 }
 
-void picasso_shader_destroy(PicassoShader *const shader) {
-  assert(shader);
-
-  glDeleteShader(shader->id);
-  free(shader);
+void picasso_shader_destroy(PicassoShader **shader) {
+  assert(shader && *shader);
+  glDeleteShader((*shader)->id);
+  free(*shader);
+  *shader = NULL;
 }
 
 PicassoResult picasso_shader_compile(PicassoShader *const shader, uintmax_t length, const uint8_t *const source) {

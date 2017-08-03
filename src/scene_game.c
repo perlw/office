@@ -189,7 +189,7 @@ void scene_game_stop(void) {
   }
 
   screen_unhook_render(&scene_game_internal_render_hook, NULL);
-  surface_destroy(scene_game_internal->world);
+  surface_destroy(&scene_game_internal->world);
 
   free(scene_game_internal);
   scene_game_internal = NULL;

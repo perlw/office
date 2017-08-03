@@ -68,7 +68,7 @@ void scene_sound_test_stop(void) {
   }
 
   screen_unhook_render(&scene_sound_test_internal_render_hook, NULL);
-  surface_destroy(scene_sound_test_internal->spectrum);
+  surface_destroy(&scene_sound_test_internal->spectrum);
 
   free(scene_sound_test_internal);
   scene_sound_test_internal = NULL;

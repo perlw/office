@@ -195,32 +195,35 @@ AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii
   return ascii;
 }
 
-void ascii_buffer_destroy(AsciiBuffer *const ascii) {
-  assert(ascii);
+void ascii_buffer_destroy(AsciiBuffer **ascii) {
+  AsciiBuffer *ptr = *ascii;
+
+  assert(ascii && ptr);
 
   // +FBO
-  picasso_texture_destroy(ascii->fbo.texture);
+  picasso_texture_destroy(&ptr->fbo.texture);
   tome_release(ASSET_SHADER, "framebuffer");
-  picasso_buffergroup_destroy(ascii->fbo.quad);
-  picasso_framebuffer_destroy(ascii->fbo.framebuffer);
+  picasso_buffergroup_destroy(&ptr->fbo.quad);
+  picasso_framebuffer_destroy(&ptr->fbo.framebuffer);
   // -FBO
 
   for (uint32_t t = 0; t < 2; t++) {
-    free(ascii->buffers[t].back_buffer);
-    free(ascii->buffers[t].fore_buffer);
-    free(ascii->buffers[t].rune_buffer);
+    free(ptr->buffers[t].back_buffer);
+    free(ptr->buffers[t].fore_buffer);
+    free(ptr->buffers[t].rune_buffer);
   }
 
-  picasso_texture_destroy(ascii->backcolors_texture);
-  picasso_texture_destroy(ascii->forecolors_texture);
-  picasso_texture_destroy(ascii->asciimap_texture);
+  picasso_texture_destroy(&ptr->backcolors_texture);
+  picasso_texture_destroy(&ptr->forecolors_texture);
+  picasso_texture_destroy(&ptr->asciimap_texture);
 
   tome_release(ASSET_TEXTURE, "ascii_buffer_font");
   tome_release(ASSET_SHADER, "ascii_buffer");
 
-  picasso_buffergroup_destroy(ascii->quad);
+  picasso_buffergroup_destroy(&ptr->quad);
 
-  free(ascii);
+  free(ptr);
+  *ascii = NULL;
 }
 
 void ascii_buffer_glyph(AsciiBuffer *const ascii, uint32_t x, uint32_t y, Glyph glyph) {

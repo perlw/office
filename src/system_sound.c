@@ -96,13 +96,13 @@ void system_sound_stop(void) {
     return;
   }
 
-  boombox_cassette_destroy(system_sound_internal->song2);
-  boombox_cassette_destroy(system_sound_internal->song);
-  //boombox_cassette_destroy(system_sound_internal->water_footsteps_sound);
-  boombox_cassette_destroy(system_sound_internal->drip_sound);
-  boombox_cassette_destroy(system_sound_internal->boom_sound);
-  boombox_cassette_destroy(system_sound_internal->tap_sound);
-  boombox_cassette_destroy(system_sound_internal->init_sound);
+  boombox_cassette_destroy(&system_sound_internal->song2);
+  boombox_cassette_destroy(&system_sound_internal->song);
+  //boombox_cassette_destroy(&system_sound_internal->water_footsteps_sound);
+  boombox_cassette_destroy(&system_sound_internal->drip_sound);
+  boombox_cassette_destroy(&system_sound_internal->boom_sound);
+  boombox_cassette_destroy(&system_sound_internal->tap_sound);
+  boombox_cassette_destroy(&system_sound_internal->init_sound);
   boombox_kill();
 
   free(system_sound_internal);

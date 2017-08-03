@@ -29,11 +29,11 @@ PicassoResult picasso_program_link_shaders(PicassoProgram *const program, uintma
   };
 }
 
-void picasso_program_destroy(PicassoProgram *const program) {
-  assert(program);
-
-  glDeleteProgram(program->id);
-  free(program);
+void picasso_program_destroy(PicassoProgram **program) {
+  assert(program && *program);
+  glDeleteProgram((*program)->id);
+  free(*program);
+  *program = NULL;
 }
 
 void picasso_program_use(PicassoProgram *const program) {

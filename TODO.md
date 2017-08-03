@@ -7,7 +7,8 @@ The actual game
 * Logging
   - Log to file aswell as log to console
   - Separate files for different systems
-* Lua bridge
+* Input
+  - Go over inputs
 * Sound
   - Ability to load and play sounds, won't need to define
 * Occulus
@@ -21,8 +22,10 @@ The actual game
     - Text input widget
     - File listing widget
       - Needs list widget
-* Lua UI
-* Lua defined tiles, properties, tags, flags, special actions
+* Lua
+  * Bridge
+  * Tiles, properties, tags, flags, special actions
+  * UI
 
 ## Bedrock
 Tests?

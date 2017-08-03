@@ -22,7 +22,7 @@ void boombox_update(void);
 typedef struct BoomboxCassette BoomboxCassette;
 
 BoomboxCassette *boombox_cassette_create(void);
-void boombox_cassette_destroy(BoomboxCassette *const cassette);
+void boombox_cassette_destroy(BoomboxCassette **cassette);
 
 BoomboxResult boombox_cassette_load_sound(BoomboxCassette *const cassette, const char *filepath);
 BoomboxResult boombox_cassette_play(BoomboxCassette *const cassette);

@@ -77,8 +77,8 @@ void scene_world_edit_stop(void) {
 
   screen_unhook_render(&scene_world_edit_internal_render_hook, NULL);
 
-  surface_destroy(scene_world_edit_internal->overlay);
-  surface_destroy(scene_world_edit_internal->world);
+  surface_destroy(&scene_world_edit_internal->overlay);
+  surface_destroy(&scene_world_edit_internal->world);
 
   free(scene_world_edit_internal);
   scene_world_edit_internal = NULL;

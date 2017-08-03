@@ -73,7 +73,7 @@ void system_debug_stop(void) {
   }
 
   screen_unhook_render(&system_debug_internal_render_hook, debugoverlay);
-  surface_destroy(debugoverlay->surface);
+  surface_destroy(&debugoverlay->surface);
 
   free(debugoverlay);
   debugoverlay = NULL;

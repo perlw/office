@@ -36,18 +36,20 @@ PicassoBufferGroup *picasso_buffergroup_create(void) {
   return buffergroup;
 }
 
-void picasso_buffergroup_destroy(PicassoBufferGroup *const buffergroup) {
-  assert(buffergroup);
+void picasso_buffergroup_destroy(PicassoBufferGroup **buffergroup) {
+  PicassoBufferGroup *ptr = *buffergroup;
+  assert(buffergroup && ptr);
 
   buffergroup_bind(0);
 
-  for (uintmax_t t = 0; t < rectify_array_size(buffergroup->buffers); t++) {
-    buffer_destroy(buffergroup->buffers[t]);
+  for (uintmax_t t = 0; t < rectify_array_size(ptr->buffers); t++) {
+    buffer_destroy(&ptr->buffers[t]);
   }
-  rectify_array_free((void **)&buffergroup->buffers);
+  rectify_array_free((void **)&ptr->buffers);
 
-  glDeleteVertexArrays(1, &buffergroup->id);
-  free(buffergroup);
+  glDeleteVertexArrays(1, &ptr->id);
+  free(ptr);
+  *buffergroup = NULL;
 }
 
 void picasso_buffergroup_draw(PicassoBufferGroup *const buffergroup, PicassoBufferMode mode, uintmax_t num_vertices) {
@@ -82,11 +84,13 @@ PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *const buffergroup, Pica
   return buffer;
 }
 
-void buffer_destroy(PicassoBuffer *const buffer) {
-  assert(buffer);
+void buffer_destroy(PicassoBuffer **buffer) {
+  PicassoBuffer *ptr = *buffer;
 
-  glDeleteBuffers(1, &buffer->id);
-  free(buffer);
+  assert(buffer && ptr);
+  glDeleteBuffers(1, &ptr->id);
+  free(ptr);
+  *buffer = NULL;
 }
 
 void picasso_buffer_set_data(PicassoBuffer *const buffer, uintmax_t num_fields, PicassoDataType type, uintmax_t size, const void *data) {

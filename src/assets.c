@@ -46,8 +46,8 @@ void *shader_loader(const char *name, const char *path) {
                                              fragment_shader,
                                            });
 
-  picasso_shader_destroy(vertex_shader);
-  picasso_shader_destroy(fragment_shader);
+  picasso_shader_destroy(&vertex_shader);
+  picasso_shader_destroy(&fragment_shader);
 
   free(vert_source);
   free(frag_source);
@@ -56,7 +56,7 @@ void *shader_loader(const char *name, const char *path) {
 }
 
 void shader_destroyer(void *data) {
-  picasso_program_destroy((PicassoProgram *)data);
+  picasso_program_destroy(&(PicassoProgram *)data);
 }
 
 void *texture_loader(const char *name, const char *path) {
@@ -74,7 +74,7 @@ void *texture_loader(const char *name, const char *path) {
 }
 
 void texture_destroyer(void *data) {
-  picasso_texture_destroy((PicassoTexture *)data);
+  picasso_texture_destroy(&(PicassoTexture *)data);
 }
 
 void setup_asset_loaders(void) {

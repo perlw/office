@@ -87,10 +87,10 @@ void scene_drips_stop(void) {
   screen_unhook_render(&scene_drips_internal_render_hook, NULL);
 
   for (uint32_t t = 0; t < scene_drips_internal->num_drips; t++) {
-    surface_destroy(scene_drips_internal->drips[t].surface);
+    surface_destroy(&scene_drips_internal->drips[t].surface);
   }
   free(scene_drips_internal->drips);
-  surface_destroy(scene_drips_internal->surface);
+  surface_destroy(&scene_drips_internal->surface);
 
   free(scene_drips_internal);
   scene_drips_internal = NULL;

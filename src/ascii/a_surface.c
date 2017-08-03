@@ -35,12 +35,13 @@ Surface *surface_clone(Surface *const original) {
   return surface;
 }
 
-void surface_destroy(Surface *const surface) {
-  assert(surface);
+void surface_destroy(Surface **surface) {
+  Surface *ptr = *surface;
 
-  free(surface->buffer);
-
-  free(surface);
+  assert(surface && ptr);
+  free(ptr->buffer);
+  free(ptr);
+  *surface = NULL;
 }
 
 void surface_clear(Surface *const surface, Glyph glyph) {

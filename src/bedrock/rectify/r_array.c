@@ -49,7 +49,7 @@ void *rectify_array_alloc(uintmax_t chunk_size, uintmax_t element_size) {
 }
 
 void rectify_array_free(void **ptr) {
-  assert(ptr);
+  assert(ptr && *ptr);
 
   free(unfence_ptr(*ptr));
   *ptr = NULL;

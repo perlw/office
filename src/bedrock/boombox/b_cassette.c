@@ -6,14 +6,15 @@ BoomboxCassette *boombox_cassette_create(void) {
   return cassette;
 }
 
-void boombox_cassette_destroy(BoomboxCassette *const cassette) {
-  assert(cassette);
+void boombox_cassette_destroy(BoomboxCassette **cassette) {
+  assert(cassette && *cassette);
 
-  if (cassette->loaded) {
-    FMOD_Sound_Release(cassette->fmod.sound);
+  if ((*cassette)->loaded) {
+    FMOD_Sound_Release((*cassette)->fmod.sound);
   }
 
-  free(cassette);
+  free(*cassette);
+  *cassette = NULL;
 }
 
 BoomboxResult boombox_cassette_load_sound(BoomboxCassette *const cassette, const char *filepath) {

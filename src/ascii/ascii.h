@@ -64,7 +64,7 @@ typedef struct {
 } AsciiBuffer;
 
 AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height);
-void ascii_buffer_destroy(AsciiBuffer *const ascii);
+void ascii_buffer_destroy(AsciiBuffer **ascii);
 
 void ascii_buffer_glyph(AsciiBuffer *const ascii, uint32_t x, uint32_t y, Glyph glyph);
 void ascii_buffer_draw(AsciiBuffer *const ascii);
@@ -88,7 +88,7 @@ typedef struct {
 
 Surface *surface_create(uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t height);
 Surface *surface_clone(Surface *const original);
-void surface_destroy(Surface *const surface);
+void surface_destroy(Surface **surface);
 
 void surface_clear(Surface *const surface, Glyph glyph);
 void surface_text(Surface *const surface, uint32_t x, uint32_t y, uint32_t length, const char *string, GlyphColor fore_color, GlyphColor back_color);
