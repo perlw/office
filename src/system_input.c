@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "bedrock/bedrock.h"
 
@@ -7,7 +8,7 @@
 
 bool system_input_start(void);
 void system_input_stop(void);
-void system_input_message(double delta);
+void system_input_message(uint32_t id, RectifyMap *const map);
 
 KronosSystem system_input = {
   .name = "input",
@@ -16,8 +17,8 @@ KronosSystem system_input = {
   .autostart = true,
   .start = &system_input_start,
   .stop = &system_input_stop,
-  .update = &system_input_message,
-  .message = NULL,
+  .update = NULL,
+  .message = &system_input_message,
 };
 
 void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *event);
@@ -26,7 +27,12 @@ void system_input_internal_click_callback(const PicassoWindowMouseEvent *event);
 void system_input_internal_mousescroll_callback(const PicassoWindowMouseScrollEvent *event);
 
 typedef struct {
-  int dummy;
+  uint32_t key;
+  char *action;
+} SystemInputKeyBind;
+
+typedef struct {
+  SystemInputKeyBind *keybinds;
 } SystemInput;
 
 SystemInput *system_input_internal = NULL;
@@ -36,6 +42,7 @@ bool system_input_start(void) {
   }
 
   system_input_internal = calloc(1, sizeof(SystemInput));
+  system_input_internal->keybinds = rectify_array_alloc(10, sizeof(SystemInputKeyBind));
 
   picasso_window_keyboard_callback(&system_input_internal_keyboard_callback);
   picasso_window_mouse_move_callback(&system_input_internal_mousemove_callback);
@@ -50,22 +57,52 @@ void system_input_stop(void) {
     return;
   }
 
+  for (uint32_t t = 0; t < rectify_array_size(system_input_internal->keybinds); t++) {
+    free(system_input_internal->keybinds[t].action);
+  }
+  rectify_array_free(&system_input_internal->keybinds);
+
   free(system_input_internal);
   system_input_internal = NULL;
 }
 
-void system_input_message(double delta) {
+void system_input_message(uint32_t id, RectifyMap *const map) {
   if (!system_input_internal) {
     return;
+  }
+
+  switch (id) {
+    case MSG_INPUT_BIND: {
+      char *const action = rectify_map_get_string(map, "action");
+      uint32_t key = rectify_map_get_uint(map, "key");
+
+      system_input_internal->keybinds = rectify_array_push(system_input_internal->keybinds, &(SystemInputKeyBind){
+                                                                                              .key = key,
+                                                                                              .action = rectify_memory_alloc_copy(action, sizeof(char) * (strnlen(action, 128) + 1)),
+                                                                                            });
+      break;
+    }
   }
 }
 
 void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
-  // Temp
+  for (uint32_t t = 0; t < rectify_array_size(system_input_internal->keybinds); t++) {
+    if (system_input_internal->keybinds[t].key == event->key) {
+      printf("Input: Triggering bind %s\n", system_input_internal->keybinds[t].action);
+
+      RectifyMap *map = rectify_map_create();
+      rectify_map_set_string(map, "action", system_input_internal->keybinds[t].action);
+      rectify_map_set_bool(map, "pressed", event->pressed);
+      rectify_map_set_bool(map, "released", event->released);
+      gossip_emit(MSG_INPUT_ACTION, map);
+      return;
+    }
+  }
+
   RectifyMap *map = rectify_map_create();
-  rectify_map_set(map, "key", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & event->key);
-  rectify_map_set(map, "pressed", RECTIFY_MAP_TYPE_BOOL, sizeof(bool), (bool *const) & event->pressed);
-  rectify_map_set(map, "released", RECTIFY_MAP_TYPE_BOOL, sizeof(bool), (bool *const) & event->released);
+  rectify_map_set_uint(map, "key", event->key);
+  rectify_map_set_bool(map, "pressed", event->pressed);
+  rectify_map_set_bool(map, "released", event->released);
   gossip_emit(MSG_INPUT_KEY, map);
 
   if (event->released) {
@@ -85,42 +122,6 @@ void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *e
 
     case PICASSO_KEY_RIGHT:
       gossip_emit(MSG_SCENE_NEXT, NULL);
-      return;
-
-    case PICASSO_KEY_KP_1:
-      gossip_emit(MSG_PLAYER_MOVE_DOWN_LEFT, NULL);
-      return;
-
-    case PICASSO_KEY_KP_2:
-      gossip_emit(MSG_PLAYER_MOVE_DOWN, NULL);
-      return;
-
-    case PICASSO_KEY_KP_3:
-      gossip_emit(MSG_PLAYER_MOVE_DOWN_RIGHT, NULL);
-      return;
-
-    case PICASSO_KEY_KP_4:
-      gossip_emit(MSG_PLAYER_MOVE_LEFT, NULL);
-      return;
-
-    case PICASSO_KEY_KP_5:
-      printf("SYSTEM_INPUT: Something should happen?\n");
-      break;
-
-    case PICASSO_KEY_KP_6:
-      gossip_emit(MSG_PLAYER_MOVE_RIGHT, NULL);
-      return;
-
-    case PICASSO_KEY_KP_7:
-      gossip_emit(MSG_PLAYER_MOVE_UP_LEFT, NULL);
-      return;
-
-    case PICASSO_KEY_KP_8:
-      gossip_emit(MSG_PLAYER_MOVE_UP, NULL);
-      return;
-
-    case PICASSO_KEY_KP_9:
-      gossip_emit(MSG_PLAYER_MOVE_UP_RIGHT, NULL);
       return;
   }
 }

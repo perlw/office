@@ -581,7 +581,7 @@ int config_internal_bind(lua_State *state) {
   int32_t key = (int32_t)lua_tointeger(state, 1);
   const char *action = lua_tostring(state, 2);
   RectifyMap *map = rectify_map_create();
-  rectify_map_set_int(map, "key", key);
+  rectify_map_set_uint(map, "key", (uint32_t)key);
   rectify_map_set_string(map, "action", (char *)action);
 
   for (uint32_t t = 0; key_names[t].name; t++) {

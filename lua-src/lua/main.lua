@@ -1,11 +1,36 @@
 local lua_bridge = require('lua_bridge')
 
-lua_bridge.on_message(function (msg, data)
-  if msg == MSG_INPUT_KEY then
-    io.write("GOT A MESSAGE, OMG, " .. msg .. " #" .. #data .. "\n")
+local player_moves = {
+  ["plr_move_dnlt"] = MSG_PLAYER_MOVE_DOWN_LEFT,
+  ["plr_move_dn"] = MSG_PLAYER_MOVE_DOWN,
+  ["plr_move_dnrt"] = MSG_PLAYER_MOVE_DOWN_RIGHT,
+  ["plr_move_lt"] = MSG_PLAYER_MOVE_LEFT,
+  ["plr_move_rt"] = MSG_PLAYER_MOVE_RIGHT,
+  ["plr_move_uplt"] = MSG_PLAYER_MOVE_UP_LEFT,
+  ["plr_move_up"] = MSG_PLAYER_MOVE_UP,
+  ["plr_move_uprt"] = MSG_PLAYER_MOVE_UP_RIGHT,
+}
+local events = {
+  [MSG_INPUT_KEY] = function (data)
+    io.write("Lua: Got key\n")
     for key, val in pairs(data) do
-      io.write(key .. "-" .. tostring(val) .. "\n")
+      io.write("\t" .. key .. " -> " .. tostring(val) .. "\n")
     end
+  end,
+
+  [MSG_INPUT_ACTION] = function (data)
+    io.write("Lua: Got action: " .. data.action .. "\n")
+
+    if data.pressed then
+      if player_moves[data.action] ~= nil then
+        lua_bridge.emit_message(player_moves[data.action], nil)
+      end
+    end
+  end,
+}
+lua_bridge.on_message(function (msg, data)
+  if events[msg] ~= nil then
+    events[msg](data)
   end
 end)
 
@@ -23,91 +48,3 @@ lua_bridge.post_message("lua_bridge", MSG_DEBUG_TEST, {
 lua_bridge.emit_message(MSG_DEBUG_TEST, {
   ["foo"] = "bar",
 })
-
---local gossip = require("lua_bridge/gossip")
---[[local Window = require("ui/window")
-local RuneSelector = require("ui/widgets/rune_selector")
-local ColorSelector = require("ui/widgets/color_selector")
-local List = require("ui/widgets/list")]]
-
---[[
-gossip.subscribe("game:init", function ()
-  io.write("LUA: Welcome!\n")
-end)
-
-gossip.subscribe("game:kill", function ()
-  io.write("LUA: Goodbye...\n")
-  teardown_world()
-end)
-]]
-
---[[local windows = {}
-function setup_world()
-  windows[#windows + 1] = Window("RuneSel", 141, 7, 18, 18)
-  windows[#windows]:content(RuneSelector())
-
-  windows[#windows + 1] = Window("ColorSel", 141, 26, 18, 18)
-  windows[#windows]:content(ColorSelector())
-
-  windows[#windows + 1] = Window("List", 141, 45, 18, 18)
-  windows[#windows]:content(List({
-    "foo",
-    "bar",
-    "c:\\foo\\bar",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m",
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m",
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-  }))
-end
-
-function teardown_world()
-  for _,window in pairs(windows) do
-    window:destroy()
-  end
-  windows = {}
-end
-
-gossip.subscribe("scene:setup", function (group_id, id, scene)
-  if scene == "world-edit" then
-    setup_world()
-  end
-end)
-
-gossip.subscribe("scene:teardown", function (group_id, id, scene)
-  if scene == "world-edit" then
-    teardown_world()
-  end
-end)]]
