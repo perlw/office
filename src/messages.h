@@ -33,6 +33,7 @@
   MSG(MSG_UI_WINDOW_CREATE)       \
   MSG(MSG_UI_WINDOW_CREATED)      \
   MSG(MSG_UI_WINDOW_DESTROY)      \
+  MSG(MSG_UI_WINDOW_GLYPH)        \
                                   \
   MSG(MSG_PLAYER_MOVE_UP_LEFT)    \
   MSG(MSG_PLAYER_MOVE_UP)         \
