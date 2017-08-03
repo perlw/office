@@ -7,8 +7,6 @@ The actual game
 * Logging
   - Log to file aswell as log to console
   - Separate files for different systems
-* Input
-  - Go over inputs
 * Sound
   - Ability to load and play sounds, won't need to define
 * Occulus
