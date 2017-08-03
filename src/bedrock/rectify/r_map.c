@@ -101,35 +101,42 @@ void *const rectify_map_get(RectifyMap *const map, const char *key) {
     }
   }
 
+  printf("RectifyMap: Warning, missing key \"%s\"\n", key);
   return NULL;
 }
 
 uint8_t rectify_map_get_byte(RectifyMap *const map, const char *key) {
-  return *(uint8_t *)rectify_map_get(map, key);
+  uint8_t *val = (uint8_t *)rectify_map_get(map, key);
+  return (val ? *val : 0);
 }
 
 bool rectify_map_get_bool(RectifyMap *const map, const char *key) {
-  return *(bool *)rectify_map_get(map, key);
+  bool *val = (bool *)rectify_map_get(map, key);
+  return (val ? *val : false);
 }
 
 uint32_t rectify_map_get_uint(RectifyMap *const map, const char *key) {
-  return *(uint32_t *)rectify_map_get(map, key);
+  uint32_t *val = (uint32_t *)rectify_map_get(map, key);
+  return (val ? *val : 0);
 }
 
 int32_t rectify_map_get_int(RectifyMap *const map, const char *key) {
-  return *(int32_t *)rectify_map_get(map, key);
+  int32_t *val = (int32_t *)rectify_map_get(map, key);
+  return (val ? *val : 0);
 }
 
 float rectify_map_get_float(RectifyMap *const map, const char *key) {
-  return *(float *)rectify_map_get(map, key);
+  float *val = (float *)rectify_map_get(map, key);
+  return (val ? *val : 0.0f);
 }
 
 double rectify_map_get_double(RectifyMap *const map, const char *key) {
-  return *(double *)rectify_map_get(map, key);
+  double *val = (double *)rectify_map_get(map, key);
+  return (val ? *val : 0.0);
 }
 
 char *const rectify_map_get_string(RectifyMap *const map, const char *key) {
-  return (char *const)rectify_map_get(map, key);
+  return (char *)rectify_map_get(map, key);
 }
 
 RectifyMap *const rectify_map_get_map(RectifyMap *const map, const char *key) {

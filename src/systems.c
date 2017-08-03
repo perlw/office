@@ -64,18 +64,24 @@ void systems_message(uint32_t id, RectifyMap *const map) {
     return;
   }
 
-  char *const system = rectify_map_get_string(map, "system");
-  if (!system) {
-    return;
-  }
   switch (id) {
-    case MSG_SYSTEM_START:
+    case MSG_SYSTEM_START: {
+      char *const system = rectify_map_get_string(map, "system");
+      if (!system) {
+        return;
+      }
       systems_internal_start(system);
       break;
+    }
 
-    case MSG_SYSTEM_STOP:
+    case MSG_SYSTEM_STOP: {
+      char *const system = rectify_map_get_string(map, "system");
+      if (!system) {
+        return;
+      }
       systems_internal_stop(system);
       break;
+    }
   }
 }
 
