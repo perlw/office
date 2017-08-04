@@ -8,6 +8,7 @@
 #include "messages.h"
 #include "scene_drips.h"
 #include "scene_game.h"
+#include "scene_secret.h"
 #include "scene_sound-test.h"
 #include "scene_test.h"
 #include "scene_world-edit.h"
@@ -50,6 +51,7 @@ bool scenes_start(void) {
   scenes_internal->systems = rectify_array_push(scenes_internal->systems, &scene_sound_test);
   scenes_internal->systems = rectify_array_push(scenes_internal->systems, &scene_game);
   scenes_internal->systems = rectify_array_push(scenes_internal->systems, &scene_world_edit);
+  //scenes_internal->systems = rectify_array_push(scenes_internal->systems, &scene_secret);
 
   return true;
 }

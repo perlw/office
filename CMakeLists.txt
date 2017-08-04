@@ -35,6 +35,7 @@ set (
   "src/scene_sound-test.c"
   "src/scene_game.c"
   "src/scene_world-edit.c"
+  "src/scene_secret.c"
 )
 add_subdirectory (src/ascii)
 add_executable (office ${SOURCES})
