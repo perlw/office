@@ -88,7 +88,7 @@ void system_lua_bridge_stop(void) {
   }
 
   lua_close(system_lua_bridge_internal->state);
-  rectify_array_free(&system_lua_bridge_internal->listeners);
+  rectify_array_free((void **)&system_lua_bridge_internal->listeners);
 
   free(system_lua_bridge_internal);
   system_lua_bridge_internal = NULL;

@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "kronos/kronos.h"
+#include "../kronos/kronos.h"
 
 #include "g_types.h"
 

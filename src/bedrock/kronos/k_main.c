@@ -40,7 +40,7 @@ void kronos_kill(void) {
 
     free(state->system);
   }
-  rectify_array_free(&kronos->systems);
+  rectify_array_free((void **)&kronos->systems);
 
   free(kronos);
 }
@@ -57,10 +57,7 @@ KronosResult kronos_register(KronosSystem *const system) {
   }
 
   kronos->systems = rectify_array_push(kronos->systems, &(KronosState){
-                                                          .system = rectify_memory_alloc_copy(system, sizeof(KronosSystem)),
-                                                          .running = false,
-                                                          .timing = 1.0 / (double)system->frames,
-                                                          .since_update = 0.0,
+                                                          .system = rectify_memory_alloc_copy(system, sizeof(KronosSystem)), .running = false, .timing = 1.0 / (double)system->frames, .since_update = 0.0,
                                                         });
 
   if (system->autostart) {

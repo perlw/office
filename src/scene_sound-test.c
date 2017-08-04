@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 
 #include "arkanis/math_3d.h"
 
@@ -139,7 +140,7 @@ void scene_sound_test_message(uint32_t id, RectifyMap *const map) {
 
   switch (id) {
     case MSG_INPUT_KEY: {
-      PicassoKey key = *(uint32_t * const)rectify_map_get(map, "key");
+      PicassoKey key = *(uint32_t * const) rectify_map_get(map, "key");
       bool pressed = *(bool *const)rectify_map_get(map, "pressed");
 
       if (pressed) {

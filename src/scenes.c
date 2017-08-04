@@ -59,7 +59,7 @@ void scenes_stop(void) {
     return;
   }
 
-  rectify_array_free(&scenes_internal->systems);
+  rectify_array_free((void **)&scenes_internal->systems);
   free(scenes_internal);
   scenes_internal = NULL;
 }
@@ -82,7 +82,7 @@ void scenes_message(uint32_t id, RectifyMap *const map) {
       }
       break;
 
-    case MSG_SCENE_GOTO:
+    case MSG_SCENE_GOTO: {
       char *const scene = (char *const)rectify_map_get(map, "scene");
       if (!scene) {
         return;
@@ -95,6 +95,7 @@ void scenes_message(uint32_t id, RectifyMap *const map) {
         }
       }
       break;
+    }
 
     case MSG_SCENE_PREV:
       if (scenes_internal->current > 0) {

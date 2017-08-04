@@ -56,7 +56,8 @@ void *shader_loader(const char *name, const char *path) {
 }
 
 void shader_destroyer(void *data) {
-  picasso_program_destroy(&(PicassoProgram *)data);
+  PicassoProgram *program = (PicassoProgram *)data;
+  picasso_program_destroy(&program);
 }
 
 void *texture_loader(const char *name, const char *path) {
@@ -74,7 +75,8 @@ void *texture_loader(const char *name, const char *path) {
 }
 
 void texture_destroyer(void *data) {
-  picasso_texture_destroy(&(PicassoTexture *)data);
+  PicassoTexture *texture = (PicassoTexture *)data;
+  picasso_texture_destroy(&texture);
 }
 
 void setup_asset_loaders(void) {

@@ -60,7 +60,7 @@ void system_input_stop(void) {
   for (uint32_t t = 0; t < rectify_array_size(system_input_internal->keybinds); t++) {
     free(system_input_internal->keybinds[t].action);
   }
-  rectify_array_free(&system_input_internal->keybinds);
+  rectify_array_free((void **)&system_input_internal->keybinds);
 
   free(system_input_internal);
   system_input_internal = NULL;
@@ -77,8 +77,7 @@ void system_input_message(uint32_t id, RectifyMap *const map) {
       uint32_t key = rectify_map_get_uint(map, "key");
 
       system_input_internal->keybinds = rectify_array_push(system_input_internal->keybinds, &(SystemInputKeyBind){
-                                                                                              .key = key,
-                                                                                              .action = rectify_memory_alloc_copy(action, sizeof(char) * (strnlen(action, 128) + 1)),
+                                                                                              .key = key, .action = rectify_memory_alloc_copy(action, sizeof(char) * (strnlen(action, 128) + 1)),
                                                                                             });
       break;
     }

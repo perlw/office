@@ -64,7 +64,7 @@ void system_ui_stop(void) {
     free(system_ui_internal->windows[t].title);
     surface_destroy(&system_ui_internal->windows[t].surface);
   }
-  rectify_array_free(&system_ui_internal->windows);
+  rectify_array_free((void **)&system_ui_internal->windows);
   free(system_ui_internal);
   system_ui_internal = NULL;
 }

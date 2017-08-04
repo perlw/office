@@ -62,7 +62,7 @@ void gossip_kill(void) {
     }
     rectify_map_destroy(&item->map);
   }
-  rectify_array_free(&gossip->queue);
+  rectify_array_free((void **)&gossip->queue);
   for (uintmax_t t = 0; t < rectify_array_size(gossip->active_queue); t++) {
     QueueItem *const item = &gossip->active_queue[t];
     if (item->system) {
@@ -70,7 +70,7 @@ void gossip_kill(void) {
     }
     rectify_map_destroy(&item->map);
   }
-  rectify_array_free(&gossip->active_queue);
+  rectify_array_free((void **)&gossip->active_queue);
 
   free(gossip);
 }
@@ -94,18 +94,14 @@ void gossip_unregister_system(KronosSystem *const system) {
 void gossip_post(const char *system, uint32_t id, RectifyMap *const map) {
   assert(gossip);
   gossip->active_queue = rectify_array_push(gossip->active_queue, &(QueueItem){
-                                                                    .system = rectify_memory_alloc_copy(system, strnlen(system, 128) + 1),
-                                                                    .id = id,
-                                                                    .map = map,
+                                                                    .system = rectify_memory_alloc_copy(system, strnlen(system, 128) + 1), .id = id, .map = map,
                                                                   });
 }
 
 void gossip_emit(uint32_t id, RectifyMap *const map) {
   assert(gossip);
   gossip->active_queue = rectify_array_push(gossip->active_queue, &(QueueItem){
-                                                                    .system = NULL,
-                                                                    .id = id,
-                                                                    .map = map,
+                                                                    .system = NULL, .id = id, .map = map,
                                                                   });
 }
 
@@ -138,6 +134,6 @@ void gossip_update(void) {
     rectify_map_destroy(&item->map);
   }
 
-  rectify_array_free(&gossip->queue);
+  rectify_array_free((void **)&gossip->queue);
   gossip->queue = rectify_array_alloc(10, sizeof(QueueItem));
 }

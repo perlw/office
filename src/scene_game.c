@@ -112,7 +112,7 @@ void scene_game_stop(void) {
   for (uint32_t t = 0; t < rectify_array_size(scene_game_internal->tiledefs); t++) {
     free(scene_game_internal->tiledefs[t].id);
   }
-  rectify_array_free(&scene_game_internal->tiledefs);
+  rectify_array_free((void **)&scene_game_internal->tiledefs);
 
   screen_unhook_render(&scene_game_internal_render_hook, NULL);
   surface_destroy(&scene_game_internal->world);

@@ -47,9 +47,9 @@ void tome_kill(void) {
       free(record->name);
       handler->destroyer(record->data);
     }
-    rectify_array_free(&handler->records);
+    rectify_array_free((void **)&handler->records);
   }
-  rectify_array_free(&tome->handlers);
+  rectify_array_free((void **)&tome->handlers);
 
   free(tome);
 }

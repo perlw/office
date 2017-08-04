@@ -30,7 +30,7 @@ void rectify_map_destroy(RectifyMap **map) {
     }
     free(dereffed->items[t].key);
   }
-  rectify_array_free(&dereffed->items);
+  rectify_array_free((void **)&dereffed->items);
   free(*map);
   *map = NULL;
 }

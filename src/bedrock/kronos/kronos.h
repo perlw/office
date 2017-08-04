@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "rectify/rectify.h"
+#include "../rectify/rectify.h"
 
 typedef enum {
   KRONOS_OK = 1,
