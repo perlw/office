@@ -29,9 +29,13 @@ The actual game
 * World file/data format
   - Header with all used ids
   - Map data should be 0-based references to mentioned ids
+* Test harness
+* Code documentation and generator
+* Remote accesss/debugging of internals (telnet? http?) *Depends on synapse*
+  - Send/watch messages
+  - See internal states
 
 ## Bedrock
-Tests?
 
 ### Picasso
 Graphics, pipeline
