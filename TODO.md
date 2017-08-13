@@ -9,6 +9,7 @@ The actual game
   - Separate files for different systems
 * Sound
   - Ability to load and play sounds, won't need to define
+  - Hook into tome
 * Occulus
   - Break out log parsing in own app
   - Move compile flag into a runtime check instead?
