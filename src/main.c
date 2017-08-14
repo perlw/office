@@ -56,10 +56,7 @@ int main(int argc, char **argv) {
   screen_init();
 
   kronos_register(&systems);
-  kronos_start_system("systems");
-
   kronos_register(&scenes);
-  kronos_start_system("scenes");
 
   gossip_emit(MSG_GAME_INIT, NULL);
 

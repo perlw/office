@@ -20,6 +20,7 @@ KronosSystem systems = {
   .name = "systems",
   .frames = 0,
   .prevent_stop = true,
+  .autostart = true,
   .start = &systems_start,
   .stop = &systems_stop,
   .update = NULL,

@@ -22,6 +22,7 @@ KronosSystem scenes = {
   .name = "scenes",
   .frames = 30,
   .prevent_stop = true,
+  .autostart = true,
   .start = &scenes_start,
   .stop = &scenes_stop,
   .update = &scenes_update,
