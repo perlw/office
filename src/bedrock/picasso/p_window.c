@@ -74,7 +74,9 @@ void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
   printf("PICASSO: GL %s\n", message);
 }
 
-PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool fullscreen, bool gl_debug) {
+PicassoWindowResult picasso_window_init(const char *title, PicassoWindowInit *const window_init) {
+  assert(window_init);
+
   if (!glfwInit()) {
     return PICASSO_WINDOW_INIT_FAIL;
   }
@@ -84,17 +86,17 @@ PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, u
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, (gl_debug ? GL_TRUE : GL_FALSE));
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, (window_init->gl_debug ? GL_TRUE : GL_FALSE));
 
-  if (fullscreen) {
-    // Borderless fullscreen
+  if (window_init->fullscreen) {
     glfwWindowHint(GLFW_DECORATED, GL_FALSE);
-    /*GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-  const GLFWvidmode *vid_mode = glfwGetVideoMode(monitor);*/
-    // Borderless fullscreen
+    GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode *vid_mode = glfwGetVideoMode(monitor);
+    window_init->width = vid_mode->width;
+    window_init->height = vid_mode->height;
   }
 
-  window = glfwCreateWindow(res_width, res_height, title, NULL, NULL);
+  window = glfwCreateWindow(window_init->width, window_init->height, title, NULL, NULL);
   if (!window) {
     glfwTerminate();
     return PICASSO_WINDOW_CREATION_FAIL;
@@ -121,10 +123,10 @@ PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, u
   glEnable(GL_DEPTH_TEST);
   glClearDepth(1);
   glDepthFunc(GL_LESS);
-  glViewport(0, 0, res_width, res_height);
+  glViewport(0, 0, window_init->width, window_init->height);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-  if (gl_debug) {
+  if (window_init->gl_debug) {
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);

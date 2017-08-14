@@ -174,7 +174,14 @@ typedef void (*PicassoWindowKeyboardCallback)(const PicassoWindowKeyboardEvent *
 typedef void (*PicassoWindowMouseCallback)(const PicassoWindowMouseEvent *const);
 typedef void (*PicassoWindowMouseScrollCallback)(const PicassoWindowMouseScrollEvent *const);
 
-PicassoWindowResult picasso_window_init(const char *title, uint32_t res_width, uint32_t res_height, bool fullscreen, bool gl_debug);
+typedef struct {
+  uint32_t width;
+  uint32_t height;
+  bool fullscreen;
+  bool gl_debug;
+} PicassoWindowInit;
+
+PicassoWindowResult picasso_window_init(const char *title, PicassoWindowInit *const window_init);
 void picasso_window_kill(void);
 void picasso_window_clear(void);
 void picasso_window_clearcolor(float r, float g, float b, float a);

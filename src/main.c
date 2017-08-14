@@ -48,10 +48,18 @@ int main(int argc, char **argv) {
 
   Config *const config = config_init();
 
-  if (picasso_window_init("Office", config->res_width, config->res_height, config->fullscreen, config->gl_debug) != PICASSO_WINDOW_OK) {
+  PicassoWindowInit window_init = {
+    .width = config->res_width,
+    .height = config->res_height,
+    .fullscreen = config->fullscreen,
+    .gl_debug = config->gl_debug,
+  };
+  if (picasso_window_init("Office", &window_init) != PICASSO_WINDOW_OK) {
     printf("Window: failed to init\n");
     return -1;
   }
+  config->res_width = window_init.width;
+  config->res_height = window_init.height;
 
   screen_init();
 
