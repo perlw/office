@@ -126,7 +126,7 @@ void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *e
 }
 
 void system_input_internal_mousemove_callback(const PicassoWindowMouseEvent *event) {
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
   uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
@@ -145,7 +145,7 @@ void system_input_internal_mousemove_callback(const PicassoWindowMouseEvent *eve
 }
 
 void system_input_internal_click_callback(const PicassoWindowMouseEvent *event) {
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
   uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
@@ -167,7 +167,7 @@ void system_input_internal_click_callback(const PicassoWindowMouseEvent *event) 
 }
 
 void system_input_internal_mousescroll_callback(const PicassoWindowMouseScrollEvent *event) {
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
   uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);

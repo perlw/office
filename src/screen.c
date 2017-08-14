@@ -24,7 +24,7 @@ void screen_init(void) {
     return;
   }
 
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   screen_internal = calloc(1, sizeof(Screen));
 

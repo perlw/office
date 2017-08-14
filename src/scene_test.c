@@ -33,7 +33,7 @@ bool scene_test_start(void) {
     return false;
   }
 
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   scene_test_internal = calloc(1, sizeof(SceneTest));
   *scene_test_internal = (SceneTest){

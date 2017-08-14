@@ -16,7 +16,7 @@ uint32_t render_height = 720;
 AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height) {
   AsciiBuffer *ascii = calloc(1, sizeof(AsciiBuffer));
 
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   ascii->quad = picasso_buffergroup_create();
 
@@ -247,7 +247,7 @@ void ascii_buffer_glyph(AsciiBuffer *const ascii, uint32_t x, uint32_t y, Glyph 
 void ascii_buffer_draw(AsciiBuffer *const ascii) {
   assert(ascii);
 
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   // +STEP 1: FBO
   picasso_framebuffer_bind(ascii->fbo.framebuffer);

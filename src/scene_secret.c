@@ -39,7 +39,7 @@ bool scene_secret_start(void) {
     gossip_post("systems", MSG_SYSTEM_STOP, map);
   }
 
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   scene_secret_internal = calloc(1, sizeof(SceneSecret));
   scene_secret_internal->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);

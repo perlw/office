@@ -608,7 +608,7 @@ Config config_internal = {
   .grid_size_height = 8.0,
 };
 
-const Config *const config_init(void) {
+Config *const config_init(void) {
   lua_State *state = luaL_newstate();
 
   lua_pushlightuserdata(state, &config_internal);
@@ -655,6 +655,6 @@ const Config *const config_init(void) {
   return &config_internal;
 }
 
-const Config *const config_get(void) {
+Config *const config_get(void) {
   return &config_internal;
 }

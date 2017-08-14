@@ -85,7 +85,7 @@ bool scene_game_start(void) {
 
   scene_game_internal = calloc(1, sizeof(SceneGame));
 
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   scene_game_internal->p_x = 2;
   scene_game_internal->p_y = 2;

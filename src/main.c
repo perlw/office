@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
 
   setup_asset_loaders();
 
-  const Config *const config = config_init();
+  Config *const config = config_init();
 
   if (picasso_window_init("Office", config->res_width, config->res_height, config->fullscreen, config->gl_debug) != PICASSO_WINDOW_OK) {
     printf("Window: failed to init\n");

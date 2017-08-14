@@ -45,7 +45,7 @@ bool scene_sound_test_start(void) {
   memset(scene_sound_test_internal->spectrum_left, 0, sizeof(float) * 78);
   memset(scene_sound_test_internal->spectrum_right, 0, sizeof(float) * 78);
 
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   // +Spectrum UI
   scene_sound_test_internal->spectrum = surface_create(0, 0, config->ascii_width, config->ascii_height);

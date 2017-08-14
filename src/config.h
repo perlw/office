@@ -15,5 +15,5 @@ typedef struct {
   double grid_size_height;
 } Config;
 
-const Config *const config_init(void);
-const Config *const config_get(void);
+Config *const config_init(void);
+Config *const config_get(void);

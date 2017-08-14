@@ -46,7 +46,7 @@ bool system_debug_start(void) {
 
   debugoverlay = calloc(1, sizeof(DebugOverlay));
 
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   debugoverlay->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
 
@@ -84,7 +84,7 @@ void system_debug_update(double delta) {
     return;
   }
 
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   surface_clear(debugoverlay->surface, (Glyph){
                                          .rune = 0,
@@ -123,7 +123,7 @@ void system_debug_message(uint32_t id, RectifyMap *const map) {
 
   switch (id) {
     case MSG_SCENE_CHANGED: {
-      const Config *const config = config_get();
+      Config *const config = config_get();
 
       snprintf(debugoverlay->scene_buffer, 32, "SCENE: %s", (char *)rectify_map_get(map, "scene"));
       break;

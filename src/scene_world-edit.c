@@ -42,7 +42,7 @@ bool scene_world_edit_start(void) {
     return false;
   }
 
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   scene_world_edit_internal = calloc(1, sizeof(SceneWorldEdit));
   *scene_world_edit_internal = (SceneWorldEdit){

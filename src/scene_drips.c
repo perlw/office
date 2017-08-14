@@ -59,7 +59,7 @@ bool scene_drips_start(void) {
 
   scene_drips_internal = calloc(1, sizeof(SceneDrips));
 
-  const Config *const config = config_get();
+  Config *const config = config_get();
 
   scene_drips_internal->offset = 0.0;
   scene_drips_internal->wave_depth = 0.5;
