@@ -162,7 +162,7 @@ void system_sound_message(uint32_t id, RectifyMap *const map) {
     }
 
     case MSG_SOUND_PLAY_SONG: {
-      uint32_t *const song = (uint32_t * const)rectify_map_get(map, "song");
+      uint32_t *const song = (uint32_t * const) rectify_map_get(map, "song");
       if (!song) {
         break;
       }
