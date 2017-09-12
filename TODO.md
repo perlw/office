@@ -3,7 +3,7 @@ TODO
 ## Game
 The actual game
 * Ability to choose monitor and sound device
-* Scene-wrapper-system for scenes instead of raw systems
+* Memory allocator for quick/often allocations (gossip f.x)
 * Logging
   - Log to file aswell as log to console
   - Separate files for different systems
