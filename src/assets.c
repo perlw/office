@@ -26,14 +26,14 @@ void *shader_loader(const char *name, const char *path) {
   PicassoShader *vertex_shader = picasso_shader_create(PICASSO_SHADER_VERTEX);
   PicassoShader *fragment_shader = picasso_shader_create(PICASSO_SHADER_FRAGMENT);
   {
-    PicassoResult result = picasso_shader_compile(vertex_shader, vert_length, vert_source);
+    PicassoShaderDetailResult result = picasso_shader_compile(vertex_shader, vert_length, vert_source);
     if (result.result != PICASSO_SHADER_OK) {
       printf("PICASSO: Shader compile error!\n-=-\n%s\n-=-\n", result.detail);
       exit(-1);
     }
   }
   {
-    PicassoResult result = picasso_shader_compile(fragment_shader, frag_length, frag_source);
+    PicassoShaderDetailResult result = picasso_shader_compile(fragment_shader, frag_length, frag_source);
     if (result.result != PICASSO_SHADER_OK) {
       printf("PICASSO: Shader compile error!\n-=-\n%s\n-=-\n", result.detail);
       exit(-1);
