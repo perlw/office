@@ -545,23 +545,6 @@ int config_internal_frame_lock(lua_State *state) {
   return 0;
 }
 
-int config_internal_ascii_resolution(lua_State *state) {
-  if (lua_gettop(state) < 2) {
-    printf("Config: Too few arguments to function \"ascii_resolution\".\n");
-    return 0;
-  }
-
-  Config *config = (Config *)lua_topointer(state, lua_upvalueindex(1));
-  config->ascii_width = (uint32_t)lua_tonumber(state, 1);
-  config->ascii_height = (uint32_t)lua_tonumber(state, 2);
-  config->grid_size_width = (double)config->res_width / (double)config->ascii_width;
-  config->grid_size_height = (double)config->res_height / (double)config->ascii_height;
-
-  printf("Config: Ascii resolution set to %dx%d, grid size updated to %.1fx%.1f\n", config->ascii_width, config->ascii_height, config->grid_size_width, config->grid_size_height);
-
-  return 0;
-}
-
 int config_internal_bind(lua_State *state) {
   if (lua_gettop(state) < 2) {
     printf("Config: Too few arguments to function \"bind\".\n");
@@ -626,10 +609,6 @@ Config *const config_init(void) {
   lua_pushlightuserdata(state, &config_internal);
   lua_pushcclosure(state, &config_internal_frame_lock, 1);
   lua_setglobal(state, "frame_lock");
-
-  lua_pushlightuserdata(state, &config_internal);
-  lua_pushcclosure(state, &config_internal_ascii_resolution, 1);
-  lua_setglobal(state, "ascii_resolution");
 
   lua_pushlightuserdata(state, &config_internal);
   lua_pushcclosure(state, &config_internal_bind, 1);

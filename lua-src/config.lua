@@ -1,8 +1,6 @@
 resolution(1280, 720)
 --fullscreen()
 --gl_debug()
-
-ascii_resolution(160, 90);
 --frame_lock(60);
 
 bind(KEY_F1, "dummy")
