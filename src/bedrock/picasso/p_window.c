@@ -4,8 +4,6 @@
 
 #include "GLFW/glfw3.h"
 
-GLFWwindow *window = NULL;
-
 void dummy_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
   printf("No keyboard callback..\n");
 };
@@ -18,17 +16,14 @@ void dummy_mouse_button_callback(const PicassoWindowMouseEvent *event){
 void dummy_mouse_scroll_callback(const PicassoWindowMouseScrollEvent *event){
   //printf("Mouse scroll: %.2f, %.2f\n", event->offset_x, event->offset_y);
 };
-PicassoWindowKeyboardCallback picasso_keyboard_callback = &dummy_keyboard_callback;
-PicassoWindowMouseCallback picasso_mouse_move_callback = &dummy_mouse_move_callback;
-PicassoWindowMouseCallback picasso_mouse_button_callback = &dummy_mouse_button_callback;
-PicassoWindowMouseScrollCallback picasso_mouse_scroll_callback = &dummy_mouse_scroll_callback;
 
-void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+void keyboard_callback(GLFWwindow *raw_window, int key, int scancode, int action, int mods) {
   if (action == GLFW_REPEAT) {
     return;
   }
 
-  picasso_keyboard_callback(&(PicassoWindowKeyboardEvent){
+  PicassoWindow *window = glfwGetWindowUserPointer(raw_window);
+  window->keyboard_callback(&(PicassoWindowKeyboardEvent){
     .key = key,
     .scancode = scancode,
     .pressed = (action == GLFW_PRESS),
@@ -37,8 +32,9 @@ void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, in
   });
 }
 
-void mouse_move_callback(GLFWwindow *window, double xpos, double ypos) {
-  picasso_mouse_move_callback(&(PicassoWindowMouseEvent){
+void mouse_move_callback(GLFWwindow *raw_window, double xpos, double ypos) {
+  PicassoWindow *window = glfwGetWindowUserPointer(raw_window);
+  window->mouse_move_callback(&(PicassoWindowMouseEvent){
     .button = -1,
     .x = xpos,
     .y = ypos,
@@ -47,10 +43,11 @@ void mouse_move_callback(GLFWwindow *window, double xpos, double ypos) {
   });
 }
 
-void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+void mouse_button_callback(GLFWwindow *raw_window, int button, int action, int mods) {
+  PicassoWindow *window = glfwGetWindowUserPointer(raw_window);
   double x, y;
-  glfwGetCursorPos(window, &x, &y);
-  picasso_mouse_button_callback(&(PicassoWindowMouseEvent){
+  glfwGetCursorPos(raw_window, &x, &y);
+  window->mouse_button_callback(&(PicassoWindowMouseEvent){
     .button = button,
     .x = x,
     .y = y,
@@ -59,10 +56,11 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
   });
 }
 
-void mouse_scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+void mouse_scroll_callback(GLFWwindow *raw_window, double xoffset, double yoffset) {
+  PicassoWindow *window = glfwGetWindowUserPointer(raw_window);
   double x, y;
-  glfwGetCursorPos(window, &x, &y);
-  picasso_mouse_scroll_callback(&(PicassoWindowMouseScrollEvent){
+  glfwGetCursorPos(raw_window, &x, &y);
+  window->mouse_scroll_callback(&(PicassoWindowMouseScrollEvent){
     .offset_x = xoffset,
     .offset_y = yoffset,
     .x = x,
@@ -70,19 +68,32 @@ void mouse_scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
   });
 }
 
+// TODO: Settable callback
 void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *user_param) {
   printf("PICASSO: GL %s\n", message);
 }
 
-PicassoWindowResult picasso_window_init(const char *title, PicassoWindowInit *const window_init) {
-  assert(window_init);
-
+PicassoWindowResult picasso_window_init(void) {
   if (!glfwInit()) {
     return PICASSO_WINDOW_INIT_FAIL;
   }
 
+  return PICASSO_WINDOW_OK;
+}
+
+void picasso_window_kill(void) {
+  glfwTerminate();
+}
+
+void picasso_window_update(void) {
+  glfwPollEvents();
+}
+
+PicassoWindow *picasso_window_create(const char *title, PicassoWindowInit *const window_init) {
+  assert(window_init);
+
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
@@ -96,22 +107,21 @@ PicassoWindowResult picasso_window_init(const char *title, PicassoWindowInit *co
     window_init->height = vid_mode->height;
   }
 
-  window = glfwCreateWindow(window_init->width, window_init->height, title, NULL, NULL);
-  if (!window) {
-    glfwTerminate();
-    return PICASSO_WINDOW_CREATION_FAIL;
+  GLFWwindow *raw_window = glfwCreateWindow(window_init->width, window_init->height, title, NULL, NULL);
+  if (!raw_window) {
+    return NULL;
   }
 
-  glfwSetKeyCallback(window, keyboard_callback);
-  glfwSetCursorPosCallback(window, mouse_move_callback);
-  glfwSetMouseButtonCallback(window, mouse_button_callback);
-  glfwSetScrollCallback(window, mouse_scroll_callback);
-  glfwMakeContextCurrent(window);
+  glfwSetKeyCallback(raw_window, keyboard_callback);
+  glfwSetCursorPosCallback(raw_window, mouse_move_callback);
+  glfwSetMouseButtonCallback(raw_window, mouse_button_callback);
+  glfwSetScrollCallback(raw_window, mouse_scroll_callback);
+  glfwMakeContextCurrent(raw_window);
   glfwSwapInterval(0);
 
   /* OpenGL */
   if (!gladLoadGL()) {
-    return PICASSO_WINDOW_GL_CONTEXT_FAIL;
+    return NULL;
   }
 
   int major, minor;
@@ -132,53 +142,87 @@ PicassoWindowResult picasso_window_init(const char *title, PicassoWindowInit *co
     glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);
   }
 
-  return PICASSO_WINDOW_OK;
+  PicassoWindow *window = calloc(1, sizeof(PicassoWindow));
+  *window = (PicassoWindow){
+    .raw_ptr = raw_window,
+    .keyboard_callback = &dummy_keyboard_callback,
+    .mouse_move_callback = &dummy_mouse_move_callback,
+    .mouse_button_callback = &dummy_mouse_button_callback,
+    .mouse_scroll_callback = &dummy_mouse_scroll_callback,
+  };
+
+  glfwSetWindowUserPointer(raw_window, window);
+
+  return window;
 }
 
-void picasso_window_kill(void) {
-  glfwTerminate();
+void picasso_window_destroy(PicassoWindow **window) {
+  assert(window && *window);
+  glfwDestroyWindow((*window)->raw_ptr);
+  free(*window);
+  *window = NULL;
 }
 
-void picasso_window_clear(void) {
+void picasso_window_clear(PicassoWindow *window) {
+  assert(window);
+  picasso_window_make_context_current(window);
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void picasso_window_clearcolor(float r, float g, float b, float a) {
+void picasso_window_clearcolor(PicassoWindow *window, float r, float g, float b, float a) {
+  assert(window);
+  picasso_window_make_context_current(window);
+
   glClearColor(r, g, b, a);
 }
 
-void picasso_window_swap(void) {
-  glfwSwapBuffers(window);
+void picasso_window_swap(PicassoWindow *window) {
+  assert(window);
+  glfwSwapBuffers(window->raw_ptr);
 }
 
-void picasso_window_update(void) {
-  glfwPollEvents();
+bool picasso_window_should_close(PicassoWindow *window) {
+  assert(window);
+  return glfwWindowShouldClose(window->raw_ptr);
 }
 
-bool picasso_window_should_close(void) {
-  return glfwWindowShouldClose(window);
+void picasso_window_make_context_current(PicassoWindow *window) {
+  assert(window);
+  glfwMakeContextCurrent(window->raw_ptr);
 }
 
-void picasso_window_keyboard_callback(PicassoWindowKeyboardCallback callback) {
+void picasso_window_keyboard_callback(PicassoWindow *window, PicassoWindowKeyboardCallback callback) {
   assert(callback);
-  picasso_keyboard_callback = callback;
+  assert(window);
+
+  window->keyboard_callback = callback;
 }
 
-void picasso_window_mouse_move_callback(PicassoWindowMouseCallback callback) {
+void picasso_window_mouse_move_callback(PicassoWindow *window, PicassoWindowMouseCallback callback) {
   assert(callback);
-  picasso_mouse_move_callback = callback;
+  assert(window);
+
+  window->mouse_move_callback = callback;
 }
 
-void picasso_window_mouse_button_callback(PicassoWindowMouseCallback callback) {
+void picasso_window_mouse_button_callback(PicassoWindow *window, PicassoWindowMouseCallback callback) {
   assert(callback);
-  picasso_mouse_button_callback = callback;
+  assert(window);
+
+  window->mouse_button_callback = callback;
 }
 
-void picasso_window_mouse_scroll_callback(PicassoWindowMouseScrollCallback callback) {
+void picasso_window_mouse_scroll_callback(PicassoWindow *window, PicassoWindowMouseScrollCallback callback) {
   assert(callback);
-  picasso_mouse_scroll_callback = callback;
+  assert(window);
+
+  window->mouse_scroll_callback = callback;
 }
 
-void picasso_window_viewport(int32_t x, int32_t y, int32_t width, int32_t height) {
+void picasso_window_viewport(PicassoWindow *window, int32_t x, int32_t y, int32_t width, int32_t height) {
+  assert(window);
+  picasso_window_make_context_current(window);
+
   glViewport(x, y, width, height);
 }

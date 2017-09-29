@@ -13,13 +13,15 @@ typedef struct {
 } ScreenRenderHook;
 
 typedef struct {
+  PicassoWindow *window;
   AsciiBuffer *ascii;
 
   ScreenRenderHook *hooks;
 } Screen;
 
 Screen *screen_internal = NULL;
-void screen_init(void) {
+void screen_init(PicassoWindow *window) {
+  assert(window);
   if (screen_internal) {
     return;
   }
@@ -28,7 +30,8 @@ void screen_init(void) {
 
   screen_internal = calloc(1, sizeof(Screen));
 
-  screen_internal->ascii = ascii_buffer_create(config->res_width, config->res_height, config->ascii_width, config->ascii_height);
+  screen_internal->window = window;
+  screen_internal->ascii = ascii_buffer_create(window, config->res_width, config->res_height, config->ascii_width, config->ascii_height);
   screen_internal->hooks = rectify_array_alloc(10, sizeof(ScreenRenderHook));
 }
 

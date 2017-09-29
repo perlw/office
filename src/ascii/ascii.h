@@ -38,6 +38,8 @@ typedef struct {
 } DisplayBuffer;
 
 typedef struct {
+  PicassoWindow *window;
+
   PicassoBufferGroup *quad;
   PicassoProgram *program;
   PicassoTexture *font_texture;
@@ -63,7 +65,7 @@ typedef struct {
   } fbo;
 } AsciiBuffer;
 
-AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height);
+AsciiBuffer *ascii_buffer_create(PicassoWindow *window, uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height);
 void ascii_buffer_destroy(AsciiBuffer **ascii);
 
 void ascii_buffer_glyph(AsciiBuffer *const ascii, uint32_t x, uint32_t y, Glyph glyph);

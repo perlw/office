@@ -44,11 +44,6 @@ bool system_input_start(void) {
   system_input_internal = calloc(1, sizeof(SystemInput));
   system_input_internal->keybinds = rectify_array_alloc(10, sizeof(SystemInputKeyBind));
 
-  picasso_window_keyboard_callback(&system_input_internal_keyboard_callback);
-  picasso_window_mouse_move_callback(&system_input_internal_mousemove_callback);
-  picasso_window_mouse_button_callback(&system_input_internal_click_callback);
-  picasso_window_mouse_scroll_callback(&system_input_internal_mousescroll_callback);
-
   return true;
 }
 
@@ -83,6 +78,17 @@ void system_input_message(uint32_t id, RectifyMap *const map) {
       break;
     }
   }
+}
+
+void system_input_bind_input(PicassoWindow *window) {
+  if (!system_input_internal) {
+    return;
+  }
+
+  picasso_window_keyboard_callback(window, &system_input_internal_keyboard_callback);
+  picasso_window_mouse_move_callback(window, &system_input_internal_mousemove_callback);
+  picasso_window_mouse_button_callback(window, &system_input_internal_click_callback);
+  picasso_window_mouse_scroll_callback(window, &system_input_internal_mousescroll_callback);
 }
 
 void system_input_internal_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
@@ -136,8 +142,8 @@ void system_input_internal_mousemove_callback(const PicassoWindowMouseEvent *eve
 
   if (m_x != o_x || m_y != o_y) {
     RectifyMap *map = rectify_map_create();
-    rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_x);
-    rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_y);
+    rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_x);
+    rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_y);
     kronos_emit(MSG_INPUT_MOUSEMOVE, map);
 
     o_x = m_x;
@@ -155,9 +161,9 @@ void system_input_internal_click_callback(const PicassoWindowMouseEvent *event) 
 
   if (m_x != o_x || m_y != o_y) {
     RectifyMap *map = rectify_map_create();
-    rectify_map_set(map, "button", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & event->button);
-    rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_x);
-    rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_y);
+    rectify_map_set(map, "button", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & event->button);
+    rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_x);
+    rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_y);
     rectify_map_set(map, "pressed", RECTIFY_MAP_TYPE_BOOL, sizeof(bool), (bool *const) & event->pressed);
     rectify_map_set(map, "released", RECTIFY_MAP_TYPE_BOOL, sizeof(bool), (bool *const) & event->released);
     kronos_emit(MSG_INPUT_CLICK, map);
@@ -176,9 +182,9 @@ void system_input_internal_mousescroll_callback(const PicassoWindowMouseScrollEv
   int32_t scroll_y = (int32_t)(event->offset_y < 0.0 ? event->offset_y - 0.5 : event->offset_y + 0.5);
 
   RectifyMap *map = rectify_map_create();
-  rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_x);
-  rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_y);
-  rectify_map_set(map, "scroll_x", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t *const) & scroll_x);
-  rectify_map_set(map, "scroll_y", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t *const) & scroll_y);
+  rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_x);
+  rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_y);
+  rectify_map_set(map, "scroll_x", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t * const) & scroll_x);
+  rectify_map_set(map, "scroll_y", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t * const) & scroll_y);
   kronos_emit(MSG_INPUT_SCROLL, map);
 }

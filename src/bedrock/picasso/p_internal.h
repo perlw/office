@@ -4,10 +4,20 @@
 
 #include "glad/glad.h"
 
+#include "GLFW/glfw3.h"
+
 #include "occulus/occulus.h"
 #include "rectify/rectify.h"
 
 #include "picasso.h"
+
+struct PicassoWindow {
+  GLFWwindow *raw_ptr;
+  PicassoWindowKeyboardCallback keyboard_callback;
+  PicassoWindowMouseCallback mouse_move_callback;
+  PicassoWindowMouseCallback mouse_button_callback;
+  PicassoWindowMouseScrollCallback mouse_scroll_callback;
+};
 
 struct PicassoShader {
   uint32_t id;

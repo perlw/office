@@ -13,11 +13,14 @@
 uint32_t render_width = 1280;
 uint32_t render_height = 720;
 
-AsciiBuffer *ascii_buffer_create(uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height) {
+AsciiBuffer *ascii_buffer_create(PicassoWindow *window, uint32_t width, uint32_t height, uint32_t ascii_width, uint32_t ascii_height) {
+  assert(window);
+
   AsciiBuffer *ascii = calloc(1, sizeof(AsciiBuffer));
 
   Config *const config = config_get();
 
+  ascii->window = window;
   ascii->quad = picasso_buffergroup_create();
 
   ascii->program = (PicassoProgram *)tome_fetch(ASSET_SHADER, "ascii_buffer", "shaders/asciilayer");
@@ -251,7 +254,7 @@ void ascii_buffer_draw(AsciiBuffer *const ascii) {
 
   // +STEP 1: FBO
   picasso_framebuffer_bind(ascii->fbo.framebuffer);
-  picasso_window_viewport(0, 0, render_width, render_height);
+  picasso_window_viewport(ascii->window, 0, 0, render_width, render_height);
 
   if (ascii->dirty) {
     ascii->dirty = false;
@@ -282,7 +285,7 @@ void ascii_buffer_draw(AsciiBuffer *const ascii) {
   // -STEP 1: FBO
 
   // +STEP 2: DRAW FBO
-  picasso_window_viewport(0, 0, config->res_width, config->res_height);
+  picasso_window_viewport(ascii->window, 0, 0, config->res_width, config->res_height);
   picasso_program_use(ascii->fbo.program);
   picasso_texture_bind_to(ascii->fbo.texture, 0);
   picasso_buffergroup_draw(ascii->fbo.quad, PICASSO_BUFFER_MODE_TRIANGLES, 6);

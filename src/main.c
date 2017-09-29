@@ -19,6 +19,7 @@
 #include "systems/systems.h"
 
 #include "systems/system_game.h"
+#include "systems/system_input.h"
 
 int main(int argc, char **argv) {
   srand(time(NULL));
@@ -53,17 +54,23 @@ int main(int argc, char **argv) {
     .fullscreen = config->fullscreen,
     .gl_debug = config->gl_debug,
   };
-  if (picasso_window_init("Office", &window_init) != PICASSO_WINDOW_OK) {
+  if (picasso_window_init() != PICASSO_WINDOW_OK) {
     printf("Window: failed to init\n");
+    return -1;
+  }
+  PicassoWindow *window = picasso_window_create("Office", &window_init);
+  if (!window) {
     return -1;
   }
   config->res_width = window_init.width;
   config->res_height = window_init.height;
 
-  screen_init();
+  screen_init(window);
 
   kronos_register(&systems);
   kronos_register(&scenes);
+
+  system_input_bind_input(window);
 
   kronos_emit(MSG_GAME_INIT, NULL);
 
@@ -79,7 +86,7 @@ int main(int argc, char **argv) {
   const double frame_timing = (config->frame_lock > 0 ? 1.0 / (double)config->frame_lock : 0);
   double next_frame = frame_timing;
   double last_tick = bedrock_time();
-  while (!picasso_window_should_close() && !system_game_should_kill()) {
+  while (!picasso_window_should_close(window) && !system_game_should_kill()) {
     double tick = bedrock_time();
     double delta = tick - last_tick;
     last_tick = tick;
@@ -89,9 +96,9 @@ int main(int argc, char **argv) {
     next_frame += delta;
     if (next_frame >= frame_timing) {
       next_frame = 0.0;
-      picasso_window_clear();
+      picasso_window_clear(window);
       screen_render();
-      picasso_window_swap();
+      picasso_window_swap(window);
     }
 
     picasso_window_update();
@@ -101,6 +108,8 @@ int main(int argc, char **argv) {
 
   kronos_kill();
   tome_kill();
+
+  picasso_window_destroy(&window);
   picasso_window_kill();
 
   occulus_print();

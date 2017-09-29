@@ -175,18 +175,25 @@ typedef struct {
   bool gl_debug;
 } PicassoWindowInit;
 
-PicassoWindowResult picasso_window_init(const char *title, PicassoWindowInit *const window_init);
+typedef struct PicassoWindow PicassoWindow;
+
+PicassoWindowResult picasso_window_init(void);
 void picasso_window_kill(void);
-void picasso_window_clear(void);
-void picasso_window_clearcolor(float r, float g, float b, float a);
-void picasso_window_swap(void);
+
+PicassoWindow *picasso_window_create(const char *title, PicassoWindowInit *const window_init);
+void picasso_window_destroy(PicassoWindow **window);
 void picasso_window_update(void);
-bool picasso_window_should_close(void);
-void picasso_window_keyboard_callback(PicassoWindowKeyboardCallback callback);
-void picasso_window_mouse_move_callback(PicassoWindowMouseCallback callback);
-void picasso_window_mouse_button_callback(PicassoWindowMouseCallback callback);
-void picasso_window_mouse_scroll_callback(PicassoWindowMouseScrollCallback callback);
-void picasso_window_viewport(int32_t x, int32_t y, int32_t width, int32_t height);
+
+void picasso_window_clear(PicassoWindow *window);
+void picasso_window_clearcolor(PicassoWindow *window, float r, float g, float b, float a);
+void picasso_window_swap(PicassoWindow *window);
+bool picasso_window_should_close(PicassoWindow *window);
+void picasso_window_make_context_current(PicassoWindow *window);
+void picasso_window_keyboard_callback(PicassoWindow *window, PicassoWindowKeyboardCallback callback);
+void picasso_window_mouse_move_callback(PicassoWindow *window, PicassoWindowMouseCallback callback);
+void picasso_window_mouse_button_callback(PicassoWindow *window, PicassoWindowMouseCallback callback);
+void picasso_window_mouse_scroll_callback(PicassoWindow *window, PicassoWindowMouseScrollCallback callback);
+void picasso_window_viewport(PicassoWindow *window, int32_t x, int32_t y, int32_t width, int32_t height);
 // -Window
 
 // +Shaders
