@@ -110,7 +110,7 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
       {
         RectifyMap *map = rectify_map_create();
         rectify_map_set_uint(map, "handle", handle);
-        gossip_emit(MSG_UI_WINDOW_CREATED, map);
+        kronos_emit(MSG_UI_WINDOW_CREATED, map);
       }
 
       break;
@@ -166,7 +166,7 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
           rectify_map_set_uint(map, "handle", window->handle);
           rectify_map_set_uint(map, "x", x - window->x - 1);
           rectify_map_set_uint(map, "y", y - window->y - 1);
-          gossip_emit(MSG_UI_WINDOW_MOUSEMOVE, map);
+          kronos_emit(MSG_UI_WINDOW_MOUSEMOVE, map);
         }
       }
 
@@ -192,7 +192,7 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
           rectify_map_set_uint(map, "y", y - window->y - 1);
           rectify_map_set_bool(map, "pressed", pressed);
           rectify_map_set_bool(map, "released", released);
-          gossip_emit(MSG_UI_WINDOW_CLICK, map);
+          kronos_emit(MSG_UI_WINDOW_CLICK, map);
         }
       }
 
@@ -216,7 +216,7 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
           rectify_map_set_uint(map, "y", y - window->y - 1);
           rectify_map_set_uint(map, "scroll_x", scroll_x);
           rectify_map_set_uint(map, "scroll_y", scroll_y);
-          gossip_emit(MSG_UI_WINDOW_SCROLL, map);
+          kronos_emit(MSG_UI_WINDOW_SCROLL, map);
         }
       }
 
@@ -227,9 +227,15 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
 
 void system_ui_internal_window_draw_border(UIWindow *const window) {
   SurfaceRectTiles rect_tiles = {
-    201, 205, 187,
-    186, 0, 186,
-    200, 205, 188,
+    201,
+    205,
+    187,
+    186,
+    0,
+    186,
+    200,
+    205,
+    188,
   };
   surface_rect(window->surface, 0, 0, window->width, window->height, rect_tiles, true, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 128, 0, 0 });
 

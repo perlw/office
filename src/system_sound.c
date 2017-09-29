@@ -133,7 +133,7 @@ void system_sound_update(double delta) {
     rectify_map_set(map, "song", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), &song_id);
     rectify_map_set(map, "left", RECTIFY_MAP_TYPE_FLOAT, sizeof(float) * 2048, left);
     rectify_map_set(map, "right", RECTIFY_MAP_TYPE_FLOAT, sizeof(float) * 2048, right);
-    gossip_emit(MSG_SOUND_SPECTRUM, map);
+    kronos_emit(MSG_SOUND_SPECTRUM, map);
   }
 }
 
@@ -162,7 +162,7 @@ void system_sound_message(uint32_t id, RectifyMap *const map) {
     }
 
     case MSG_SOUND_PLAY_SONG: {
-      uint32_t *const song = (uint32_t * const) rectify_map_get(map, "song");
+      uint32_t *const song = (uint32_t *const)rectify_map_get(map, "song");
       if (!song) {
         break;
       }

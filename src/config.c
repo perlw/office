@@ -591,7 +591,7 @@ int config_internal_bind(lua_State *state) {
     }
   }
 
-  gossip_post("input", MSG_INPUT_BIND, map);
+  kronos_post("input", MSG_INPUT_BIND, map);
 
   return 0;
 }

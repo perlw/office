@@ -36,7 +36,7 @@ bool scene_secret_start(void) {
   {
     RectifyMap *map = rectify_map_create();
     rectify_map_set_string(map, "system", "debug");
-    gossip_post("systems", MSG_SYSTEM_STOP, map);
+    kronos_post("systems", MSG_SYSTEM_STOP, map);
   }
 
   Config *const config = config_get();
@@ -74,7 +74,7 @@ void scene_secret_stop(void) {
   {
     RectifyMap *map = rectify_map_create();
     rectify_map_set_string(map, "system", "debug");
-    gossip_post("systems", MSG_SYSTEM_START, map);
+    kronos_post("systems", MSG_SYSTEM_START, map);
   }
 
   screen_unhook_render(&scene_secret_internal_render_hook, NULL);

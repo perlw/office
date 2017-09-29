@@ -98,7 +98,7 @@ bool scene_game_start(void) {
 
   screen_hook_render(&scene_game_internal_render_hook, NULL, 0);
 
-  gossip_post("lua_bridge", MSG_MATERIALS_LOAD, NULL);
+  kronos_post("lua_bridge", MSG_MATERIALS_LOAD, NULL);
 
   return true;
 }

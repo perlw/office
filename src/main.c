@@ -40,7 +40,6 @@ int main(int argc, char **argv) {
   }
   // -Flags
 
-  gossip_init();
   tome_init();
   kronos_init();
 
@@ -66,7 +65,7 @@ int main(int argc, char **argv) {
   kronos_register(&systems);
   kronos_register(&scenes);
 
-  gossip_emit(MSG_GAME_INIT, NULL);
+  kronos_emit(MSG_GAME_INIT, NULL);
 
   {
     char buffer[128] = { 0 };
@@ -74,7 +73,7 @@ int main(int argc, char **argv) {
 
     RectifyMap *map = rectify_map_create();
     rectify_map_set_string(map, "scene", buffer);
-    gossip_post("scenes", MSG_SCENE_GOTO, map);
+    kronos_post("scenes", MSG_SCENE_GOTO, map);
   }
 
   const double frame_timing = (config->frame_lock > 0 ? 1.0 / (double)config->frame_lock : 0);
@@ -86,7 +85,6 @@ int main(int argc, char **argv) {
     last_tick = tick;
 
     kronos_update(delta);
-    gossip_update();
 
     next_frame += delta;
     if (next_frame >= frame_timing) {
@@ -103,7 +101,6 @@ int main(int argc, char **argv) {
 
   kronos_kill();
   tome_kill();
-  gossip_kill();
   picasso_window_kill();
 
   occulus_print();

@@ -50,9 +50,15 @@ bool scene_sound_test_start(void) {
   // +Spectrum UI
   scene_sound_test_internal->spectrum = surface_create(0, 0, config->ascii_width, config->ascii_height);
   SurfaceRectTiles rect_tiles = {
-    '+', '-', '+',
-    '|', 0, '|',
-    '+', '-', '+',
+    '+',
+    '-',
+    '+',
+    '|',
+    0,
+    '|',
+    '+',
+    '-',
+    '+',
   };
   surface_rect(scene_sound_test_internal->spectrum, 0, 0, config->ascii_width, 30, rect_tiles, true, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
   surface_textc(scene_sound_test_internal->spectrum, 2, 29, 75, " #{ffffff}P#{c8c8c8}lay | #{ffffff}S#{c8c8c8}top | #{ffffff}N#{c8c8c8}ext ");
@@ -140,7 +146,7 @@ void scene_sound_test_message(uint32_t id, RectifyMap *const map) {
 
   switch (id) {
     case MSG_INPUT_KEY: {
-      PicassoKey key = *(uint32_t * const) rectify_map_get(map, "key");
+      PicassoKey key = *(uint32_t *const)rectify_map_get(map, "key");
       bool pressed = *(bool *const)rectify_map_get(map, "pressed");
 
       if (pressed) {
@@ -148,12 +154,12 @@ void scene_sound_test_message(uint32_t id, RectifyMap *const map) {
           case PICASSO_KEY_P: {
             RectifyMap *map = rectify_map_create();
             rectify_map_set(map, "song", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), &scene_sound_test_internal->song);
-            gossip_emit(MSG_SOUND_PLAY_SONG, map);
+            kronos_emit(MSG_SOUND_PLAY_SONG, map);
             break;
           }
 
           case PICASSO_KEY_S: {
-            gossip_emit(MSG_SOUND_STOP_SONG, NULL);
+            kronos_emit(MSG_SOUND_STOP_SONG, NULL);
             for (uint32_t t = 0; t < 78; t++) {
               scene_sound_test_internal->spectrum_left[t] = 0.0f;
               scene_sound_test_internal->spectrum_right[t] = 0.0f;
@@ -162,12 +168,12 @@ void scene_sound_test_message(uint32_t id, RectifyMap *const map) {
           }
 
           case PICASSO_KEY_N: {
-            gossip_emit(MSG_SOUND_STOP_SONG, NULL);
+            kronos_emit(MSG_SOUND_STOP_SONG, NULL);
 
             scene_sound_test_internal->song = (scene_sound_test_internal->song == 0 ? 1 : 0);
             RectifyMap *map = rectify_map_create();
             rectify_map_set(map, "song", sizeof(uint32_t), RECTIFY_MAP_TYPE_UINT, &scene_sound_test_internal->song);
-            gossip_emit(MSG_SOUND_PLAY_SONG, map);
+            kronos_emit(MSG_SOUND_PLAY_SONG, map);
             break;
           }
         }

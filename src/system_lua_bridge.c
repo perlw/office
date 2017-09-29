@@ -247,7 +247,7 @@ int system_lua_bridge_internal_lua_module_post_message(lua_State *state) {
     map = system_lua_bridge_internal_table_to_map(state, 3);
   }
 
-  gossip_post(system, id, map);
+  kronos_post(system, id, map);
 
   return 0;
 }
@@ -274,7 +274,7 @@ int system_lua_bridge_internal_lua_module_emit_message(lua_State *state) {
     map = system_lua_bridge_internal_table_to_map(state, 2);
   }
 
-  gossip_emit(id, map);
+  kronos_emit(id, map);
 
   return 0;
 }

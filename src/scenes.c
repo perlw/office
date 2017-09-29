@@ -126,29 +126,29 @@ void scenes_internal_goto(uint32_t index) {
     {
       RectifyMap *map = rectify_map_create();
       rectify_map_set(map, "scene", RECTIFY_MAP_TYPE_STRING, sizeof(char) * (strnlen(current->name, 128) + 1), current->name);
-      gossip_emit(MSG_SCENE_TEARDOWN, map);
+      kronos_emit(MSG_SCENE_TEARDOWN, map);
     }
     {
       RectifyMap *map = rectify_map_create();
       rectify_map_set(map, "system", RECTIFY_MAP_TYPE_STRING, sizeof(char) * (strnlen(current->name, 128) + 1), current->name);
-      gossip_post("systems", MSG_SYSTEM_STOP, map);
+      kronos_post("systems", MSG_SYSTEM_STOP, map);
     }
   }
 
   {
     RectifyMap *map = rectify_map_create();
     rectify_map_set(map, "system", RECTIFY_MAP_TYPE_STRING, sizeof(char) * (strnlen(target->name, 128) + 1), target->name);
-    gossip_post("systems", MSG_SYSTEM_START, map);
+    kronos_post("systems", MSG_SYSTEM_START, map);
   }
   {
     RectifyMap *map = rectify_map_create();
     rectify_map_set(map, "scene", RECTIFY_MAP_TYPE_STRING, sizeof(char) * (strnlen(target->name, 128) + 1), target->name);
-    gossip_emit(MSG_SCENE_SETUP, map);
+    kronos_emit(MSG_SCENE_SETUP, map);
   }
   {
     RectifyMap *map = rectify_map_create();
     rectify_map_set(map, "scene", RECTIFY_MAP_TYPE_STRING, sizeof(char) * (strnlen(target->name, 128) + 1), target->name);
-    gossip_emit(MSG_SCENE_CHANGED, map);
+    kronos_emit(MSG_SCENE_CHANGED, map);
   }
 
   scenes_internal->current = (int32_t)index;

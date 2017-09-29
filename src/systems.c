@@ -92,7 +92,7 @@ void systems_internal_start(const char *system) {
   if (result == KRONOS_OK) {
     RectifyMap *map = rectify_map_create();
     rectify_map_set_string(map, "system", (char *const)system);
-    gossip_emit(MSG_SYSTEM_SPUN_UP, map);
+    kronos_emit(MSG_SYSTEM_SPUN_UP, map);
 
     printf("System: \"%s\" spun up!\n", system);
   } else {
@@ -106,7 +106,7 @@ void systems_internal_stop(const char *system) {
   if (result == KRONOS_OK) {
     RectifyMap *map = rectify_map_create();
     rectify_map_set_string(map, "system", (char *const)system);
-    gossip_emit(MSG_SYSTEM_SHUT_DOWN, map);
+    kronos_emit(MSG_SYSTEM_SHUT_DOWN, map);
 
     printf("System: \"%s\" shut down!\n", system);
   } else {
