@@ -4,6 +4,8 @@
 
 #include "GLFW/glfw3.h"
 
+GLFWwindow *current_context = NULL;
+
 void dummy_keyboard_callback(const PicassoWindowKeyboardEvent *event) {
   printf("No keyboard callback..\n");
 };
@@ -92,6 +94,7 @@ void picasso_window_update(void) {
 PicassoWindow *picasso_window_create(const char *title, PicassoWindowInit *const window_init) {
   assert(window_init);
 
+  glfwDefaultWindowHints();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -116,8 +119,20 @@ PicassoWindow *picasso_window_create(const char *title, PicassoWindowInit *const
   glfwSetCursorPosCallback(raw_window, mouse_move_callback);
   glfwSetMouseButtonCallback(raw_window, mouse_button_callback);
   glfwSetScrollCallback(raw_window, mouse_scroll_callback);
+
+  PicassoWindow *window = calloc(1, sizeof(PicassoWindow));
+  *window = (PicassoWindow){
+    .raw_ptr = raw_window,
+    .keyboard_callback = &dummy_keyboard_callback,
+    .mouse_move_callback = &dummy_mouse_move_callback,
+    .mouse_button_callback = &dummy_mouse_button_callback,
+    .mouse_scroll_callback = &dummy_mouse_scroll_callback,
+  };
+
+  glfwSetWindowUserPointer(raw_window, window);
   glfwMakeContextCurrent(raw_window);
   glfwSwapInterval(0);
+  current_context = raw_window;
 
   /* OpenGL */
   if (!gladLoadGL()) {
@@ -141,17 +156,6 @@ PicassoWindow *picasso_window_create(const char *title, PicassoWindowInit *const
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     glDebugMessageCallback((GLDEBUGPROC)debug_callback, NULL);
   }
-
-  PicassoWindow *window = calloc(1, sizeof(PicassoWindow));
-  *window = (PicassoWindow){
-    .raw_ptr = raw_window,
-    .keyboard_callback = &dummy_keyboard_callback,
-    .mouse_move_callback = &dummy_mouse_move_callback,
-    .mouse_button_callback = &dummy_mouse_button_callback,
-    .mouse_scroll_callback = &dummy_mouse_scroll_callback,
-  };
-
-  glfwSetWindowUserPointer(raw_window, window);
 
   return window;
 }
@@ -189,7 +193,10 @@ bool picasso_window_should_close(PicassoWindow *window) {
 
 void picasso_window_make_context_current(PicassoWindow *window) {
   assert(window);
-  glfwMakeContextCurrent(window->raw_ptr);
+  if (window->raw_ptr != current_context) {
+    glfwMakeContextCurrent(window->raw_ptr);
+    current_context = window->raw_ptr;
+  }
 }
 
 void picasso_window_keyboard_callback(PicassoWindow *window, PicassoWindowKeyboardCallback callback) {
