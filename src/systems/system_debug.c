@@ -7,7 +7,7 @@
 #include "ascii/ascii.h"
 #include "config.h"
 #include "messages.h"
-#include "scenes.h"
+#include "scenes/scenes.h"
 #include "screen.h"
 
 bool system_debug_start(void);

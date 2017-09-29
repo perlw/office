@@ -22,22 +22,10 @@ set (
   "src/assets.c"
   "src/config.c"
   "src/screen.c"
-  "src/systems.c"
-  "src/system_debug.c"
-  "src/system_input.c"
-  "src/system_game.c"
-  "src/system_sound.c"
-  "src/system_lua_bridge.c"
-  "src/system_ui.c"
-  "src/scenes.c"
-  "src/scene_test.c"
-  "src/scene_drips.c"
-  "src/scene_sound-test.c"
-  "src/scene_game.c"
-  "src/scene_world-edit.c"
-  "src/scene_secret.c"
 )
 add_subdirectory (src/ascii)
+add_subdirectory (src/systems)
+add_subdirectory (src/scenes)
 add_executable (office ${SOURCES})
 
 if (UNIX)

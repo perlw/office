@@ -14,11 +14,11 @@
 #include "assets.h"
 #include "config.h"
 #include "messages.h"
-#include "scenes.h"
+#include "scenes/scenes.h"
 #include "screen.h"
-#include "systems.h"
+#include "systems/systems.h"
 
-#include "system_game.h"
+#include "systems/system_game.h"
 
 int main(int argc, char **argv) {
   srand(time(NULL));
