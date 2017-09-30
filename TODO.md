@@ -1,18 +1,23 @@
 TODO
 ===
-## Game
-The actual game
+## Game - Plans
+* Titlescreen
+  - Prototype in rexpaint
+* Options
+  - Prototype in rexpaint
+* Initial world editing
+  - Needs basic UI capabilities
+* Ability to explore created world
+  - Networking needs to be in early, preferably at this stage
+
+## Game - Tech
 * Ability to choose monitor and sound device
-* Memory allocator for quick/often allocations (gossip f.x)
 * Logging
   - Log to file aswell as log to console
   - Separate files for different systems
 * Sound
   - Ability to load and play sounds, won't need to define
   - Hook into tome
-* Occulus
-  - Break out log parsing in own app
-  - Move compile flag into a runtime check instead?
 * Resolutions
   - Load higher res font when possible?
 * World edit
@@ -53,6 +58,8 @@ Boombox/Cassette
 
 ### Occulus
 Memory introspector
+* Break out log parsing in own app
+* Move compile flag into a runtime check instead?
 
 ### Rectify
 Data, memory, sorting
