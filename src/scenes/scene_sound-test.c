@@ -26,8 +26,8 @@ KronosSystem scene_sound_test = {
 
 typedef struct {
   uint32_t song;
-  float spectrum_left[78];
-  float spectrum_right[78];
+  float spectrum_left[158];
+  float spectrum_right[158];
 
   Surface *spectrum;
 } SceneSoundTest;
@@ -42,8 +42,8 @@ bool scene_sound_test_start(void) {
 
   scene_sound_test_internal = calloc(1, sizeof(SceneSoundTest));
   scene_sound_test_internal->song = 0;
-  memset(scene_sound_test_internal->spectrum_left, 0, sizeof(float) * 78);
-  memset(scene_sound_test_internal->spectrum_right, 0, sizeof(float) * 78);
+  memset(scene_sound_test_internal->spectrum_left, 0, sizeof(float) * 158);
+  memset(scene_sound_test_internal->spectrum_right, 0, sizeof(float) * 158);
 
   Config *const config = config_get();
 
@@ -86,7 +86,7 @@ void scene_sound_test_update(double delta) {
     return;
   }
 
-  for (uint32_t t = 0; t < 78; t++) {
+  for (uint32_t t = 0; t < 158; t++) {
     uint32_t height_l = (uint32_t)(scene_sound_test_internal->spectrum_left[t] * 14.0f);
     uint32_t height_r = (uint32_t)(scene_sound_test_internal->spectrum_right[t] * 14.0f);
 
@@ -160,7 +160,7 @@ void scene_sound_test_message(uint32_t id, RectifyMap *const map) {
 
           case PICASSO_KEY_S: {
             kronos_emit(MSG_SOUND_STOP_SONG, NULL);
-            for (uint32_t t = 0; t < 78; t++) {
+            for (uint32_t t = 0; t < 158; t++) {
               scene_sound_test_internal->spectrum_left[t] = 0.0f;
               scene_sound_test_internal->spectrum_right[t] = 0.0f;
             }
@@ -192,7 +192,7 @@ void scene_sound_test_message(uint32_t id, RectifyMap *const map) {
       scene_sound_test_internal->song = *song;
 
       uint32_t step = 1;
-      for (uint32_t t = 0, u = 0; u < 78; t += step, u++) {
+      for (uint32_t t = 0, u = 0; u < 158; t += step, u++) {
         float l = 0.0f;
         float r = 0.0f;
         for (uint32_t s = t; s < t + step; s++) {
