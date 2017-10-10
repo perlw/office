@@ -30,7 +30,7 @@ GLenum BufferModeToGL[] = {
 PicassoBufferGroup *picasso_buffergroup_create(void) {
   PicassoBufferGroup *buffergroup = calloc(1, sizeof(PicassoBufferGroup));
 
-  glCreateVertexArrays(1, &buffergroup->id);
+  glGenVertexArrays(1, &buffergroup->id);
   buffergroup->buffers = rectify_array_alloc(1, sizeof(PicassoBuffer *));
 
   return buffergroup;
@@ -75,8 +75,7 @@ PicassoBuffer *picasso_buffer_create(PicassoBufferGroup *const buffergroup, Pica
   buffergroup->buffers = rectify_array_push(buffergroup->buffers, &buffer);
   buffer->group = buffergroup;
 
-  glCreateBuffers(1, &buffer->id);
-  glVertexArrayVertexBuffer(buffer->group->id, (GLuint)rectify_array_size(buffer->group->buffers), buffer->id, 0, 0);
+  glGenBuffers(1, &buffer->id);
 
   buffer->gl.type = BufferTypeToGL[type];
   buffer->gl.usage = BufferUsageToGL[usage];
@@ -96,7 +95,8 @@ void buffer_destroy(PicassoBuffer **buffer) {
 void picasso_buffer_set_data(PicassoBuffer *const buffer, uintmax_t num_fields, PicassoDataType type, uintmax_t size, const void *data) {
   assert(buffer);
 
-  glNamedBufferData(buffer->id, size, data, buffer->gl.usage);
+  buffer_bind(buffer);
+  glBufferData(GL_ARRAY_BUFFER, size, data, buffer->gl.usage);
   buffer->num_fields = num_fields;
   buffer->gl.data_type = BufferDataTypeToGL[type];
 }
@@ -109,9 +109,6 @@ void picasso_buffer_shader_attrib(PicassoBuffer *const buffer, int32_t attr_pos)
 
   glEnableVertexAttribArray(attr_pos);
   glVertexAttribPointer(attr_pos, (GLint)buffer->num_fields, buffer->gl.data_type, GL_FALSE, 0, NULL);
-
-  buffer_bind(NULL);
-  buffergroup_bind(NULL);
 }
 
 void buffer_bind(PicassoBuffer *const buffer) {

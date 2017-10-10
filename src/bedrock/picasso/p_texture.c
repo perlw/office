@@ -33,18 +33,19 @@ PicassoTexture *picasso_texture_create(PicassoTextureTarget target, uintmax_t wi
   texture->gl.target = TextureTargetToGL[target];
   texture->gl.channels = TextureChannelToGL[channels];
 
-  glCreateTextures(texture->gl.target, 1, &texture->id);
+  glGenTextures(1, &texture->id);
+  texture_bind(texture);
   if (filtered) {
-    glTextureParameteri(texture->id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(texture->id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   } else {
-    glTextureParameteri(texture->id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTextureParameteri(texture->id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   }
-  glTextureParameteri(texture->id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTextureParameteri(texture->id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-  glTextureStorage2D(texture->id, 1, TextureChannelToFormatGL[channels], (GLsizei)texture->width, (GLsizei)texture->height);
+  glTexImage2D(texture->gl.target, 0, TextureChannelToFormatGL[channels], (GLsizei)texture->width, (GLsizei)texture->height, 0, texture->gl.channels, GL_UNSIGNED_BYTE, NULL);
 
   return texture;
 }
@@ -77,7 +78,8 @@ PicassoTextureResult picasso_texture_set_data(PicassoTexture *const texture, uin
     return PICASSO_TEXTURE_OUT_OF_BOUNDS;
   }
 
-  glTextureSubImage2D(texture->id, 0, (GLint)offset_x, (GLint)offset_y, (GLsizei)width, (GLsizei)height, texture->gl.channels, GL_UNSIGNED_BYTE, data);
+  texture_bind(texture);
+  glTexSubImage2D(texture->gl.target, 0, (GLint)offset_x, (GLint)offset_y, (GLsizei)width, (GLsizei)height, texture->gl.channels, GL_UNSIGNED_BYTE, data);
 
   return PICASSO_TEXTURE_OK;
 }
@@ -85,5 +87,15 @@ PicassoTextureResult picasso_texture_set_data(PicassoTexture *const texture, uin
 void picasso_texture_bind_to(PicassoTexture *const texture, uint32_t index) {
   assert(texture);
 
-  glBindTextureUnit(index, texture->id);
+  glActiveTexture(GL_TEXTURE0 + index);
+  texture_bind(texture);
+}
+
+void texture_bind(PicassoTexture *const texture) {
+  uint32_t id = (texture ? texture->id : 0);
+
+  if (get_state(PICASSO_STATE_TEXTURE) != id) {
+    glBindTexture(GL_TEXTURE_2D, id);
+    set_state(PICASSO_STATE_TEXTURE, id);
+  }
 }

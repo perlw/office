@@ -80,3 +80,4 @@ void set_state(PicassoState state, uint32_t value);
 void buffergroup_bind(PicassoBufferGroup *const buffergroup);
 void buffer_destroy(PicassoBuffer **buffer);
 void buffer_bind(PicassoBuffer *const buffer);
+void texture_bind(PicassoTexture *const texture);
