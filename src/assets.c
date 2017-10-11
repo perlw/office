@@ -7,8 +7,9 @@
 #define USE_TOME
 #include "bedrock/bedrock.h"
 
-#include "ascii/ascii.h"
-#include "assets.h"
+#define USE_ASCII
+#define USE_ASSETS
+#include "main.h"
 
 void *shader_loader(const char *name, const char *path) {
   uintmax_t vert_length = 0, frag_length = 0;

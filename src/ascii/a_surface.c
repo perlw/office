@@ -4,7 +4,8 @@
 #define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
-#include "ascii.h"
+#define USE_ASCII
+#include "main.h"
 
 Surface *surface_create(uint32_t pos_x, uint32_t pos_y, uint32_t width, uint32_t height) {
   Surface *surface = calloc(1, sizeof(Surface));

@@ -11,10 +11,11 @@
 #define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
-#include "ascii/ascii.h"
-#include "config.h"
-#include "messages.h"
-#include "screen.h"
+#define USE_ASCII
+#define USE_CONFIG
+#define USE_MESSAGES
+#define USE_SCREEN
+#include "main.h"
 
 bool scene_drips_start(void);
 void scene_drips_stop(void);

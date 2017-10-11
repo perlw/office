@@ -6,8 +6,9 @@
 #define USE_KRONOS
 #include "bedrock/bedrock.h"
 
-#include "messages.h"
-#include "scenes.h"
+#define USE_MESSAGES
+#define USE_SCENES
+#include "main.h"
 
 bool scenes_start(void);
 void scenes_stop(void);

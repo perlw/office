@@ -5,8 +5,9 @@
 #define USE_KRONOS
 #include "bedrock/bedrock.h"
 
-#include "messages.h"
-#include "systems.h"
+#define USE_MESSAGES
+#define USE_SYSTEMS
+#include "main.h"
 
 bool systems_start(void);
 void systems_stop(void);

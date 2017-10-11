@@ -10,7 +10,8 @@
 #define USE_KRONOS
 #include "bedrock/bedrock.h"
 
-#include "messages.h"
+#define USE_MESSAGES
+#include "main.h"
 
 bool system_lua_bridge_start(void);
 void system_lua_bridge_stop(void);

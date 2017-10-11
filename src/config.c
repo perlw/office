@@ -10,8 +10,9 @@
 #define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
-#include "config.h"
-#include "messages.h"
+#define USE_CONFIG
+#define USE_MESSAGES
+#include "main.h"
 
 struct {
   char *name;

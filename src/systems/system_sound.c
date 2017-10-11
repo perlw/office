@@ -7,7 +7,8 @@
 #define USE_KRONOS
 #include "bedrock/bedrock.h"
 
-#include "messages.h"
+#define USE_MESSAGES
+#include "main.h"
 
 bool system_sound_start(void);
 void system_sound_stop(void);

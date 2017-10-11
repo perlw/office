@@ -4,9 +4,10 @@
 #define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
-#include "ascii/ascii.h"
-#include "config.h"
-#include "screen.h"
+#define USE_ASCII
+#define USE_CONFIG
+#define USE_SCREEN
+#include "main.h"
 
 typedef struct {
   ScreenRender render_func;

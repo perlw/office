@@ -13,12 +13,13 @@
 #define USE_TOME
 #include "bedrock/bedrock.h"
 
-#include "assets.h"
-#include "config.h"
-#include "messages.h"
-#include "scenes/scenes.h"
-#include "screen.h"
-#include "systems/systems.h"
+#define USE_ASSETS
+#define USE_CONFIG
+#define USE_MESSAGES
+#define USE_SCENES
+#define USE_SCREEN
+#define USE_SYSTEMS
+#include "main.h"
 
 int main(int argc, char **argv) {
   srand(time(NULL));

@@ -5,8 +5,9 @@
 #define USE_PICASSO
 #include "bedrock/bedrock.h"
 
-#include "config.h"
-#include "messages.h"
+#define USE_CONFIG
+#define USE_MESSAGES
+#include "main.h"
 
 bool system_input_start(void);
 void system_input_stop(void);

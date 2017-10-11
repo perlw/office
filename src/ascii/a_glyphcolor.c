@@ -1,4 +1,5 @@
-#include "ascii.h"
+#define USE_ASCII
+#include "main.h"
 
 GlyphColor glyphcolor(uint8_t r, uint8_t g, uint8_t b) {
   return (GlyphColor){ r, g, b };

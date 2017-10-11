@@ -4,10 +4,11 @@
 #define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
-#include "ascii/ascii.h"
-#include "config.h"
-#include "messages.h"
-#include "screen.h"
+#define USE_ASCII
+#define USE_CONFIG
+#define USE_MESSAGES
+#define USE_SCREEN
+#include "main.h"
 
 bool system_ui_start(void);
 void system_ui_stop(void);

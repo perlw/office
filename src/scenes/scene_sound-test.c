@@ -6,10 +6,11 @@
 #define USE_KRONOS
 #include "bedrock/bedrock.h"
 
-#include "ascii/ascii.h"
-#include "config.h"
-#include "messages.h"
-#include "screen.h"
+#define USE_ASCII
+#define USE_CONFIG
+#define USE_MESSAGES
+#define USE_SCREEN
+#include "main.h"
 
 bool scene_sound_test_start(void);
 void scene_sound_test_stop(void);

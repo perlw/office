@@ -8,9 +8,10 @@
 #define USE_TOME
 #include "bedrock/bedrock.h"
 
-#include "ascii.h"
-#include "assets.h"
-#include "config.h"
+#define USE_ASCII
+#define USE_ASSETS
+#define USE_CONFIG
+#include "main.h"
 
 uint32_t render_width = 1280;
 uint32_t render_height = 720;

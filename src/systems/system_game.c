@@ -3,8 +3,9 @@
 #define USE_KRONOS
 #include "bedrock/bedrock.h"
 
-#include "config.h"
-#include "messages.h"
+#define USE_CONFIG
+#define USE_MESSAGES
+#include "main.h"
 
 bool system_game_start(void);
 void system_game_stop(void);
