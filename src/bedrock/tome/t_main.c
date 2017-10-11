@@ -168,7 +168,10 @@ void tome_handler(int32_t type, TomeLoader loader, TomeDestroyer destroyer) {
   }
 
   tome->handlers = rectify_array_push(tome->handlers, &(Handler){
-                                                        .type = type, .loader = loader, .destroyer = destroyer, .records = rectify_array_alloc(10, sizeof(Record)),
+                                                        .type = type,
+                                                        .loader = loader,
+                                                        .destroyer = destroyer,
+                                                        .records = rectify_array_alloc(10, sizeof(Record)),
                                                       });
   printf("DONE\n");
 }
