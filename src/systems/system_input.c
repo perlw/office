@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define USE_KRONOS
+#define USE_PICASSO
 #include "bedrock/bedrock.h"
 
 #include "config.h"
@@ -142,8 +144,8 @@ void system_input_internal_mousemove_callback(const PicassoWindowMouseEvent *eve
 
   if (m_x != o_x || m_y != o_y) {
     RectifyMap *map = rectify_map_create();
-    rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_x);
-    rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_y);
+    rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_x);
+    rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_y);
     kronos_emit(MSG_INPUT_MOUSEMOVE, map);
 
     o_x = m_x;
@@ -161,9 +163,9 @@ void system_input_internal_click_callback(const PicassoWindowMouseEvent *event) 
 
   if (m_x != o_x || m_y != o_y) {
     RectifyMap *map = rectify_map_create();
-    rectify_map_set(map, "button", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & event->button);
-    rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_x);
-    rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_y);
+    rectify_map_set(map, "button", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & event->button);
+    rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_x);
+    rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_y);
     rectify_map_set(map, "pressed", RECTIFY_MAP_TYPE_BOOL, sizeof(bool), (bool *const) & event->pressed);
     rectify_map_set(map, "released", RECTIFY_MAP_TYPE_BOOL, sizeof(bool), (bool *const) & event->released);
     kronos_emit(MSG_INPUT_CLICK, map);
@@ -182,9 +184,9 @@ void system_input_internal_mousescroll_callback(const PicassoWindowMouseScrollEv
   int32_t scroll_y = (int32_t)(event->offset_y < 0.0 ? event->offset_y - 0.5 : event->offset_y + 0.5);
 
   RectifyMap *map = rectify_map_create();
-  rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_x);
-  rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t * const) & m_y);
-  rectify_map_set(map, "scroll_x", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t * const) & scroll_x);
-  rectify_map_set(map, "scroll_y", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t * const) & scroll_y);
+  rectify_map_set(map, "x", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_x);
+  rectify_map_set(map, "y", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), (uint32_t *const) & m_y);
+  rectify_map_set(map, "scroll_x", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t *const) & scroll_x);
+  rectify_map_set(map, "scroll_y", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t *const) & scroll_y);
   kronos_emit(MSG_INPUT_SCROLL, map);
 }

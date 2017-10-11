@@ -1,5 +1,7 @@
 #pragma once
 
+#define USE_KRONOS
+#define USE_PICASSO
 #include "bedrock/bedrock.h"
 
 extern KronosSystem system_input;

@@ -1,5 +1,7 @@
 #include <assert.h>
 
+#define USE_PICASSO
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #include "ascii/ascii.h"
@@ -67,14 +69,18 @@ void screen_hook_render(ScreenRender render_func, void *const userdata, uint32_t
     if (!inserted && screen_internal->hooks[t].layer >= layer) {
       inserted = true;
       new_list = rectify_array_push(new_list, &(ScreenRenderHook){
-                                                .render_func = render_func, .layer = layer, .userdata = userdata,
+                                                .render_func = render_func,
+                                                .layer = layer,
+                                                .userdata = userdata,
                                               });
     }
     new_list = rectify_array_push(new_list, &screen_internal->hooks[t]);
   }
   if (!inserted) {
     new_list = rectify_array_push(new_list, &(ScreenRenderHook){
-                                              .render_func = render_func, .layer = layer, .userdata = userdata,
+                                              .render_func = render_func,
+                                              .layer = layer,
+                                              .userdata = userdata,
                                             });
   }
 

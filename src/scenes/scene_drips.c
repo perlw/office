@@ -7,6 +7,8 @@
 
 #include "arkanis/math_3d.h"
 
+#define USE_KRONOS
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #include "ascii/ascii.h"

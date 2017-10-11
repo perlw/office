@@ -9,6 +9,8 @@
 #include "arkanis/math_3d.h"
 #undef MATH_3D_IMPLEMENTATION
 
+#define USE_PICASSO
+#define USE_TOME
 #include "bedrock/bedrock.h"
 
 #include "assets.h"

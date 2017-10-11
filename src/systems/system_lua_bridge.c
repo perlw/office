@@ -7,6 +7,7 @@
 #include "lua.h"
 #include "lualib.h"
 
+#define USE_KRONOS
 #include "bedrock/bedrock.h"
 
 #include "messages.h"

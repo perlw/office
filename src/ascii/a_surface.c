@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <string.h>
 
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #include "ascii.h"

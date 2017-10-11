@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#define USE_KRONOS
 #include "bedrock/bedrock.h"
 
 #include "config.h"

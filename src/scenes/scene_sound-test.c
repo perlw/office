@@ -3,6 +3,7 @@
 
 #include "arkanis/math_3d.h"
 
+#define USE_KRONOS
 #include "bedrock/bedrock.h"
 
 #include "ascii/ascii.h"

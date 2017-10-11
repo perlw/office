@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#define USE_KRONOS
 #include "bedrock/bedrock.h"
 
 #include "messages.h"

@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#define USE_KRONOS
 #include "bedrock/bedrock.h"
 
 #include "ascii/ascii.h"
@@ -53,9 +54,15 @@ bool scene_world_edit_start(void) {
   };
 
   SurfaceRectTiles rect_tiles = {
-    '+', '-', '+',
-    '|', 0, '|',
-    '+', '-', '+',
+    '+',
+    '-',
+    '+',
+    '|',
+    0,
+    '|',
+    '+',
+    '-',
+    '+',
   };
   surface_rect(scene_world_edit_internal->world, 0, 0, scene_world_edit_internal->world->width, scene_world_edit_internal->world->height, rect_tiles, false, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
   surface_textc(scene_world_edit_internal->world, 40, scene_world_edit_internal->world->height - 1, 0, " #{ffffff}S#{aaaaaa}ave/Save #{ffffff}a#{aaaaaa}s | #{ffffff}L#{aaaaaa}oad ");

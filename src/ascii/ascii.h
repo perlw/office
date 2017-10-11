@@ -4,6 +4,7 @@
 
 #include "arkanis/math_3d.h"
 
+#define USE_PICASSO
 #include "bedrock/bedrock.h"
 
 // +AsciiBuffer

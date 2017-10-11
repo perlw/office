@@ -4,6 +4,8 @@
 
 #include "glad/glad.h"
 
+#define USE_RECTIFY
+#define USE_TOME
 #include "bedrock/bedrock.h"
 
 #include "ascii.h"
@@ -31,22 +33,34 @@ AsciiBuffer *ascii_buffer_create(PicassoWindow *window, uint32_t width, uint32_t
 
   {
     int32_t vertex_data[] = {
-      0, 0,
-      render_width, render_height,
-      0, render_height,
+      0,
+      0,
+      render_width,
+      render_height,
+      0,
+      render_height,
 
-      0, 0,
-      render_width, 0,
-      render_width, render_height,
+      0,
+      0,
+      render_width,
+      0,
+      render_width,
+      render_height,
     };
     float coord_data[] = {
-      0, 1,
-      1, 0,
-      0, 0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
 
-      0, 1,
-      1, 1,
-      1, 0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
     };
 
     PicassoBuffer *vertex_buffer = picasso_buffer_create(ascii->quad, PICASSO_BUFFER_TYPE_ARRAY, PICASSO_BUFFER_USAGE_STATIC);
@@ -134,22 +148,34 @@ AsciiBuffer *ascii_buffer_create(PicassoWindow *window, uint32_t width, uint32_t
     }
 
     int32_t vertex_data[] = {
-      0, 0,
-      fudged_width, fudged_height,
-      0, fudged_height,
+      0,
+      0,
+      fudged_width,
+      fudged_height,
+      0,
+      fudged_height,
 
-      0, 0,
-      fudged_width, 0,
-      fudged_width, fudged_height,
+      0,
+      0,
+      fudged_width,
+      0,
+      fudged_width,
+      fudged_height,
     };
     float coord_data[] = {
-      0, 1,
-      1, 0,
-      0, 0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
 
-      0, 1,
-      1, 1,
-      1, 0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0,
     };
 
     ascii->fbo.quad = picasso_buffergroup_create();

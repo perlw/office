@@ -1,5 +1,6 @@
 #pragma once
 
+#define USE_PICASSO
 #include "bedrock/bedrock.h"
 
 #include "ascii/ascii.h"

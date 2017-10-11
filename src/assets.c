@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#define USE_ARCHIVIST
+#define USE_PICASSO
+#define USE_TOME
 #include "bedrock/bedrock.h"
 
 #include "ascii/ascii.h"

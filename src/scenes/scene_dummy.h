@@ -1,5 +1,6 @@
 #pragma once
 
+#define USE_KRONOS
 #include "scenes.h"
 
 typedef void SceneDummy;

@@ -5,6 +5,9 @@
 #include "lua.h"
 #include "lualib.h"
 
+#define USE_KRONOS
+#define USE_PICASSO
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #include "config.h"
