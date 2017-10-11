@@ -1,0 +1,32 @@
+{
+  dri
+    Memcheck:Cond
+    ...
+    obj:/usr/lib/xorg/modules/dri/i965_dri.so
+    ...
+}
+
+{
+  dri
+    Memcheck:Free
+    ...
+    obj:/usr/lib/xorg/modules/dri/i965_dri.so
+    ...
+}
+
+{
+  dri
+    Memcheck:Value8
+    ...
+    obj:/usr/lib/xorg/modules/dri/i965_dri.so
+    ...
+}
+
+{
+  dri
+    Memcheck:Leak
+    fun:*alloc
+    ...
+    obj:/usr/lib/xorg/modules/dri/i965_dri.so
+    ...
+}
