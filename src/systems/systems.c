@@ -6,12 +6,7 @@
 #include "bedrock/bedrock.h"
 
 #include "messages.h"
-#include "system_debug.h"
-#include "system_game.h"
-#include "system_input.h"
-#include "system_lua_bridge.h"
-#include "system_sound.h"
-#include "system_ui.h"
+#include "systems.h"
 
 bool systems_start(void);
 void systems_stop(void);

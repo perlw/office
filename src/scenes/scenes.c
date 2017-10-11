@@ -7,11 +7,7 @@
 #include "bedrock/bedrock.h"
 
 #include "messages.h"
-#include "scene_drips.h"
-#include "scene_game.h"
-#include "scene_sound-test.h"
-#include "scene_test.h"
-#include "scene_world-edit.h"
+#include "scenes.h"
 
 bool scenes_start(void);
 void scenes_stop(void);

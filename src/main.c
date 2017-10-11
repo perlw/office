@@ -20,9 +20,6 @@
 #include "screen.h"
 #include "systems/systems.h"
 
-#include "systems/system_game.h"
-#include "systems/system_input.h"
-
 int main(int argc, char **argv) {
   srand(time(NULL));
 
