@@ -14,10 +14,10 @@ typedef enum {
   KRONOS_SYSTEM_STOP_PREVENTED,
 } KronosResult;
 
-typedef bool (*KronosSystemStart)(void);
-typedef void (*KronosSystemMessage)(uint32_t id, RectifyMap *const map);
-typedef void (*KronosSystemUpdate)(double delta);
-typedef void (*KronosSystemFunc)(void);
+typedef void *(*KronosSystemStart)(void);
+typedef void (*KronosSystemMessage)(void *system, uint32_t id, RectifyMap *const map);
+typedef void (*KronosSystemUpdate)(void *system, double delta);
+typedef void (*KronosSystemStop)(void **system);
 
 typedef struct {
   char *name;
@@ -25,13 +25,15 @@ typedef struct {
   bool prevent_stop;
   bool autostart;
   KronosSystemStart start;
-  KronosSystemFunc stop;
+  KronosSystemStop stop;
   KronosSystemUpdate update;
   KronosSystemMessage message;
 } KronosSystem;
 
 void kronos_init(void);
 void kronos_kill(void);
+void kronos_halt(void);
+bool kronos_should_halt(void);
 
 KronosResult kronos_register(KronosSystem *const system);
 KronosResult kronos_start_system(const char *name);

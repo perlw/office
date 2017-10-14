@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h>
 
 #define USE_KRONOS
@@ -9,20 +10,6 @@
 #define USE_MESSAGES
 #define USE_SCREEN
 #include "main.h"
-
-bool system_ui_start(void);
-void system_ui_stop(void);
-void system_ui_update(double delta);
-void system_ui_message(uint32_t id, RectifyMap *const map);
-
-KronosSystem system_ui = {
-  .name = "ui",
-  .frames = 30,
-  .start = &system_ui_start,
-  .stop = &system_ui_stop,
-  .update = &system_ui_update,
-  .message = &system_ui_message,
-};
 
 typedef struct {
   char *title;
@@ -39,49 +26,53 @@ typedef struct {
   UIWindow *windows;
 } SystemUI;
 
+SystemUI *system_ui_start(void);
+void system_ui_stop(void **system);
+void system_ui_update(SystemUI *system, double delta);
+void system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const map);
+
+KronosSystem system_ui = {
+  .name = "ui",
+  .frames = 30,
+  .start = &system_ui_start,
+  .stop = &system_ui_stop,
+  .update = &system_ui_update,
+  .message = &system_ui_message,
+};
+
 void system_ui_internal_window_draw_border(UIWindow *const window);
 void system_ui_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
 
-SystemUI *system_ui_internal = NULL;
-bool system_ui_start(void) {
-  if (system_ui_internal) {
-    return false;
-  }
+SystemUI *system_ui_start(void) {
+  SystemUI *system = calloc(1, sizeof(SystemUI));
+  system->windows = rectify_array_alloc(10, sizeof(UIWindow));
 
-  system_ui_internal = calloc(1, sizeof(SystemUI));
-  system_ui_internal->windows = rectify_array_alloc(10, sizeof(UIWindow));
+  screen_hook_render(&system_ui_internal_render_hook, system, 1);
 
-  screen_hook_render(&system_ui_internal_render_hook, NULL, 1);
-
-  return true;
+  return system;
 }
 
-void system_ui_stop(void) {
-  if (!system_ui_internal) {
-    return;
-  }
+void system_ui_stop(void **system) {
+  SystemUI *ptr = *system;
+  assert(ptr && system);
 
-  screen_unhook_render(&system_ui_internal_render_hook, NULL);
+  screen_unhook_render(&system_ui_internal_render_hook, ptr);
 
-  for (uint32_t t = 0; t < rectify_array_size(system_ui_internal->windows); t++) {
-    free(system_ui_internal->windows[t].title);
-    surface_destroy(&system_ui_internal->windows[t].surface);
+  for (uint32_t t = 0; t < rectify_array_size(ptr->windows); t++) {
+    free(ptr->windows[t].title);
+    surface_destroy(&ptr->windows[t].surface);
   }
-  rectify_array_free((void **)&system_ui_internal->windows);
-  free(system_ui_internal);
-  system_ui_internal = NULL;
+  rectify_array_free((void **)&ptr->windows);
+  free(ptr);
+  *system = NULL;
 }
 
-void system_ui_update(double delta) {
-  if (!system_ui_internal) {
-    return;
-  }
+void system_ui_update(SystemUI *system, double delta) {
+  assert(system);
 }
 
-void system_ui_message(uint32_t id, RectifyMap *const map) {
-  if (!system_ui_internal) {
-    return;
-  }
+void system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const map) {
+  assert(system);
 
   switch (id) {
     case MSG_UI_WINDOW_CREATE: {
@@ -108,7 +99,7 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
       };
       system_ui_internal_window_draw_border(&window);
 
-      system_ui_internal->windows = rectify_array_push(system_ui_internal->windows, &window);
+      system->windows = rectify_array_push(system->windows, &window);
 
       {
         RectifyMap *map = rectify_map_create();
@@ -126,8 +117,8 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
 
     case MSG_UI_WINDOW_GLYPH: {
       uint32_t handle = rectify_map_get_uint(map, "handle");
-      for (uint32_t t = 0; t < rectify_array_size(system_ui_internal->windows); t++) {
-        UIWindow *window = &system_ui_internal->windows[t];
+      for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
+        UIWindow *window = &system->windows[t];
 
         if (window->handle == handle) {
           uint8_t rune = rectify_map_get_byte(map, "rune");
@@ -160,8 +151,8 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
       uint32_t x = rectify_map_get_uint(map, "x");
       uint32_t y = rectify_map_get_uint(map, "y");
 
-      for (uint32_t t = 0; t < rectify_array_size(system_ui_internal->windows); t++) {
-        UIWindow *window = &system_ui_internal->windows[t];
+      for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
+        UIWindow *window = &system->windows[t];
 
         if (x > window->x && x < window->x + window->width - 1
             && y > window->y && y < window->y + window->width - 1) {
@@ -183,8 +174,8 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
       bool pressed = rectify_map_get_bool(map, "pressed");
       bool released = rectify_map_get_bool(map, "released");
 
-      for (uint32_t t = 0; t < rectify_array_size(system_ui_internal->windows); t++) {
-        UIWindow *window = &system_ui_internal->windows[t];
+      for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
+        UIWindow *window = &system->windows[t];
 
         if (x > window->x && x < window->x + window->width - 1
             && y > window->y && y < window->y + window->width - 1) {
@@ -208,8 +199,8 @@ void system_ui_message(uint32_t id, RectifyMap *const map) {
       int32_t scroll_x = rectify_map_get_int(map, "scroll_x");
       int32_t scroll_y = rectify_map_get_int(map, "scroll_y");
 
-      for (uint32_t t = 0; t < rectify_array_size(system_ui_internal->windows); t++) {
-        UIWindow *window = &system_ui_internal->windows[t];
+      for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
+        UIWindow *window = &system->windows[t];
 
         if (x > window->x && x < window->x + window->width - 1
             && y > window->y && y < window->y + window->width - 1) {
@@ -257,11 +248,9 @@ void system_ui_internal_window_draw_border(UIWindow *const window) {
 }
 
 void system_ui_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
-  if (!system_ui_internal) {
-    return;
-  }
+  SystemUI *system = userdata;
 
-  for (uint32_t t = 0; t < rectify_array_size(system_ui_internal->windows); t++) {
-    surface_draw(system_ui_internal->windows[t].surface, screen);
+  for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
+    surface_draw(system->windows[t].surface, screen);
   }
 }

@@ -75,7 +75,10 @@ void rectify_map_print(RectifyMap *const map);
 // -map
 
 // +memory
+#ifndef RECTIFY_DEBUG
 void *rectify_memory_alloc_copy(const void *ptr, uintmax_t size);
-//void *rectify_memory_alloc_copy_debug(const void *ptr, uintmax_t size, const char *filepath, uintmax_t line, const char *function);
-//#define rectify_memory_alloc_copy(a, b) rectify_memory_alloc_copy_debug(a, b, __FILE__, __LINE__, __func__)
+#else
+void *rectify_memory_alloc_copy_debug(const void *ptr, uintmax_t size, const char *filepath, uintmax_t line, const char *function);
+#define rectify_memory_alloc_copy(a, b) rectify_memory_alloc_copy_debug(a, b, __FILE__, __LINE__, __func__)
+#endif
 // +memory

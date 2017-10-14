@@ -9,9 +9,13 @@
 #define USE_SYSTEMS
 #include "main.h"
 
-bool systems_start(void);
-void systems_stop(void);
-void systems_message(uint32_t id, RectifyMap *const map);
+typedef struct {
+  int dummy;
+} Systems;
+
+Systems *systems_start(void);
+void systems_stop(void **systems);
+void systems_message(Systems *systems, uint32_t id, RectifyMap *const map);
 
 KronosSystem systems = {
   .name = "systems",
@@ -24,60 +28,50 @@ KronosSystem systems = {
   .message = &systems_message,
 };
 
-typedef struct {
-  int dummy;
-} Systems;
+void systems_internal_start(const char *name);
+void systems_internal_stop(const char *name);
 
-Systems *systems_internal;
-
-void systems_internal_start(const char *system);
-void systems_internal_stop(const char *system);
-
-bool systems_start(void) {
-  if (systems_internal) {
-    return false;
-  }
-
-  systems_internal = calloc(1, sizeof(Systems));
+Systems *systems_start(void) {
+  Systems *systems = calloc(1, sizeof(Systems));
 
   kronos_register(&system_debug);
-  kronos_register(&system_input);
-  kronos_register(&system_game);
+  //kronos_register(&system_input);
+  //kronos_register(&system_game);
+  kronos_register(&system_window);
   kronos_register(&system_sound);
   kronos_register(&system_lua_bridge);
   kronos_register(&system_ui);
 
-  return true;
+  return systems;
 }
 
-void systems_stop(void) {
-  if (!systems_internal) {
-    return;
-  }
-  free(systems_internal);
+void systems_stop(Systems **systems) {
+  Systems *ptr = *systems;
+  assert(ptr && systems);
+
+  free(ptr);
+  *systems = NULL;
 }
 
-void systems_message(uint32_t id, RectifyMap *const map) {
-  if (!systems_internal) {
-    return;
-  }
+void systems_message(Systems *systems, uint32_t id, RectifyMap *const map) {
+  assert(systems);
 
   switch (id) {
     case MSG_SYSTEM_START: {
-      char *const system = rectify_map_get_string(map, "system");
-      if (!system) {
+      char *const name = rectify_map_get_string(map, "system");
+      if (!name) {
         return;
       }
-      systems_internal_start(system);
+      systems_internal_start(name);
       break;
     }
 
     case MSG_SYSTEM_STOP: {
-      char *const system = rectify_map_get_string(map, "system");
-      if (!system) {
+      char *const name = rectify_map_get_string(map, "system");
+      if (!name) {
         return;
       }
-      systems_internal_stop(system);
+      systems_internal_stop(name);
       break;
     }
   }

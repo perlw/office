@@ -10,10 +10,10 @@
 #define USE_SCENES
 #include "main.h"
 
-bool scenes_start(void);
-void scenes_stop(void);
-void scenes_update(double delta);
-void scenes_message(uint32_t id, RectifyMap *const map);
+void *scenes_start(void);
+void scenes_stop(void **system);
+void scenes_update(void *system, double delta);
+void scenes_message(void *system, uint32_t id, RectifyMap *const map);
 
 KronosSystem scenes = {
   .name = "scenes",
@@ -32,15 +32,10 @@ typedef struct {
   KronosSystem *systems;
 } Scenes;
 
-void scenes_internal_goto(uint32_t index);
+void scenes_internal_goto(void *system, uint32_t index);
 
-Scenes *scenes_internal = NULL;
-bool scenes_start(void) {
-  if (scenes_internal) {
-    return false;
-  }
-
-  scenes_internal = calloc(1, sizeof(Scenes));
+void *scenes_start(void) {
+  Scenes *scenes_internal = calloc(1, sizeof(Scenes));
 
   scenes_internal->current = -1;
   scenes_internal->systems = rectify_array_alloc(10, sizeof(KronosSystem));
@@ -50,29 +45,25 @@ bool scenes_start(void) {
   scenes_internal->systems = rectify_array_push(scenes_internal->systems, &scene_game);
   scenes_internal->systems = rectify_array_push(scenes_internal->systems, &scene_world_edit);
 
-  return true;
+  return scenes_internal;
 }
 
-void scenes_stop(void) {
-  if (!scenes_internal) {
-    return;
-  }
+void scenes_stop(void **system) {
+  Scenes *scenes_internal = *system;
+  assert(system && scenes_internal);
 
   rectify_array_free((void **)&scenes_internal->systems);
   free(scenes_internal);
-  scenes_internal = NULL;
+  *system = NULL;
 }
 
-void scenes_update(double delta) {
-  if (!scenes_internal) {
-    return;
-  }
+void scenes_update(void *system, double delta) {
+  assert(system);
 }
 
-void scenes_message(uint32_t id, RectifyMap *const map) {
-  if (!scenes_internal) {
-    return;
-  }
+void scenes_message(void *system, uint32_t id, RectifyMap *const map) {
+  assert(system);
+  Scenes *scenes_internal = system;
 
   switch (id) {
     case MSG_GAME_INIT:
@@ -89,7 +80,7 @@ void scenes_message(uint32_t id, RectifyMap *const map) {
 
       for (uint32_t t = 0; t < rectify_array_size(scenes_internal->systems); t++) {
         if (strncmp(scenes_internal->systems[t].name, scene, 128) == 0) {
-          scenes_internal_goto(t);
+          scenes_internal_goto(scenes_internal, t);
           break;
         }
       }
@@ -98,22 +89,21 @@ void scenes_message(uint32_t id, RectifyMap *const map) {
 
     case MSG_SCENE_PREV:
       if (scenes_internal->current > 0) {
-        scenes_internal_goto((uint32_t)scenes_internal->current - 1);
+        scenes_internal_goto(scenes_internal, (uint32_t)scenes_internal->current - 1);
       }
       break;
 
     case MSG_SCENE_NEXT:
       if (scenes_internal->current < rectify_array_size(scenes_internal->systems) - 1) {
-        scenes_internal_goto((uint32_t)scenes_internal->current + 1);
+        scenes_internal_goto(scenes_internal, (uint32_t)scenes_internal->current + 1);
       }
       break;
   }
 }
 
-void scenes_internal_goto(uint32_t index) {
-  if (!scenes_internal) {
-    return;
-  }
+void scenes_internal_goto(void *system, uint32_t index) {
+  assert(system);
+  Scenes *scenes_internal = system;
 
   KronosSystem *const current = (scenes_internal->current < 0 ? NULL : &scenes_internal->systems[scenes_internal->current]);
   KronosSystem *const target = &scenes_internal->systems[index];

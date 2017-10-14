@@ -11,6 +11,9 @@ TODO
   - Networking needs to be in early, preferably at this stage
 
 ## Game - Tech
+* Move windowing into own system, remove game system for now
+  - Merge game, input, into windowing system?
+* Kill Tome, atleast this incarnation of it?
 * Ability to choose monitor and sound device
 * Logging
   - Log to file aswell as log to console

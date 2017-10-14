@@ -9,9 +9,14 @@
 #define USE_SCREEN
 #include "main.h"
 
-bool scene_test_start(void);
-void scene_test_stop(void);
-void scene_test_update(double delta);
+typedef struct {
+  double offset;
+  Surface *surface;
+} SceneTest;
+
+SceneTest *scene_test_start(void);
+void scene_test_stop(void **scene);
+void scene_test_update(SceneTest *scene, double delta);
 
 KronosSystem scene_test = {
   .name = "scene_test",
@@ -22,65 +27,51 @@ KronosSystem scene_test = {
   .message = NULL,
 };
 
-typedef struct {
-  double offset;
-  Surface *surface;
-} SceneTest;
-
 void scene_test_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
 
-SceneTest *scene_test_internal = NULL;
-bool scene_test_start(void) {
-  if (scene_test_internal) {
-    return false;
-  }
-
+SceneTest *scene_test_start(void) {
   Config *const config = config_get();
 
-  scene_test_internal = calloc(1, sizeof(SceneTest));
-  *scene_test_internal = (SceneTest){
+  SceneTest *scene = calloc(1, sizeof(SceneTest));
+  *scene = (SceneTest){
     .offset = 0.0,
     .surface = surface_create(0, 0, config->ascii_width, config->ascii_height),
   };
 
-  screen_hook_render(&scene_test_internal_render_hook, NULL, 0);
+  screen_hook_render(&scene_test_internal_render_hook, scene, 0);
 
-  return true;
+  return scene;
 }
 
-void scene_test_stop(void) {
-  if (!scene_test_internal) {
-    return;
-  }
+void scene_test_stop(void **scene) {
+  SceneTest *ptr = *scene;
 
-  screen_unhook_render(&scene_test_internal_render_hook, NULL);
-  surface_destroy(&scene_test_internal->surface);
+  screen_unhook_render(&scene_test_internal_render_hook, ptr);
+  surface_destroy(&ptr->surface);
 
-  free(scene_test_internal);
-  scene_test_internal = NULL;
+  free(ptr);
+  *scene = NULL;
 }
 
-void scene_test_update(double delta) {
-  if (!scene_test_internal) {
-    return;
-  }
+void scene_test_update(SceneTest *scene, double delta) {
+  assert(scene);
 
   // Wave
   {
-    scene_test_internal->offset += 0.1;
+    scene->offset += 0.1;
 
     double wave_depth = 0.25;
     double wave_thickness = M_PI * 4.0;
-    double cx = scene_test_internal->surface->width / 2;
-    double cy = scene_test_internal->surface->height / 2;
-    for (uintmax_t y = 0; y < scene_test_internal->surface->height; y++) {
-      for (uintmax_t x = 0; x < scene_test_internal->surface->width; x++) {
+    double cx = scene->surface->width / 2;
+    double cy = scene->surface->height / 2;
+    for (uintmax_t y = 0; y < scene->surface->height; y++) {
+      for (uintmax_t x = 0; x < scene->surface->width; x++) {
         double dx = fabs((double)x - cx);
         double dy = fabs((double)y - cy);
         double dist = sqrt(pow(dx, 2) + pow(dy, 2));
         double ndist = dist / 50.0;
 
-        double final_color = ((cos((ndist * wave_thickness) + scene_test_internal->offset) + 1.0) / 4.0) + wave_depth;
+        double final_color = ((cos((ndist * wave_thickness) + scene->offset) + 1.0) / 4.0) + wave_depth;
 
         uint8_t color = (uint8_t)(final_color * 255.0);
         Glyph glyph = {
@@ -98,15 +89,13 @@ void scene_test_update(double delta) {
         glyph.fore.r = (uint8_t)(255.0 * (1.0 - final_color));
         glyph.fore.g = (uint8_t)(255.0 * final_color);
         glyph.fore.b = 255;
-        surface_glyph(scene_test_internal->surface, x, y, glyph);
+        surface_glyph(scene->surface, x, y, glyph);
       }
     }
   }
 }
 
 void scene_test_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
-  if (!scene_test_internal) {
-    return;
-  }
-  surface_draw(scene_test_internal->surface, screen);
+  SceneTest *scene = userdata;
+  surface_draw(scene->surface, screen);
 }

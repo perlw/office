@@ -14,6 +14,7 @@ typedef struct {
 
 typedef struct {
   KronosSystem *system;
+  void *handle;
   bool running;
   double timing;
   double since_update;
@@ -24,6 +25,8 @@ typedef struct {
 
   QueueItem *queue;
   QueueItem *active_queue;
+
+  bool halt;
 } Kronos;
 
 Kronos *kronos = NULL;
@@ -36,6 +39,7 @@ void kronos_init(void) {
     .systems = rectify_array_alloc(10, sizeof(KronosState)),
     .queue = rectify_array_alloc(10, sizeof(QueueItem)),
     .active_queue = rectify_array_alloc(10, sizeof(QueueItem)),
+    .halt = false,
   };
 }
 
@@ -63,8 +67,7 @@ void kronos_kill(void) {
     KronosState *state = &kronos->systems[t];
 
     if (state->running) {
-      //gossip_unregister_system(state->system);
-      state->system->stop();
+      state->system->stop(&state->handle);
       state->running = false;
     }
 
@@ -73,6 +76,16 @@ void kronos_kill(void) {
   rectify_array_free((void **)&kronos->systems);
 
   free(kronos);
+}
+
+void kronos_halt(void) {
+  assert(kronos);
+  kronos->halt = true;
+}
+
+bool kronos_should_halt(void) {
+  assert(kronos);
+  return kronos->halt;
 }
 
 KronosResult kronos_register(KronosSystem *const system) {
@@ -91,6 +104,7 @@ KronosResult kronos_register(KronosSystem *const system) {
                                                           .running = false,
                                                           .timing = 1.0 / (double)system->frames,
                                                           .since_update = 0.0,
+                                                          .handle = NULL,
                                                         });
 
   if (system->autostart) {
@@ -107,11 +121,8 @@ KronosResult kronos_start_system(const char *name) {
     KronosState *state = &kronos->systems[t];
 
     if (strncmp(state->system->name, name, 128) == 0) {
-      if (state->system->start()) {
-        /*if (state->system->message) {
-          gossip_register_system(state->system);
-        }*/
-
+      state->handle = state->system->start();
+      if (state->handle) {
         state->since_update = (state->system->frames == 0 ? 0.0 : 1.0 / (double)((rand() % state->system->frames) + 1));
         state->running = true;
         return KRONOS_OK;
@@ -135,10 +146,7 @@ KronosResult kronos_stop_system(const char *name) {
       if (state->system->prevent_stop) {
         return KRONOS_SYSTEM_STOP_PREVENTED;
       } else {
-        /*if (state->system->message) {
-          gossip_unregister_system(state->system);
-        }*/
-        state->system->stop();
+        state->system->stop(&state->handle);
         state->running = false;
         return KRONOS_OK;
       }
@@ -177,13 +185,13 @@ void kronos_update(double delta) {
     }
 
     if (state->system->frames == 0) {
-      state->system->update(state->timing);
+      state->system->update(state->handle, state->timing);
     } else {
       state->since_update += delta;
       while (state->since_update >= state->timing) {
         state->since_update -= state->timing;
 
-        state->system->update(state->timing);
+        state->system->update(state->handle, state->timing);
       }
     }
   }
@@ -205,12 +213,12 @@ void kronos_update(double delta) {
         }
 
         if (strncmp(state->system->name, item->system, 128) == 0) {
-          state->system->message(item->id, item->map);
-          free(item->system);
-          item->system = NULL;
+          state->system->message(state->handle, item->id, item->map);
           break;
         }
       }
+      free(item->system);
+      item->system = NULL;
     } else {
       for (uint32_t u = 0; u < rectify_array_size(kronos->systems); u++) {
         KronosState *state = &kronos->systems[u];
@@ -219,7 +227,7 @@ void kronos_update(double delta) {
           continue;
         }
 
-        state->system->message(item->id, item->map);
+        state->system->message(state->handle, item->id, item->map);
       }
     }
 
