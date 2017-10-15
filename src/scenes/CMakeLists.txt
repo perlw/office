@@ -1,7 +1,7 @@
 set (
   SOURCES
   ${SOURCES}
-  "${CMAKE_CURRENT_LIST_DIR}/scenes.c"
+  "${CMAKE_CURRENT_LIST_DIR}/mod.c"
   "${CMAKE_CURRENT_LIST_DIR}/drips.c"
   "${CMAKE_CURRENT_LIST_DIR}/game.c"
   "${CMAKE_CURRENT_LIST_DIR}/sound-test.c"

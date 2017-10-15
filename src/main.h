@@ -265,6 +265,7 @@ void screen_render(void);
 #include "bedrock/bedrock.h"
 
 extern KronosSystem system_debug;
+extern KronosSystem system_input;
 extern KronosSystem system_lua_bridge;
 extern KronosSystem system_sound;
 extern KronosSystem system_ui;

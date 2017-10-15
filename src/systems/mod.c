@@ -35,8 +35,7 @@ Systems *systems_start(void) {
   Systems *systems = calloc(1, sizeof(Systems));
 
   kronos_register(&system_debug);
-  //kronos_register(&system_input);
-  //kronos_register(&system_game);
+  kronos_register(&system_input);
   kronos_register(&system_window);
   kronos_register(&system_sound);
   kronos_register(&system_lua_bridge);

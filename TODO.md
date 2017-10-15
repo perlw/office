@@ -47,6 +47,7 @@ TODO
 ### Picasso
 Graphics, pipeline
 * Probable need for reworking of picasso window and gl management
+* Look over callback usage in regards to multiple windows
 
 ### Archivist module
 File management
