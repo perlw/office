@@ -123,10 +123,16 @@ KronosResult kronos_start_system(const char *name) {
     if (strncmp(state->system->name, name, 128) == 0) {
       state->handle = state->system->start();
       if (state->handle) {
+#ifdef KRONOS_DEBUG
+        printf("Kronos: System \"%s\" started\n", name);
+#endif
         state->since_update = (state->system->frames == 0 ? 0.0 : 1.0 / (double)((rand() % state->system->frames) + 1));
         state->running = true;
         return KRONOS_OK;
       } else {
+#ifdef KRONOS_DEBUG
+        printf("Kronos: Failed to start system \"%s\"\n", name);
+#endif
         state->running = false;
         return KRONOS_SYSTEM_FAILED_TO_START;
       }
@@ -144,8 +150,14 @@ KronosResult kronos_stop_system(const char *name) {
 
     if (strncmp(state->system->name, name, 128) == 0) {
       if (state->system->prevent_stop) {
+#ifdef KRONOS_DEBUG
+        printf("Kronos: Failed to stop system \"%s\", prevented\n", name);
+#endif
         return KRONOS_SYSTEM_STOP_PREVENTED;
       } else {
+#ifdef KRONOS_DEBUG
+        printf("Kronos: System \"%s\" stopped\n", name);
+#endif
         state->system->stop(&state->handle);
         state->running = false;
         return KRONOS_OK;
@@ -158,6 +170,12 @@ KronosResult kronos_stop_system(const char *name) {
 
 void kronos_post(const char *system, uint32_t id, RectifyMap *const map) {
   assert(kronos);
+
+#ifdef KRONOS_DEBUG
+  printf("Kronos: Posting id#%d to \"%s\" ->\n", id, system);
+  rectify_map_print(map);
+#endif
+
   kronos->active_queue = rectify_array_push(kronos->active_queue, &(QueueItem){
                                                                     .system = rectify_memory_alloc_copy(system, strnlen(system, 128) + 1),
                                                                     .id = id,
@@ -167,6 +185,12 @@ void kronos_post(const char *system, uint32_t id, RectifyMap *const map) {
 
 void kronos_emit(uint32_t id, RectifyMap *const map) {
   assert(kronos);
+
+#ifdef KRONOS_DEBUG
+  printf("Kronos: Emitting id#%d ->\n", id);
+  rectify_map_print(map);
+#endif
+
   kronos->active_queue = rectify_array_push(kronos->active_queue, &(QueueItem){
                                                                     .system = NULL,
                                                                     .id = id,
@@ -201,6 +225,12 @@ void kronos_update(double delta) {
   kronos->active_queue = swp;
 
   uintmax_t queue_size = rectify_array_size(kronos->queue);
+#ifdef KRONOS_DEBUG
+  if (queue_size > 0) {
+    printf("Kronos: Processing %d queued messages...\n", (uint32_t)queue_size);
+  }
+#endif
+
   for (uintmax_t t = 0; t < queue_size; t++) {
     QueueItem *const item = &kronos->queue[t];
 
