@@ -31,7 +31,7 @@ add_subdirectory (src/scenes)
 add_executable (office ${SOURCES})
 
 if (UNIX)
-  target_compile_options (bedrock PRIVATE -std=gnu99 -march=native -Wall)
+  target_compile_options (office PRIVATE -std=gnu99 -march=native -Wall -Wno-incompatible-pointer-types)
 endif (UNIX)
 if (WIN32)
   if (MSVC)

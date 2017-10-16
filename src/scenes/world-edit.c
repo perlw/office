@@ -74,7 +74,7 @@ SceneWorldEdit *scene_world_edit_start(void) {
   return scene;
 }
 
-void scene_world_edit_stop(SceneWorldEdit **scene) {
+void scene_world_edit_stop(void **scene) {
   SceneWorldEdit *ptr = *scene;
   assert(ptr && scene);
 

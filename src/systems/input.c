@@ -44,7 +44,7 @@ SystemInput *system_input_start(void) {
   return system;
 }
 
-void system_input_stop(SystemInput **system) {
+void system_input_stop(void **system) {
   SystemInput *ptr = *system;
   assert(ptr && system);
 

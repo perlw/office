@@ -66,7 +66,7 @@ SceneSoundTest *scene_sound_test_start(void) {
   return scene;
 }
 
-void scene_sound_test_stop(SceneSoundTest **scene) {
+void scene_sound_test_stop(void **scene) {
   SceneSoundTest *ptr = *scene;
   assert(ptr && scene);
 
@@ -138,7 +138,7 @@ void scene_sound_test_message(SceneSoundTest *scene, uint32_t id, RectifyMap *co
 
   switch (id) {
     case MSG_INPUT_KEY: {
-      PicassoKey key = *(uint32_t * const)rectify_map_get(map, "key");
+      PicassoKey key = *(uint32_t *const)rectify_map_get(map, "key");
       bool pressed = *(bool *const)rectify_map_get(map, "pressed");
 
       if (pressed) {

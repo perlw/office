@@ -64,7 +64,7 @@ DebugOverlay *system_debug_start(void) {
   return system;
 }
 
-void system_debug_stop(DebugOverlay **system) {
+void system_debug_stop(void **system) {
   DebugOverlay *ptr = *system;
   assert(system && ptr);
 

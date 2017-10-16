@@ -44,7 +44,7 @@ Systems *systems_start(void) {
   return systems;
 }
 
-void systems_stop(Systems **systems) {
+void systems_stop(void **systems) {
   Systems *ptr = *systems;
   assert(ptr && systems);
 

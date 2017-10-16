@@ -77,7 +77,7 @@ SceneDrips *scene_drips_start(void) {
   return scene;
 }
 
-void scene_drips_stop(SceneDrips **scene) {
+void scene_drips_stop(void **scene) {
   SceneDrips *ptr = *scene;
   assert(ptr && scene);
 
