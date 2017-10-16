@@ -61,7 +61,6 @@ int main(int argc, char **argv) {
   }
 
   double tick = 0;
-  double delta = 0;
   double last_tick = bedrock_time();
   while (!kronos_should_halt()) {
     tick = bedrock_time();

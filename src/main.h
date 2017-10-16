@@ -216,10 +216,12 @@ typedef enum {
   FOREACH_MESSAGE(GENERATE_ENUM)
 } Messages;
 
+#ifdef USE_MESSAGES_NAMES
 static char *MSG_NAMES[] = {
   FOREACH_MESSAGE(GENERATE_STRING)
     NULL,
 };
+#endif // USE_MESSAGES_NAMES
 #endif // MESSAGES_LOADED
 #endif // USE_MESSAGES
 

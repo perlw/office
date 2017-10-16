@@ -11,6 +11,7 @@
 #include "bedrock/bedrock.h"
 
 #define USE_MESSAGES
+#define USE_MESSAGES_NAMES
 #include "main.h"
 
 typedef struct {

@@ -31,7 +31,7 @@ add_subdirectory (src/scenes)
 add_executable (office ${SOURCES})
 
 if (UNIX)
-  target_compile_options (office PRIVATE -std=gnu99 -march=native -Wall -Wno-incompatible-pointer-types)
+  target_compile_options (office PRIVATE -std=gnu99 -march=native -Wall -Wno-incompatible-pointer-types -Wno-missing-braces -Wno-switch)
 endif (UNIX)
 if (WIN32)
   if (MSVC)

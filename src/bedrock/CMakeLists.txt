@@ -53,7 +53,7 @@ if (UNIX)
     # Dummy
   else (APPLE)
     list (APPEND DEPS_LIBS X11 Xrandr Xinerama Xxf86vm Xcursor dl GL m pthread rt)
-  target_compile_options (bedrock PRIVATE -std=gnu99 -march=native -Wall -Wno-incompatible-pointer-types)
+    target_compile_options (bedrock PRIVATE -std=gnu99 -march=native -Wall -Wno-incompatible-pointer-types)
   endif (APPLE)
 endif (UNIX)
 

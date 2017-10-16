@@ -182,7 +182,6 @@ void scene_drips_update(SceneDrips *scene, double delta) {
       final_color += 0.25;
 
       uintmax_t i = (y * scene->surface->width) + x;
-      uint8_t color = (uint8_t)(final_color * 255.0);
       scene->surface->buffer[i].rune = '~';
 
       scene->surface->buffer[i].fore.r = 0;
