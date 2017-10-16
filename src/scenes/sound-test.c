@@ -138,14 +138,14 @@ void scene_sound_test_message(SceneSoundTest *scene, uint32_t id, RectifyMap *co
 
   switch (id) {
     case MSG_INPUT_KEY: {
-      PicassoKey key = *(uint32_t *const)rectify_map_get(map, "key");
-      bool pressed = *(bool *const)rectify_map_get(map, "pressed");
+      PicassoKey key = rectify_map_get_uint(map, "key");
+      bool pressed = rectify_map_get_bool(map, "pressed");
 
       if (pressed) {
         switch (key) {
           case PICASSO_KEY_P: {
             RectifyMap *map = rectify_map_create();
-            rectify_map_set(map, "song", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), &scene->song);
+            rectify_map_set_uint(map, "song", scene->song);
             kronos_emit(MSG_SOUND_PLAY_SONG, map);
             break;
           }
@@ -164,7 +164,7 @@ void scene_sound_test_message(SceneSoundTest *scene, uint32_t id, RectifyMap *co
 
             scene->song = (scene->song == 0 ? 1 : 0);
             RectifyMap *map = rectify_map_create();
-            rectify_map_set(map, "song", sizeof(uint32_t), RECTIFY_MAP_TYPE_UINT, &scene->song);
+            rectify_map_set_uint(map, "song", scene->song);
             kronos_emit(MSG_SOUND_PLAY_SONG, map);
             break;
           }
@@ -174,14 +174,14 @@ void scene_sound_test_message(SceneSoundTest *scene, uint32_t id, RectifyMap *co
     }
 
     case MSG_SOUND_SPECTRUM: {
-      uint32_t *const song = rectify_map_get(map, "song");
+      uint32_t song = rectify_map_get_uint(map, "song");
       float *const left = rectify_map_get(map, "left");
       float *const right = rectify_map_get(map, "right");
       if (!left || !right) {
         return;
       }
 
-      scene->song = *song;
+      scene->song = song;
 
       uint32_t step = 1;
       for (uint32_t t = 0, u = 0; u < 158; t += step, u++) {

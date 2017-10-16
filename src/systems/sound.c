@@ -116,6 +116,8 @@ void system_sound_update(SystemSound *system, double delta) {
     uint32_t song_id = 0;
     float left[2048];
     float right[2048];
+    memset(left, 0, sizeof(float) * 2048);
+    memset(right, 0, sizeof(float) * 2048);
     if (boombox_cassette_playing(system->song)) {
       song_id = 0;
       boombox_cassette_get_spectrum(system->song, left, right);
@@ -125,7 +127,7 @@ void system_sound_update(SystemSound *system, double delta) {
     }
 
     RectifyMap *map = rectify_map_create();
-    rectify_map_set(map, "song", RECTIFY_MAP_TYPE_UINT, sizeof(uint32_t), &song_id);
+    rectify_map_set_uint(map, "song", song_id);
     rectify_map_set(map, "left", RECTIFY_MAP_TYPE_FLOAT, sizeof(float) * 2048, left);
     rectify_map_set(map, "right", RECTIFY_MAP_TYPE_FLOAT, sizeof(float) * 2048, right);
     kronos_emit(MSG_SOUND_SPECTRUM, map);
@@ -137,7 +139,7 @@ void system_sound_message(SystemSound *system, uint32_t id, RectifyMap *const ma
 
   switch (id) {
     case MSG_SOUND_PLAY: {
-      char *const sound = (char *const)rectify_map_get(map, "sound");
+      char *const sound = rectify_map_get_string(map, "sound");
       if (!sound) {
         break;
       }
@@ -155,12 +157,9 @@ void system_sound_message(SystemSound *system, uint32_t id, RectifyMap *const ma
     }
 
     case MSG_SOUND_PLAY_SONG: {
-      uint32_t *const song = (uint32_t * const)rectify_map_get(map, "song");
-      if (!song) {
-        break;
-      }
+      uint32_t song = rectify_map_get_uint(map, "song");
 
-      if (*song == 0) {
+      if (song == 0) {
         boombox_cassette_play(system->song);
       } else {
         boombox_cassette_play(system->song2);
