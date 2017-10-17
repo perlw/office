@@ -9,11 +9,12 @@
 #include "arkanis/math_3d.h"
 #undef MATH_3D_IMPLEMENTATION
 
+#define USE_KRONOS
+#define USE_RECTIFY
 #define USE_TOME
 #include "bedrock/bedrock.h"
 
 #define USE_ASSETS
-#define USE_CONFIG
 #define USE_MESSAGES
 #define USE_SCENES
 #define USE_SYSTEMS
@@ -44,7 +45,7 @@ int main(int argc, char **argv) {
 
   setup_asset_loaders();
 
-  Config *const config = config_init();
+  config_init();
 
   kronos_register(&systems);
   kronos_register(&scenes);
