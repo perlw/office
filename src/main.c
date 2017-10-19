@@ -15,6 +15,7 @@
 #include "bedrock/bedrock.h"
 
 #define USE_ASSETS
+#define USE_CONFIG
 #define USE_MESSAGES
 #define USE_SCENES
 #define USE_SYSTEMS

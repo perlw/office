@@ -183,7 +183,7 @@ void kronos_post(const char *system, uint32_t id, RectifyMap *const map, const c
   assert(kronos);
 
 #ifdef KRONOS_DEBUG
-  printf("Kronos: Posting id#%d to \"%s\" ->\n", id, system);
+  printf("Kronos: System \"%s\" posting id#%d to \"%s\" ->\n", (caller ? caller : "UNK"), id, system);
   rectify_map_print(map);
 #endif
 
