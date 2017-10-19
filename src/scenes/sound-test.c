@@ -68,6 +68,7 @@ SceneSoundTest *scene_sound_test_start(void) {
   scene->selected_sound = 0;
   scene->sounds = rectify_array_alloc(10, sizeof(char *));
   kronos_post("sound", MSG_SOUND_LIST, NULL, "scene_sound-test");
+  surface_rect(scene->spectrum, 0, 31, 10, rectify_array_size(scene->sounds) + 2, rect_tiles, true, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
 
   screen_hook_render(&scene_sound_test_internal_render_hook, scene, 0);
 
@@ -153,7 +154,7 @@ void scene_sound_test_update(SceneSoundTest *scene, double delta) {
       fore = glyphcolor_hex(0xffffff);
       back = glyphcolor_hex(0x666666);
     }
-    surface_text(scene->spectrum, 0, 32 + t, 0, scene->sounds[t], fore, back);
+    surface_text(scene->spectrum, 1, 32 + t, 0, scene->sounds[t], fore, back);
   }
   // -Sound list
 }
@@ -249,6 +250,18 @@ RectifyMap *scene_sound_test_message(SceneSoundTest *scene, uint32_t id, Rectify
         char *sound = rectify_memory_alloc_copy(sounds[t], strnlen(sounds[t], 128) + 1);
         scene->sounds = rectify_array_push(scene->sounds, &sound);
       }
+      SurfaceRectTiles rect_tiles = {
+        '+',
+        '-',
+        '+',
+        '|',
+        0,
+        '|',
+        '+',
+        '-',
+        '+',
+      };
+      surface_rect(scene->spectrum, 0, 31, 10, rectify_array_size(scene->sounds) + 2, rect_tiles, true, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
 
       break;
     }
