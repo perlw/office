@@ -3,6 +3,7 @@
 #include <string.h>
 
 #define USE_KRONOS
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #define USE_CONFIG
@@ -18,7 +19,7 @@ typedef struct {
 SystemTemplate *system_template_start(void);
 void system_template_stop(void **system);
 void system_template_update(SystemTemplate *system, double delta);
-void system_template_message(SystemTemplate *system, uint32_t id, RectifyMap *const map);
+RectifyMap *system_template_message(SystemTemplate *system, uint32_t id, RectifyMap *const map);
 
 KronosSystem system_template = {
   .name = "template",
@@ -52,9 +53,11 @@ void system_template_update(SystemTemplate *system, double delta) {
   assert(system);
 }
 
-void system_template_message(SystemTemplate *system, uint32_t id, RectifyMap *const map) {
+RectifyMap *system_template_message(SystemTemplate *system, uint32_t id, RectifyMap *const map) {
   assert(system);
 
   switch (id) {
   }
+
+  return NULL;
 }

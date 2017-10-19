@@ -182,6 +182,7 @@ Config *const config_get(void);
   MSG(MSG_SOUND_PLAY_SONG)           \
   MSG(MSG_SOUND_STOP_SONG)           \
   MSG(MSG_SOUND_SPECTRUM)            \
+  MSG(MSG_SOUND_LIST)                \
                                      \
   MSG(MSG_UI_WINDOW_CREATE)          \
   MSG(MSG_UI_WINDOW_CREATED)         \

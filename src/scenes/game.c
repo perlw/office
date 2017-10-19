@@ -4,6 +4,7 @@
 #include <string.h>
 
 #define USE_KRONOS
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #define USE_ASCII
@@ -35,7 +36,7 @@ typedef struct {
 SceneGame *scene_game_start(void);
 void scene_game_stop(void **scene);
 void scene_game_update(SceneGame *scene, double delta);
-void scene_game_message(SceneGame *scene, uint32_t id, RectifyMap *const map);
+RectifyMap *scene_game_message(SceneGame *scene, uint32_t id, RectifyMap *const map);
 
 KronosSystem scene_game = {
   .name = "scene_game",
@@ -536,7 +537,7 @@ void scene_game_update(SceneGame *scene, double delta) {
   // -Draw player
 }
 
-void scene_game_message(SceneGame *scene, uint32_t id, RectifyMap *const map) {
+RectifyMap *scene_game_message(SceneGame *scene, uint32_t id, RectifyMap *const map) {
   assert(scene);
 
   uint32_t o_x = scene->p_x;
@@ -630,6 +631,8 @@ void scene_game_message(SceneGame *scene, uint32_t id, RectifyMap *const map) {
     scene->p_x = o_x;
     scene->p_y = o_y;
   }
+
+  return NULL;
 }
 
 void scene_game_internal_build_map(SceneGame *scene) {

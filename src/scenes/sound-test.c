@@ -4,6 +4,7 @@
 #include "arkanis/math_3d.h"
 
 #define USE_KRONOS
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #define USE_ASCII
@@ -23,7 +24,7 @@ typedef struct {
 SceneSoundTest *scene_sound_test_start(void);
 void scene_sound_test_stop(void **scene);
 void scene_sound_test_update(SceneSoundTest *scene, double delta);
-void scene_sound_test_message(SceneSoundTest *scene, uint32_t id, RectifyMap *const map);
+RectifyMap *scene_sound_test_message(SceneSoundTest *scene, uint32_t id, RectifyMap *const map);
 
 KronosSystem scene_sound_test = {
   .name = "scene_sound-test",
@@ -60,6 +61,8 @@ SceneSoundTest *scene_sound_test_start(void) {
   surface_rect(scene->spectrum, 0, 0, config->ascii_width, 30, rect_tiles, true, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
   surface_textc(scene->spectrum, 2, 29, 75, " #{ffffff}P#{c8c8c8}lay | #{ffffff}S#{c8c8c8}top | #{ffffff}N#{c8c8c8}ext ");
   // -Spectrum UI
+
+  kronos_post("sound", MSG_SOUND_LIST, NULL, "scene_sound-test");
 
   screen_hook_render(&scene_sound_test_internal_render_hook, scene, 0);
 
@@ -133,7 +136,7 @@ void scene_sound_test_update(SceneSoundTest *scene, double delta) {
   }
 }
 
-void scene_sound_test_message(SceneSoundTest *scene, uint32_t id, RectifyMap *const map) {
+RectifyMap *scene_sound_test_message(SceneSoundTest *scene, uint32_t id, RectifyMap *const map) {
   assert(scene);
 
   switch (id) {
@@ -178,7 +181,7 @@ void scene_sound_test_message(SceneSoundTest *scene, uint32_t id, RectifyMap *co
       float *const left = rectify_map_get(map, "left");
       float *const right = rectify_map_get(map, "right");
       if (!left || !right) {
-        return;
+        break;
       }
 
       scene->song = song;
@@ -198,7 +201,20 @@ void scene_sound_test_message(SceneSoundTest *scene, uint32_t id, RectifyMap *co
       }
       break;
     }
+
+    case MSG_SOUND_LIST: {
+      char **sounds = (char **)rectify_map_get(map, "sounds");
+      uint32_t num = rectify_map_get_uint(map, "num");
+
+      for (uint32_t t = 0; t < num; t++) {
+        printf("%d -> %s\n", t, sounds[t]);
+      }
+
+      break;
+    }
   }
+
+  return NULL;
 }
 
 void scene_sound_test_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {

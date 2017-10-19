@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #define USE_KRONOS
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #define USE_ASCII

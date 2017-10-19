@@ -8,6 +8,7 @@
 #include "lualib.h"
 
 #define USE_KRONOS
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #define USE_MESSAGES
@@ -21,7 +22,7 @@ typedef struct {
 
 SystemLuaBridge *system_lua_bridge_start(void);
 void system_lua_bridge_stop(void **system);
-void system_lua_bridge_message(SystemLuaBridge *system, uint32_t id, RectifyMap *const map);
+RectifyMap *system_lua_bridge_message(SystemLuaBridge *system, uint32_t id, RectifyMap *const map);
 
 KronosSystem system_lua_bridge = {
   .name = "lua_bridge",
@@ -91,7 +92,7 @@ void system_lua_bridge_stop(void **system) {
   *system = NULL;
 }
 
-void system_lua_bridge_message(SystemLuaBridge *system, uint32_t id, RectifyMap *const map) {
+RectifyMap *system_lua_bridge_message(SystemLuaBridge *system, uint32_t id, RectifyMap *const map) {
   assert(system);
 
 #ifdef LUA_BRIDGE_DEBUG
@@ -173,6 +174,8 @@ void system_lua_bridge_message(SystemLuaBridge *system, uint32_t id, RectifyMap 
       lua_pop(system->state, 1);
     }
   }
+
+  return NULL;
 }
 
 void system_lua_bridge_internal_register_lua_module(SystemLuaBridge *system, const char *name, LuaBridgeModuleLoadFunc load_func) {

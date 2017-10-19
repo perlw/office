@@ -41,7 +41,6 @@ typedef struct {
 SceneDrips *scene_drips_start(void);
 void scene_drips_stop(void **scene);
 void scene_drips_update(SceneDrips *scene, double delta);
-void scene_drips_message(SceneDrips *scene, uint32_t id, RectifyMap *const map);
 
 KronosSystem scene_drips = {
   .name = "scene_drips",
@@ -49,7 +48,7 @@ KronosSystem scene_drips = {
   .start = &scene_drips_start,
   .stop = &scene_drips_stop,
   .update = &scene_drips_update,
-  .message = &scene_drips_message,
+  .message = NULL,
 };
 
 void scene_drips_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
@@ -189,10 +188,6 @@ void scene_drips_update(SceneDrips *scene, double delta) {
       scene->surface->buffer[i].fore.b = (uint8_t)(255.0 * final_color);
     }
   }
-}
-
-void scene_drips_message(SceneDrips *scene, uint32_t id, RectifyMap *const map) {
-  assert(scene);
 }
 
 void scene_drips_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {

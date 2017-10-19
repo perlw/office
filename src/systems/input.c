@@ -3,6 +3,7 @@
 #include <string.h>
 
 #define USE_KRONOS
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #define USE_CONFIG
@@ -21,7 +22,7 @@ typedef struct {
 SystemInput *system_input_start(void);
 void system_input_stop(void **system);
 void system_input_update(SystemInput *system, double delta);
-void system_input_message(SystemInput *system, uint32_t id, RectifyMap *const map);
+RectifyMap *system_input_message(SystemInput *system, uint32_t id, RectifyMap *const map);
 
 KronosSystem system_input = {
   .name = "input",
@@ -61,7 +62,7 @@ void system_input_update(SystemInput *system, double delta) {
   assert(system);
 }
 
-void system_input_message(SystemInput *system, uint32_t id, RectifyMap *const map) {
+RectifyMap *system_input_message(SystemInput *system, uint32_t id, RectifyMap *const map) {
   assert(system);
 
   switch (id) {
@@ -79,7 +80,8 @@ void system_input_message(SystemInput *system, uint32_t id, RectifyMap *const ma
           rectify_map_set_bool(map, "pressed", pressed);
           rectify_map_set_bool(map, "released", released);
           kronos_emit(MSG_INPUT_ACTION, map);
-          return;
+
+          break;
         }
       }
       break;
@@ -96,4 +98,6 @@ void system_input_message(SystemInput *system, uint32_t id, RectifyMap *const ma
       break;
     }
   }
+
+  return NULL;
 }

@@ -261,7 +261,16 @@ void kronos_update(double delta) {
         }
 
         if (strncmp(state->system->name, item->system, 128) == 0) {
-          state->system->message(state->handle, item->id, item->map);
+          RectifyMap *response = state->system->message(state->handle, item->id, item->map);
+          if (response) {
+            if (item->caller) {
+              kronos_post(item->caller, item->id, response, item->system);
+            } else {
+              printf("Kronos: Post had no caller, deleted... ");
+              rectify_map_print(response);
+              rectify_map_destroy(&response);
+            }
+          }
           break;
         }
       }
@@ -273,7 +282,12 @@ void kronos_update(double delta) {
           continue;
         }
 
-        state->system->message(state->handle, item->id, item->map);
+        RectifyMap *response = state->system->message(state->handle, item->id, item->map);
+        if (response) {
+          printf("Kronos: Emit returning a response, deleted... ");
+          rectify_map_print(response);
+          rectify_map_destroy(&response);
+        }
       }
     }
     if (item->system) {

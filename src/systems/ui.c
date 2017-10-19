@@ -29,7 +29,7 @@ typedef struct {
 SystemUI *system_ui_start(void);
 void system_ui_stop(void **system);
 void system_ui_update(SystemUI *system, double delta);
-void system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const map);
+RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const map);
 
 KronosSystem system_ui = {
   .name = "ui",
@@ -71,7 +71,7 @@ void system_ui_update(SystemUI *system, double delta) {
   assert(system);
 }
 
-void system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const map) {
+RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const map) {
   assert(system);
 
   switch (id) {
@@ -85,7 +85,7 @@ void system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const map) {
 
       if (!title) {
         printf("UI: Missing title when creating window\n");
-        return;
+        break;
       }
 
       UIWindow window = {
@@ -217,6 +217,8 @@ void system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const map) {
       break;
     }
   }
+
+  return NULL;
 }
 
 void system_ui_internal_window_draw_border(UIWindow *const window) {

@@ -25,7 +25,7 @@ typedef struct {
 DebugOverlay *system_debug_start(void);
 void system_debug_stop(void **system);
 void system_debug_update(DebugOverlay *system, double delta);
-void system_debug_message(DebugOverlay *system, uint32_t id, RectifyMap *const map);
+RectifyMap *system_debug_message(DebugOverlay *system, uint32_t id, RectifyMap *const map);
 
 KronosSystem system_debug = {
   .name = "debug",
@@ -110,7 +110,7 @@ void system_debug_update(DebugOverlay *system, double delta) {
   system->frames = 0;
 }
 
-void system_debug_message(DebugOverlay *system, uint32_t id, RectifyMap *const map) {
+RectifyMap *system_debug_message(DebugOverlay *system, uint32_t id, RectifyMap *const map) {
   assert(system);
 
   switch (id) {
@@ -121,6 +121,8 @@ void system_debug_message(DebugOverlay *system, uint32_t id, RectifyMap *const m
       break;
     }
   }
+
+  return NULL;
 }
 
 void system_debug_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {

@@ -3,6 +3,7 @@
 #include <string.h>
 
 #define USE_KRONOS
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #define USE_MESSAGES
@@ -15,7 +16,7 @@ typedef struct {
 
 Systems *systems_start(void);
 void systems_stop(void **systems);
-void systems_message(Systems *systems, uint32_t id, RectifyMap *const map);
+RectifyMap *systems_message(Systems *systems, uint32_t id, RectifyMap *const map);
 
 KronosSystem systems = {
   .name = "systems",
@@ -52,14 +53,14 @@ void systems_stop(void **systems) {
   *systems = NULL;
 }
 
-void systems_message(Systems *systems, uint32_t id, RectifyMap *const map) {
+RectifyMap *systems_message(Systems *systems, uint32_t id, RectifyMap *const map) {
   assert(systems);
 
   switch (id) {
     case MSG_SYSTEM_START: {
       char *const name = rectify_map_get_string(map, "system");
       if (!name) {
-        return;
+        break;
       }
       systems_internal_start(name);
       break;
@@ -68,12 +69,14 @@ void systems_message(Systems *systems, uint32_t id, RectifyMap *const map) {
     case MSG_SYSTEM_STOP: {
       char *const name = rectify_map_get_string(map, "system");
       if (!name) {
-        return;
+        break;
       }
       systems_internal_stop(name);
       break;
     }
   }
+
+  return NULL;
 }
 
 void systems_internal_start(const char *system) {

@@ -4,6 +4,7 @@
 
 #define USE_KRONOS
 #define USE_PICASSO
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #define USE_CONFIG
@@ -21,7 +22,7 @@ typedef struct {
 SystemWindow *system_window_start(void);
 void system_window_stop(void **system);
 void system_window_update(SystemWindow *system, double delta);
-void system_window_message(SystemWindow *system, uint32_t id, RectifyMap *const map);
+RectifyMap *system_window_message(SystemWindow *system, uint32_t id, RectifyMap *const map);
 
 KronosSystem system_window = {
   .name = "window",
@@ -108,7 +109,7 @@ void system_window_update(SystemWindow *system, double delta) {
   picasso_window_update();
 }
 
-void system_window_message(SystemWindow *system, uint32_t id, RectifyMap *const map) {
+RectifyMap *system_window_message(SystemWindow *system, uint32_t id, RectifyMap *const map) {
   assert(system);
 
   switch (id) {
@@ -116,6 +117,8 @@ void system_window_message(SystemWindow *system, uint32_t id, RectifyMap *const 
       system->should_kill = true;
       break;
   }
+
+  return NULL;
 }
 
 void system_window_internal_keyboard_callback(const PicassoWindowKeyboardEvent *event) {

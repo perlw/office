@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #define USE_KRONOS
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #define USE_ASCII
@@ -26,7 +27,7 @@ typedef struct {
 SceneWorldEdit *scene_world_edit_start(void);
 void scene_world_edit_stop(void **scene);
 void scene_world_edit_update(SceneWorldEdit *scene, double delta);
-void scene_world_edit_message(SceneWorldEdit *scene, uint32_t id, RectifyMap *const map);
+RectifyMap *scene_world_edit_message(SceneWorldEdit *scene, uint32_t id, RectifyMap *const map);
 
 KronosSystem scene_world_edit = {
   .name = "scene_world-edit",
@@ -126,7 +127,7 @@ void scene_world_edit_update(SceneWorldEdit *scene, double delta) {
   scene->o_y = scene->m_y;
 }
 
-void scene_world_edit_message(SceneWorldEdit *scene, uint32_t id, RectifyMap *const map) {
+RectifyMap *scene_world_edit_message(SceneWorldEdit *scene, uint32_t id, RectifyMap *const map) {
   assert(scene);
 
   switch (id) {
@@ -158,6 +159,8 @@ void scene_world_edit_message(SceneWorldEdit *scene, uint32_t id, RectifyMap *co
       scene->chosen_color = rectify_map_get_uint(map, "color");
       break;
   }
+
+  return NULL;
 }
 
 void scene_world_edit_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {

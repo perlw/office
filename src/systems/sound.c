@@ -5,6 +5,7 @@
 
 #define USE_BOOMBOX
 #define USE_KRONOS
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #define USE_MESSAGES
@@ -24,7 +25,7 @@ typedef struct {
 SystemSound *system_sound_start(void);
 void system_sound_stop(void **system);
 void system_sound_update(SystemSound *system, double delta);
-void system_sound_message(SystemSound *system, uint32_t id, RectifyMap *const map);
+RectifyMap *system_sound_message(SystemSound *system, uint32_t id, RectifyMap *const map);
 
 KronosSystem system_sound = {
   .name = "sound",
@@ -134,7 +135,7 @@ void system_sound_update(SystemSound *system, double delta) {
   }
 }
 
-void system_sound_message(SystemSound *system, uint32_t id, RectifyMap *const map) {
+RectifyMap *system_sound_message(SystemSound *system, uint32_t id, RectifyMap *const map) {
   assert(system);
 
   switch (id) {
@@ -172,5 +173,19 @@ void system_sound_message(SystemSound *system, uint32_t id, RectifyMap *const ma
       boombox_cassette_stop(system->song2);
       break;
     }
+
+    case MSG_SOUND_LIST: {
+      char *sounds[] = {
+        "tap",
+        "boom",
+        "drip",
+      };
+      RectifyMap *map = rectify_map_create();
+      rectify_map_set(map, "sounds", RECTIFY_MAP_TYPE_PTR, sizeof(sounds), sounds);
+      rectify_map_set_uint(map, "num", 3);
+      return map;
+    }
   }
+
+  return NULL;
 }

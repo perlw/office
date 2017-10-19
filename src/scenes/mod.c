@@ -4,6 +4,7 @@
 #include <string.h>
 
 #define USE_KRONOS
+#define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
 #define USE_MESSAGES
@@ -13,7 +14,7 @@
 void *scenes_start(void);
 void scenes_stop(void **system);
 void scenes_update(void *system, double delta);
-void scenes_message(void *system, uint32_t id, RectifyMap *const map);
+RectifyMap *scenes_message(void *system, uint32_t id, RectifyMap *const map);
 
 KronosSystem scenes = {
   .name = "scenes",
@@ -61,7 +62,7 @@ void scenes_update(void *system, double delta) {
   assert(system);
 }
 
-void scenes_message(void *system, uint32_t id, RectifyMap *const map) {
+RectifyMap *scenes_message(void *system, uint32_t id, RectifyMap *const map) {
   assert(system);
   Scenes *scenes_internal = system;
 
@@ -75,7 +76,7 @@ void scenes_message(void *system, uint32_t id, RectifyMap *const map) {
     case MSG_SCENE_GOTO: {
       char *const scene = (char *const)rectify_map_get(map, "scene");
       if (!scene) {
-        return;
+        break;
       }
 
       for (uint32_t t = 0; t < rectify_array_size(scenes_internal->systems); t++) {
@@ -99,6 +100,8 @@ void scenes_message(void *system, uint32_t id, RectifyMap *const map) {
       }
       break;
   }
+
+  return NULL;
 }
 
 void scenes_internal_goto(void *system, uint32_t index) {

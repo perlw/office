@@ -15,7 +15,7 @@ typedef enum {
 } KronosResult;
 
 typedef void *(*KronosSystemStart)(void);
-typedef void (*KronosSystemMessage)(void *system, uint32_t id, RectifyMap *const map);
+typedef RectifyMap *(*KronosSystemMessage)(void *system, uint32_t id, RectifyMap *const map);
 typedef void (*KronosSystemUpdate)(void *system, double delta);
 typedef void (*KronosSystemStop)(void **system);
 
