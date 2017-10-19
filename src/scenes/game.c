@@ -475,7 +475,7 @@ SceneGame *scene_game_start(void) {
 
   screen_hook_render(&scene_game_internal_render_hook, scene, 0);
 
-  kronos_post("lua_bridge", MSG_MATERIALS_LOAD, NULL);
+  kronos_post("lua_bridge", MSG_MATERIALS_LOAD, NULL, NULL);
 
   return scene;
 }

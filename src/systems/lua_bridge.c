@@ -250,7 +250,7 @@ int system_lua_bridge_internal_lua_module_post_message(lua_State *state) {
     map = system_lua_bridge_internal_table_to_map(state, 3);
   }
 
-  kronos_post(system_name, id, map);
+  kronos_post(system_name, id, map, NULL);
 
   return 0;
 }

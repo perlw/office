@@ -58,8 +58,10 @@ int main(int argc, char **argv) {
 
     RectifyMap *map = rectify_map_create();
     rectify_map_set_string(map, "scene", buffer);
-    kronos_post("scenes", MSG_SCENE_GOTO, map);
+    kronos_post("scenes", MSG_SCENE_GOTO, map, NULL);
   }
+
+  //rectify_map_print(kronos_post_immediate("foo", MSG_DEBUG_TEST, NULL));
 
   double tick = 0;
   double last_tick = bedrock_time();

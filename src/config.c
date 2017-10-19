@@ -578,7 +578,7 @@ int config_internal_bind(lua_State *state) {
     }
   }
 
-  kronos_post("input", MSG_INPUT_BIND, map);
+  kronos_post("input", MSG_INPUT_BIND, map, NULL);
 
   return 0;
 }

@@ -39,7 +39,8 @@ KronosResult kronos_register(KronosSystem *const system);
 KronosResult kronos_start_system(const char *name);
 KronosResult kronos_stop_system(const char *name);
 
-void kronos_post(const char *system, uint32_t id, RectifyMap *const map);
+void kronos_post(const char *system, uint32_t id, RectifyMap *const map, const char *caller);
 void kronos_emit(uint32_t id, RectifyMap *const map);
+RectifyMap *kronos_post_immediate(const char *system, uint32_t id, RectifyMap *const map);
 
 void kronos_update(double delta);

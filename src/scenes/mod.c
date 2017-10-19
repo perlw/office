@@ -117,14 +117,14 @@ void scenes_internal_goto(void *system, uint32_t index) {
     {
       RectifyMap *map = rectify_map_create();
       rectify_map_set(map, "system", RECTIFY_MAP_TYPE_STRING, sizeof(char) * (strnlen(current->name, 128) + 1), current->name);
-      kronos_post("systems", MSG_SYSTEM_STOP, map);
+      kronos_post("systems", MSG_SYSTEM_STOP, map, NULL);
     }
   }
 
   {
     RectifyMap *map = rectify_map_create();
     rectify_map_set(map, "system", RECTIFY_MAP_TYPE_STRING, sizeof(char) * (strnlen(target->name, 128) + 1), target->name);
-    kronos_post("systems", MSG_SYSTEM_START, map);
+    kronos_post("systems", MSG_SYSTEM_START, map, NULL);
   }
   {
     RectifyMap *map = rectify_map_create();

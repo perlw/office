@@ -116,7 +116,7 @@ void scene_drips_update(SceneDrips *scene, double delta) {
 
       RectifyMap *map = rectify_map_create();
       rectify_map_set(map, "sound", RECTIFY_MAP_TYPE_STRING, sizeof(char) * 5, "drip");
-      kronos_post("sound", MSG_SOUND_PLAY, map);
+      kronos_post("sound", MSG_SOUND_PLAY, map, NULL);
       break;
     }
 

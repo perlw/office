@@ -8,6 +8,7 @@
 
 typedef struct {
   char *system;
+  char *caller;
   uint32_t id;
   RectifyMap *map;
 } QueueItem;
@@ -50,6 +51,11 @@ void kronos_kill(void) {
     QueueItem *const item = &kronos->queue[t];
     if (item->system) {
       free(item->system);
+      item->system = NULL;
+    }
+    if (item->caller) {
+      free(item->caller);
+      item->caller = NULL;
     }
     rectify_map_destroy(&item->map);
   }
@@ -58,6 +64,11 @@ void kronos_kill(void) {
     QueueItem *const item = &kronos->active_queue[t];
     if (item->system) {
       free(item->system);
+      item->system = NULL;
+    }
+    if (item->caller) {
+      free(item->caller);
+      item->caller = NULL;
     }
     rectify_map_destroy(&item->map);
   }
@@ -168,7 +179,7 @@ KronosResult kronos_stop_system(const char *name) {
   return KRONOS_SYSTEM_NOT_FOUND;
 }
 
-void kronos_post(const char *system, uint32_t id, RectifyMap *const map) {
+void kronos_post(const char *system, uint32_t id, RectifyMap *const map, const char *caller) {
   assert(kronos);
 
 #ifdef KRONOS_DEBUG
@@ -178,6 +189,7 @@ void kronos_post(const char *system, uint32_t id, RectifyMap *const map) {
 
   kronos->active_queue = rectify_array_push(kronos->active_queue, &(QueueItem){
                                                                     .system = rectify_memory_alloc_copy(system, strnlen(system, 128) + 1),
+                                                                    .caller = (caller ? rectify_memory_alloc_copy(caller, strnlen(caller, 128) + 1) : NULL),
                                                                     .id = id,
                                                                     .map = map,
                                                                   });
@@ -193,9 +205,15 @@ void kronos_emit(uint32_t id, RectifyMap *const map) {
 
   kronos->active_queue = rectify_array_push(kronos->active_queue, &(QueueItem){
                                                                     .system = NULL,
+                                                                    .caller = NULL,
                                                                     .id = id,
                                                                     .map = map,
                                                                   });
+}
+
+RectifyMap *kronos_post_immediate(const char *system, uint32_t id, RectifyMap *const map) {
+  assert(false && "NOT IMPLEMENTED");
+  return NULL;
 }
 
 void kronos_update(double delta) {
@@ -247,8 +265,6 @@ void kronos_update(double delta) {
           break;
         }
       }
-      free(item->system);
-      item->system = NULL;
     } else {
       for (uint32_t u = 0; u < rectify_array_size(kronos->systems); u++) {
         KronosState *state = &kronos->systems[u];
@@ -259,6 +275,14 @@ void kronos_update(double delta) {
 
         state->system->message(state->handle, item->id, item->map);
       }
+    }
+    if (item->system) {
+      free(item->system);
+      item->system = NULL;
+    }
+    if (item->caller) {
+      free(item->caller);
+      item->caller = NULL;
     }
 
     rectify_map_destroy(&item->map);
