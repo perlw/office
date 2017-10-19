@@ -18,6 +18,9 @@ typedef struct {
   float spectrum_left[158];
   float spectrum_right[158];
 
+  uint32_t selected_sound;
+  char **sounds;
+
   Surface *spectrum;
 } SceneSoundTest;
 
@@ -62,6 +65,8 @@ SceneSoundTest *scene_sound_test_start(void) {
   surface_textc(scene->spectrum, 2, 29, 75, " #{ffffff}P#{c8c8c8}lay | #{ffffff}S#{c8c8c8}top | #{ffffff}N#{c8c8c8}ext ");
   // -Spectrum UI
 
+  scene->selected_sound = 0;
+  scene->sounds = rectify_array_alloc(10, sizeof(char *));
   kronos_post("sound", MSG_SOUND_LIST, NULL, "scene_sound-test");
 
   screen_hook_render(&scene_sound_test_internal_render_hook, scene, 0);
@@ -75,6 +80,11 @@ void scene_sound_test_stop(void **scene) {
 
   screen_unhook_render(&scene_sound_test_internal_render_hook, ptr);
   surface_destroy(&ptr->spectrum);
+
+  for (uint32_t t = 0; t < rectify_array_size(ptr->sounds); t++) {
+    free(ptr->sounds[t]);
+  }
+  rectify_array_free(&ptr->sounds);
 
   free(ptr);
   *scene = NULL;
@@ -134,6 +144,18 @@ void scene_sound_test_update(SceneSoundTest *scene, double delta) {
     surface_text(scene->spectrum, 2, 0, 16, " settlers.mod |", (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
     surface_text(scene->spectrum, 17, 0, 15, " comicbak.mod ", (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 0, 0, 0 });
   }
+
+  // +Sound list
+  for (uint32_t t = 0; t < rectify_array_size(scene->sounds); t++) {
+    GlyphColor fore = glyphcolor_hex(0xc8c8c8);
+    GlyphColor back = glyphcolor_hex(0x0);
+    if (scene->selected_sound == t) {
+      fore = glyphcolor_hex(0xffffff);
+      back = glyphcolor_hex(0x666666);
+    }
+    surface_text(scene->spectrum, 0, 32 + t, 0, scene->sounds[t], fore, back);
+  }
+  // -Sound list
 }
 
 RectifyMap *scene_sound_test_message(SceneSoundTest *scene, uint32_t id, RectifyMap *const map) {
@@ -146,15 +168,32 @@ RectifyMap *scene_sound_test_message(SceneSoundTest *scene, uint32_t id, Rectify
 
       if (pressed) {
         switch (key) {
+          case PICASSO_KEY_UP: {
+            scene->selected_sound -= (scene->selected_sound > 0 ? 1 : 0);
+            break;
+          }
+
+          case PICASSO_KEY_DOWN: {
+            scene->selected_sound += (scene->selected_sound < 2 ? 1 : 0);
+            break;
+          }
+
+          case PICASSO_KEY_ENTER: {
+            RectifyMap *map = rectify_map_create();
+            rectify_map_set_string(map, "sound", scene->sounds[scene->selected_sound]);
+            kronos_post("sound", MSG_SOUND_PLAY, map, NULL);
+            break;
+          }
+
           case PICASSO_KEY_P: {
             RectifyMap *map = rectify_map_create();
             rectify_map_set_uint(map, "song", scene->song);
-            kronos_emit(MSG_SOUND_PLAY_SONG, map);
+            kronos_post("sound", MSG_SOUND_PLAY_SONG, map, NULL);
             break;
           }
 
           case PICASSO_KEY_S: {
-            kronos_emit(MSG_SOUND_STOP_SONG, NULL);
+            kronos_post("sound", MSG_SOUND_STOP_SONG, NULL, NULL);
             for (uint32_t t = 0; t < 158; t++) {
               scene->spectrum_left[t] = 0.0f;
               scene->spectrum_right[t] = 0.0f;
@@ -163,12 +202,12 @@ RectifyMap *scene_sound_test_message(SceneSoundTest *scene, uint32_t id, Rectify
           }
 
           case PICASSO_KEY_N: {
-            kronos_emit(MSG_SOUND_STOP_SONG, NULL);
+            kronos_post("sound", MSG_SOUND_STOP_SONG, NULL, NULL);
 
             scene->song = (scene->song == 0 ? 1 : 0);
             RectifyMap *map = rectify_map_create();
             rectify_map_set_uint(map, "song", scene->song);
-            kronos_emit(MSG_SOUND_PLAY_SONG, map);
+            kronos_post("sound", MSG_SOUND_PLAY_SONG, map, NULL);
             break;
           }
         }
@@ -207,7 +246,8 @@ RectifyMap *scene_sound_test_message(SceneSoundTest *scene, uint32_t id, Rectify
       uint32_t num = rectify_map_get_uint(map, "num");
 
       for (uint32_t t = 0; t < num; t++) {
-        printf("%d -> %s\n", t, sounds[t]);
+        char *sound = rectify_memory_alloc_copy(sounds[t], strnlen(sounds[t], 128) + 1);
+        scene->sounds = rectify_array_push(scene->sounds, &sound);
       }
 
       break;
