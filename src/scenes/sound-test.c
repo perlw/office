@@ -85,7 +85,8 @@ void scene_sound_test_stop(void **scene) {
   for (uint32_t t = 0; t < rectify_array_size(ptr->sounds); t++) {
     free(ptr->sounds[t]);
   }
-  rectify_array_free(&(void *)ptr->sounds);
+  void *sounds = (void *)ptr->sounds;
+  rectify_array_free(&sounds);
 
   free(ptr);
   *scene = NULL;
