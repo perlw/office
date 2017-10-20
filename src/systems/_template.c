@@ -41,7 +41,7 @@ SystemTemplate *system_template_start(void) {
   return system;
 }
 
-void system_template_stop(SystemTemplate **system) {
+void system_template_stop(void **system) {
   SystemTemplate *ptr = *system;
   assert(ptr && system);
 

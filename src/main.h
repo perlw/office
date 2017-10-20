@@ -271,6 +271,7 @@ extern KronosSystem system_debug;
 extern KronosSystem system_input;
 extern KronosSystem system_lua_bridge;
 extern KronosSystem system_sound;
+extern KronosSystem system_test;
 extern KronosSystem system_ui;
 extern KronosSystem system_window;
 

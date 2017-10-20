@@ -41,6 +41,8 @@ KronosResult kronos_stop_system(const char *name);
 
 void kronos_post(const char *system, uint32_t id, RectifyMap *const map, const char *caller);
 void kronos_emit(uint32_t id, RectifyMap *const map);
+// Immediately posts to system and returns result synchronously.
+// Note: Any returned map needs to behandled by caller.
 RectifyMap *kronos_post_immediate(const char *system, uint32_t id, RectifyMap *const map);
 
 void kronos_update(double delta);
