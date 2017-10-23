@@ -2,10 +2,11 @@ math.randomseed(os.time())
 
 local lua_bridge = require("lua_bridge")
 local ui = require("ui")
+local scenes = require("scenes")
 local load_tiledefs = require("tiledefs")
-local Window = require("window")
 
-local windows = {}
+scenes.register("scene_sound-test", require("sound_test"))
+scenes.register("scene_world-edit", require("world_edit"))
 
 local player_moves = {
   ["plr_move_dnlt"] = MSG_PLAYER_MOVE_DOWN_LEFT,
@@ -38,33 +39,6 @@ local events = {
   [MSG_MATERIALS_LOAD] = function (data)
     load_tiledefs()
   end,
-
-  [MSG_SCENE_SETUP] = function (data)
-    if data.scene == "scene_world-edit" then
-      lua_bridge.post_message("systems", MSG_SYSTEM_START, {
-        ["system"] = "ui",
-      })
-    end
-  end,
-  [MSG_SCENE_TEARDOWN] = function (data)
-    if data.scene == "scene_world-edit" then
-      lua_bridge.post_message("systems", MSG_SYSTEM_STOP, {
-        ["system"] = "ui",
-      })
-    end
-  end,
-
-  [MSG_SYSTEM_SPUN_UP] = function (data)
-    if data.system == "ui" then
-      windows[#windows + 1] = Window("Test Wnd 1", 141, 7, 18, 18)
-      windows[#windows + 1] = Window("Test Wnd 2", 141, 26, 18, 18)
-    end
-  end,
-  [MSG_SYSTEM_SHUT_DOWN] = function (data)
-    if data.system == "ui" then
-      windows = {}
-    end
-  end,
 }
 lua_bridge.on_message(function (msg, data)
   if events[msg] ~= nil then
@@ -72,6 +46,7 @@ lua_bridge.on_message(function (msg, data)
   end
 
   ui.handle_message(msg, data)
+  scenes.handle_message(msg, data)
 end)
 
 lua_bridge.post_message("lua_bridge", MSG_DEBUG_TEST, nil)

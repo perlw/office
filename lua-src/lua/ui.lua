@@ -1,16 +1,16 @@
 local lua_bridge = require("lua_bridge")
 
 local module = {}
+windows = {}
 
 function trigger_windows(event, data)
-  for _, window in ipairs(module.windows) do
+  for _, window in ipairs(windows) do
     if window.handle == data.handle then
       window:trigger(event, data)
     end
   end
 end
 
-module.windows = {}
 module.events = {
   [MSG_UI_WINDOW_CREATED] = function (data)
     trigger_windows("created", data)
@@ -31,7 +31,7 @@ module.events = {
 
 function module.window_create(window, title, x, y, width, height)
   window.handle = os.time() + math.random(1000000)
-  module.windows[#module.windows + 1] = window
+  windows[#windows + 1] = window
   lua_bridge.post_message("ui", MSG_UI_WINDOW_CREATE, {
     ["title"] = title,
     ["x"] = x,
