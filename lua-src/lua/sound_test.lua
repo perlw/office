@@ -20,10 +20,4 @@ end
 function Scene:destroy()
 end
 
-function Scene:trigger(id, data)
-  --[[if self.events[id] ~= nil then
-    self.events[id](data)
-  end]]--
-end
-
 return Scene

@@ -1,5 +1,3 @@
-local lua_bridge = require("lua_bridge")
-
 local Widget = {}
 Widget.__index = Widget
 
@@ -54,23 +52,14 @@ function hsl_to_rgb(h, s, l)
 end
 
 
-function Widget:create()
-  self.chosen_color = 1
+function Widget:create(initial_index)
+  self.chosen_color = initial_index
+  self.listeners = {}
 
   self.events = {
-    ["created"] = function (e)
-      local color = hsl_to_rgb(math.floor(self.chosen_color / 16) / 16, 1.0, math.floor(self.chosen_color % 16) / 16);
-      lua_bridge.emit_message(MSG_WORLD_EDIT_COLOR_SELECTED, {
-        ["color"] = color,
-      })
-    end,
-
     ["click"] = function (e)
       self.chosen_color = (e.y * 16) + e.x
-      local color = hsl_to_rgb(e.y / 16, 1.0, e.x / 16);
-      lua_bridge.emit_message(MSG_WORLD_EDIT_COLOR_SELECTED, {
-        ["color"] = color,
-      })
+      self:emit("selected", self:color())
     end,
   }
 
@@ -84,7 +73,7 @@ function Widget:paint(canvas)
   for y = 0, 15 do
     for x = 0, 15 do
       local rune = 219
-      local fore = hsl_to_rgb(y / 16, 1.0, x / 16);
+      local fore = hsl_to_rgb(y / 16, 1.0, x / 16)
       if (y * 16) + x == self.chosen_color then
         rune = "*"
       end
@@ -98,6 +87,25 @@ function Widget:trigger(id, data)
   if self.events[id] ~= nil then
     self.events[id](data)
   end
+end
+
+function Widget:emit(id, data)
+  if self.listeners[id] ~= nil then
+    for _, callback in ipairs(self.listeners[id]) do
+      callback(data)
+    end
+  end
+end
+
+function Widget:on(id, callback)
+  if self.listeners[id] == nil then
+    self.listeners[id] = {}
+  end
+  self.listeners[id][#self.listeners[id] + 1] = callback
+end
+
+function Widget:color()
+  return hsl_to_rgb(math.floor(self.chosen_color / 16) / 16, 1.0, math.floor(self.chosen_color % 16) / 16)
 end
 
 return Widget
