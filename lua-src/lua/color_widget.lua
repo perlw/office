@@ -1,13 +1,40 @@
-local Widget = {}
-Widget.__index = Widget
+function new_object(clone_object)
+  local Object = clone_object or {}
+  Object.__index = Object
 
-setmetatable(Widget, {
-  __call = function (cls, ...)
-    local self = setmetatable({}, Widget)
-    self:create(...)
-    return self
-  end,
-})
+  setmetatable(Object, {
+    __call = function (cls, ...)
+      local self = setmetatable({}, Object)
+      self:create(...)
+      return self
+    end,
+  })
+
+  return Object
+end
+
+------------------------
+local Events = {
+  listeners = {}
+}
+
+function Events:emit(id, data)
+  if self.listeners[id] ~= nil then
+    for _, callback in ipairs(self.listeners[id]) do
+      callback(data)
+    end
+  end
+end
+
+function Events:on(id, callback)
+  if self.listeners[id] == nil then
+    self.listeners[id] = {}
+  end
+  self.listeners[id][#self.listeners[id] + 1] = callback
+end
+------------------------
+
+local Widget = new_object(Events)
 
 function hue_to_rgb(p, q, t)
   if t < 0 then
@@ -51,10 +78,8 @@ function hsl_to_rgb(h, s, l)
   return (r << 16) + (g << 8) + b
 end
 
-
 function Widget:create(initial_index)
   self.chosen_color = initial_index
-  self.listeners = {}
 
   self.events = {
     ["click"] = function (e)
@@ -87,21 +112,6 @@ function Widget:trigger(id, data)
   if self.events[id] ~= nil then
     self.events[id](data)
   end
-end
-
-function Widget:emit(id, data)
-  if self.listeners[id] ~= nil then
-    for _, callback in ipairs(self.listeners[id]) do
-      callback(data)
-    end
-  end
-end
-
-function Widget:on(id, callback)
-  if self.listeners[id] == nil then
-    self.listeners[id] = {}
-  end
-  self.listeners[id][#self.listeners[id] + 1] = callback
 end
 
 function Widget:color()
