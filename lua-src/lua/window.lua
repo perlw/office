@@ -13,7 +13,7 @@ setmetatable(Window, {
 })
 
 function Window:create(title, x, y, width, height)
-  self.chosen_rune = 1
+  self.widget = nil
 
   self.events = {
     ["created"] = function (e)
@@ -22,19 +22,17 @@ function Window:create(title, x, y, width, height)
 
     ["mousemove"] = function (e)
       io.write("received mousemove\n")
+      self:paint()
     end,
 
     ["click"] = function (e)
-      self.chosen_rune = (e.y * 16) + e.x
+      io.write("received click\n")
       self:paint()
-
-      lua_bridge.emit_message(MSG_WORLD_EDIT_RUNE_SELECTED, {
-        ["rune"] = self.chosen_rune,
-      })
     end,
 
     ["scroll"] = function (e)
       io.write("received scroll\n")
+      self:paint()
     end,
   }
 
@@ -47,25 +45,13 @@ function Window:destroy()
   ui.window_destroy(self)
 end
 
+function Window:widget(widget)
+  self.widget = widget
+end
+
 function Window:paint()
-  for y = 0, 15 do
-    for x = 0, 15 do
-      local rune = (y * 16) + x
-      local fore = 0x808080
-      local back = 0x0
-
-      if math.floor(rune / 16) == math.floor(self.chosen_rune / 16)
-        or math.floor(rune % 16) == math.floor(self.chosen_rune % 16) then
-        fore = 0xc8c8c8
-        back = 0x666666
-      end
-      if rune == self.chosen_rune then
-        fore = 0xffffff
-        back = 0x999999
-      end
-
-      self:glyph(rune, x, y, fore, back)
-    end
+  if self.widget ~= nil then
+    self.widget:paint(self)
   end
 end
 
@@ -74,6 +60,10 @@ function Window:glyph(rune, x, y, fore_color, back_color)
 end
 
 function Window:trigger(id, data)
+  if self.widget ~= nil then
+    self.widget:trigger(id, data)
+  end
+
   if self.events[id] ~= nil then
     self.events[id](data)
   end
