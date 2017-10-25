@@ -1,17 +1,10 @@
-local Widget = {}
-Widget.__index = Widget
+local new_object = require("new_object")
+local EventsMixin = require("events_mixin")
 
-setmetatable(Widget, {
-  __call = function (cls, ...)
-    local self = setmetatable({}, Widget)
-    self:create(...)
-    return self
-  end,
-})
+local Widget = new_object({EventsMixin})
 
 function Widget:create(initial_rune)
   self.chosen_rune = initial_rune
-  self.listeners = {}
 
   self.events = {
     ["click"] = function (e)
@@ -52,21 +45,6 @@ function Widget:trigger(id, data)
   if self.events[id] ~= nil then
     self.events[id](data)
   end
-end
-
-function Widget:emit(id, data)
-  if self.listeners[id] ~= nil then
-    for _, callback in ipairs(self.listeners[id]) do
-      callback(data)
-    end
-  end
-end
-
-function Widget:on(id, callback)
-  if self.listeners[id] == nil then
-    self.listeners[id] = {}
-  end
-  self.listeners[id][#self.listeners[id] + 1] = callback
 end
 
 function Widget:rune()

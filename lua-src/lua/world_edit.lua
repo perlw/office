@@ -46,7 +46,6 @@ function Scene:create()
 
   self.rune_window:widget(self.rune_widget)
   self.color_window:widget(self.color_widget)
-
   return self
 end
 
