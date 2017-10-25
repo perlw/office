@@ -59,6 +59,13 @@ function module.window_glyph(window, rune, x, y, fore_color, back_color)
   })
 end
 
+function module.window_glyphs(window, glyphs)
+  lua_bridge.post_message("ui", MSG_UI_WINDOW_GLYPHS, {
+    ["handle"] = window.handle,
+    ["glyphs"] = glyphs,
+  })
+end
+
 function module.handle_message(msg, data)
   if module.events[msg] ~= nil then
     module.events[msg](data)

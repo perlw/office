@@ -188,6 +188,7 @@ Config *const config_get(void);
   MSG(MSG_UI_WINDOW_CREATED)         \
   MSG(MSG_UI_WINDOW_DESTROY)         \
   MSG(MSG_UI_WINDOW_GLYPH)           \
+  MSG(MSG_UI_WINDOW_GLYPHS)          \
   MSG(MSG_UI_WINDOW_MOUSEMOVE)       \
   MSG(MSG_UI_WINDOW_CLICK)           \
   MSG(MSG_UI_WINDOW_SCROLL)          \

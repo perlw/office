@@ -1,16 +1,23 @@
 local lua_bridge = require("lua_bridge")
 local ui = require("ui")
+local new_object = require("new_object")
 
-local Window = {}
-Window.__index = Window
+local Canvas = new_object()
+function Canvas:create()
+  self.glyphs = {}
+end
 
-setmetatable(Window, {
-  __call = function (cls, ...)
-    local self = setmetatable({}, Window)
-    self:create(...)
-    return self
-  end,
-})
+function Canvas:glyph(rune, x, y, fore_color, back_color)
+  self.glyphs[#self.glyphs + 1] = {
+    rune = rune,
+    x = x,
+    y = y,
+    fore_color = fore_color,
+    back_color = back_color,
+  }
+end
+
+local Window = new_object()
 
 function Window:create(title, x, y, width, height)
   self.widget = nil
@@ -51,12 +58,12 @@ end
 
 function Window:paint()
   if type(self.widget) == "table" then
-    self.widget:paint(self)
+    local canvas = Canvas()
+    self.widget:paint(canvas)
+    if #canvas.glyphs > 0 then
+      ui.window_glyphs(self, canvas.glyphs)
+    end
   end
-end
-
-function Window:glyph(rune, x, y, fore_color, back_color)
-  ui.window_glyph(self, rune, x, y, fore_color, back_color)
 end
 
 function Window:trigger(id, data)

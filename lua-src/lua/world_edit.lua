@@ -1,19 +1,11 @@
 local lua_bridge = require("lua_bridge")
+local new_object = require("new_object")
 
 local Window = require("window")
 local RuneWidget = require("rune_widget")
 local ColorWidget = require("color_widget")
 
-local Scene = {}
-Scene.__index = Scene
-
-setmetatable(Scene, {
-  __call = function (cls, ...)
-    local self = setmetatable({}, Scene)
-    self:create(...)
-    return self
-  end,
-})
+local Scene = new_object()
 
 Scene.systems = {
   "ui",

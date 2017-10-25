@@ -147,6 +147,44 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       break;
     }
 
+    case MSG_UI_WINDOW_GLYPHS: {
+      uint32_t handle = rectify_map_get_uint(map, "handle");
+      for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
+        UIWindow *window = &system->windows[t];
+
+        if (window->handle == handle) {
+          RectifyMapIter iter = rectify_map_iter(rectify_map_get_map(map, "glyphs"));
+          for (RectifyMapItem item; rectify_map_iter_next(&iter, &item);) {
+            if (item.type == RECTIFY_MAP_TYPE_MAP) {
+              RectifyMap *item_map = (RectifyMap *)item.val;
+              uint8_t rune = rectify_map_get_byte(item_map, "rune");
+              uint32_t x = rectify_map_get_uint(item_map, "x");
+              uint32_t y = rectify_map_get_uint(item_map, "y");
+              GlyphColor fore = glyphcolor_hex(rectify_map_get_uint(item_map, "fore_color"));
+              GlyphColor back = glyphcolor_hex(rectify_map_get_uint(item_map, "back_color"));
+
+              if (x > window->width - 3 || y > window->height - 3) {
+                break;
+              }
+
+              uint32_t tx = x + 1;
+              uint32_t ty = y + 1;
+
+              window->surface->buffer[(ty * window->width) + tx] = (Glyph){
+                .rune = rune,
+                .fore = fore,
+                .back = back,
+              };
+            }
+          }
+
+          break;
+        }
+      }
+
+      break;
+    }
+
     case MSG_INPUT_MOUSEMOVE: {
       uint32_t x = rectify_map_get_uint(map, "x");
       uint32_t y = rectify_map_get_uint(map, "y");

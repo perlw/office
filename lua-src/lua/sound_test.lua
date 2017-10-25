@@ -1,13 +1,6 @@
-local Scene = {}
-Scene.__index = Scene
+local new_object = require("new_object")
 
-setmetatable(Scene, {
-  __call = function (cls, ...)
-    local self = setmetatable({}, Scene)
-    self:create(...)
-    return self
-  end,
-})
+local Scene = new_object()
 
 Scene.systems = {
   "ui",
