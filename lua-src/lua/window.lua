@@ -50,7 +50,7 @@ function Window:widget(widget)
 end
 
 function Window:paint()
-  if self.widget ~= nil then
+  if type(self.widget) == "table" then
     self.widget:paint(self)
   end
 end
@@ -60,7 +60,7 @@ function Window:glyph(rune, x, y, fore_color, back_color)
 end
 
 function Window:trigger(id, data)
-  if self.widget ~= nil then
+  if type(self.widget) == "table" then
     self.widget:trigger(id, data)
   end
 
