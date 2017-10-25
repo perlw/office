@@ -3,12 +3,26 @@ local ui = require("ui")
 local new_object = require("new_object")
 
 local Canvas = new_object()
-function Canvas:create()
+function Canvas:create(width, height)
+  self.width = width
+  self.height = height
   self.glyphs = {}
+  self.dirty = false
 end
 
 function Canvas:glyph(rune, x, y, fore_color, back_color)
-  self.glyphs[#self.glyphs + 1] = {
+  local index = (y * self.width) + x
+  if self.glyphs[index] == nil then
+    self.dirty = true
+  else
+    if self.glyphs[index].rune ~= rune or
+      self.glyphs[index].fore_color ~= fore_color or
+      self.glyphs[index].back_color ~= back_color then
+      self.dirty = true
+    end
+  end
+
+  self.glyphs[index] = {
     rune = rune,
     x = x,
     y = y,
@@ -21,6 +35,7 @@ local Window = new_object()
 
 function Window:create(title, x, y, width, height)
   self.widget = nil
+  self.canvas = Canvas(width, height)
 
   self.events = {
     ["created"] = function (e)
@@ -58,10 +73,10 @@ end
 
 function Window:paint()
   if type(self.widget) == "table" then
-    local canvas = Canvas()
-    self.widget:paint(canvas)
-    if #canvas.glyphs > 0 then
-      ui.window_glyphs(self, canvas.glyphs)
+    self.widget:paint(self.canvas)
+    if self.canvas.dirty then
+      self.canvas.dirty = false
+      ui.window_glyphs(self, self.canvas.glyphs)
     end
   end
 end
