@@ -33,7 +33,9 @@ SystemTest *system_test_start(void) {
   Config *const config = config_get();
 
   SystemTest *system = calloc(1, sizeof(SystemTest));
-  *system = (SystemTest){};
+  *system = (SystemTest){
+    .dummy = 1,
+  };
 
   return system;
 }

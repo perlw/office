@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#define USE_ARCHIVIST
 #define USE_KRONOS
 #define USE_PICASSO
 #define USE_RECTIFY
@@ -477,7 +478,7 @@ Config *const config_get(void) {
 }
 
 void config_internal_handle(void *const userdata, const char *section, const char *key, const char *value) {
-  Config *const config = (Config *const)userdata;
+  Config *const config = (Config * const)userdata;
 
   // TODO: Break down into section handlers etc
   if (strncmp(section, "window", 1024) == 0) {

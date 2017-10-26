@@ -485,7 +485,7 @@ SceneGame *scene_game_start(void) {
     archivist_read_file("tiledefs.json", &num_bytes, &data);
 
     cJSON *root = cJSON_Parse((const char *)data);
-    for (uint32_t t = 0; t < cJSON_GetArraySize(root); t++) {
+    for (int32_t t = 0; t < cJSON_GetArraySize(root); t++) {
       cJSON *item = cJSON_GetArrayItem(root, t);
 
       cJSON *id = cJSON_GetObjectItemCaseSensitive(item, "id");
@@ -503,7 +503,7 @@ SceneGame *scene_game_start(void) {
         },
         .collides = false,
       };
-      for (uint32_t u = 0; u < cJSON_GetArraySize(tags); u++) {
+      for (int32_t u = 0; u < cJSON_GetArraySize(tags); u++) {
         cJSON *tag = cJSON_GetArrayItem(tags, u);
         if (strncmp(tag->valuestring, "wall", 128) == 0) {
           def.collides = true;
