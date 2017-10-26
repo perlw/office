@@ -465,113 +465,15 @@ Config config_internal = {
   .grid_size_height = 8.0,
 };
 
-typedef void (*ConfigHandleCallback)(void *const userdata, const char *section, const char *key, const char *value);
-void config_internal_read_file(const char *filename, ConfigHandleCallback callback, void *const userdata);
 void config_internal_handle(void *const userdata, const char *section, const char *key, const char *value);
 
 Config *const config_init(void) {
-  config_internal_read_file("config.ini", &config_internal_handle, &config_internal);
+  archivist_read_ini_file("config.ini", &config_internal_handle, &config_internal);
   return &config_internal;
 }
 
 Config *const config_get(void) {
   return &config_internal;
-}
-
-void config_internal_read_file(const char *filename, ConfigHandleCallback callback, void *const userdata) {
-  FILE *file = fopen(filename, "r");
-  if (!file) {
-    printf("Failed to open config\n");
-    return;
-  }
-
-  uint32_t line = 0;
-  bool has_section = false;
-  char section[1024] = { 0 };
-  while (!feof(file)) {
-    char buffer[1024] = { 0 };
-    if (!fgets(buffer, 1024, file)) {
-      break;
-    }
-
-    line++;
-    if (buffer[0] == ';') {
-      continue;
-    } else if (buffer[0] == '[') {
-      uint32_t start = 1;
-      uint32_t end = 1;
-      for (uint32_t t = 0; t < 1024; t++, end++) {
-        if (buffer[t] == '\0' || buffer[t] == '\n') {
-          printf("Config: parse error, broken section title on line %d\n", line);
-          break;
-        }
-        if (buffer[t] == ']') {
-          end = t;
-          break;
-        }
-      }
-
-      if (start != end) {
-        memset(section, 0, 1024);
-        strncpy(section, &buffer[1], end - start);
-        has_section = true;
-      }
-    } else if (!has_section) {
-      printf("Config: parse error, missing initial section before line %d\n", line);
-      break;
-    } else {
-      int32_t key_start = -1;
-      int32_t key_end = -1;
-      int32_t value_start = -1;
-      int32_t value_end = -1;
-      bool has_key = false;
-      bool has_value = false;
-      for (uint32_t t = 0; t < 1024; t++) {
-        if (buffer[t] > 32 && buffer[t] < 127 && buffer[t] != '=') {
-          if (!has_key && key_start == -1) {
-            key_start = t;
-          } else if (has_key && !has_value && value_start == -1) {
-            value_start = t;
-          }
-        } else if (buffer[t] == '=') {
-          if (has_key) {
-            printf("Config: parse error, already parsed key on line %d\n", line);
-            break;
-          }
-          key_end = t;
-          has_key = true;
-        } else {
-          if (buffer[t] == '\0' || buffer[t] == '\n') {
-            if (!has_key) {
-              if (key_start < 0) {
-                continue;
-              }
-
-              printf("Config: parse error, broken keyval on line %d\n", line);
-              break;
-            }
-
-            has_value = true;
-            value_end = t;
-            break;
-          }
-        }
-      }
-
-      if (has_key && has_value) {
-        char key[1024] = { 0 };
-        char value[1024] = { 0 };
-        memset(key, 0, 1024);
-        strncpy(key, &buffer[key_start], key_end - key_start);
-        memset(value, 0, 1024);
-        strncpy(value, &buffer[value_start], value_end - value_start);
-
-        callback(userdata, section, key, value);
-      }
-    }
-  }
-
-  fclose(file);
 }
 
 void config_internal_handle(void *const userdata, const char *section, const char *key, const char *value) {
