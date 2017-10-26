@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "cJSON.h"
+
+#define USE_ARCHIVIST
 #define USE_KRONOS
 #define USE_RECTIFY
 #include "bedrock/bedrock.h"
@@ -476,7 +479,46 @@ SceneGame *scene_game_start(void) {
 
   screen_hook_render(&scene_game_internal_render_hook, scene, 0);
 
-  //kronos_post("lua_bridge", MSG_MATERIALS_LOAD, NULL, NULL);
+  {
+    size_t num_bytes = 0;
+    uint8_t *data = NULL;
+    archivist_read_file("tiledefs.json", &num_bytes, &data);
+
+    cJSON *root = cJSON_Parse((const char *)data);
+    for (uint32_t t = 0; t < cJSON_GetArraySize(root); t++) {
+      cJSON *item = cJSON_GetArrayItem(root, t);
+
+      cJSON *id = cJSON_GetObjectItemCaseSensitive(item, "id");
+      cJSON *rune = cJSON_GetObjectItemCaseSensitive(item, "rune");
+      cJSON *fore_color = cJSON_GetObjectItemCaseSensitive(item, "fore_color");
+      cJSON *back_color = cJSON_GetObjectItemCaseSensitive(item, "back_color");
+      cJSON *tags = cJSON_GetObjectItemCaseSensitive(item, "tags");
+
+      TileDef def = {
+        .id = rectify_memory_alloc_copy(id->valuestring, sizeof(char) * (strnlen(id->valuestring, 128) + 1)),
+        .glyph = (Glyph){
+          .rune = rune->valueint,
+          .fore = glyphcolor_hex(fore_color->valueint),
+          .back = glyphcolor_hex(back_color->valueint),
+        },
+        .collides = false,
+      };
+      for (uint32_t u = 0; u < cJSON_GetArraySize(tags); u++) {
+        cJSON *tag = cJSON_GetArrayItem(tags, u);
+        if (strncmp(tag->valuestring, "wall", 128) == 0) {
+          def.collides = true;
+        }
+      }
+
+      printf("%s => { %d|%c, (%d %d %d) (%d %d %d)}\n", def.id, def.glyph.rune, def.glyph.rune, def.glyph.fore.r, def.glyph.fore.g, def.glyph.fore.b, def.glyph.back.r, def.glyph.back.g, def.glyph.back.b);
+
+      scene->tiledefs = rectify_array_push(scene->tiledefs, &def);
+    }
+    cJSON_Delete(root);
+
+    free(data);
+  }
+  scene_game_internal_build_map(scene);
 
   return scene;
 }
@@ -543,87 +585,30 @@ RectifyMap *scene_game_message(SceneGame *scene, uint32_t id, RectifyMap *const 
   uint32_t o_x = scene->p_x;
   uint32_t o_y = scene->p_y;
   switch (id) {
-    case MSG_PLAYER_MOVE_UP_LEFT: {
-      scene->p_x = (scene->p_x > 0 ? scene->p_x - 1 : scene->p_x);
-      scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
-      break;
-    }
-
-    case MSG_PLAYER_MOVE_UP: {
-      scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
-      break;
-    }
-
-    case MSG_PLAYER_MOVE_UP_RIGHT: {
-      scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
-      scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
-      break;
-    }
-
-    case MSG_PLAYER_MOVE_LEFT: {
-      scene->p_x = (scene->p_x > 0 ? scene->p_x - 1 : scene->p_x);
-      break;
-    }
-
-    case MSG_PLAYER_MOVE_RIGHT: {
-      scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
-      break;
-    }
-
-    case MSG_PLAYER_MOVE_DOWN_LEFT: {
-      scene->p_x = (scene->p_x > 0 ? scene->p_x - 1 : scene->p_x);
-      scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
-      break;
-    }
-
-    case MSG_PLAYER_MOVE_DOWN: {
-      scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
-      break;
-    }
-
-    case MSG_PLAYER_MOVE_DOWN_RIGHT: {
-      scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
-      scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
-      break;
-    }
-
-    case MSG_MATERIAL_REGISTER: {
-      char *const id = rectify_map_get_string(map, "id");
-      uint8_t rune = rectify_map_get_byte(map, "rune");
-      GlyphColor fore = glyphcolor_hex(rectify_map_get_uint(map, "fore_color"));
-      GlyphColor back = glyphcolor_hex(rectify_map_get_uint(map, "back_color"));
-      RectifyMap *tags = rectify_map_get_map(map, "tags");
-
-      TileDef def = {
-        .id = rectify_memory_alloc_copy(id, sizeof(char) * (strnlen(id, 128) + 1)),
-        .glyph = (Glyph){
-          .rune = rune,
-          .fore = fore,
-          .back = back,
-        },
-        .collides = false,
-      };
-
-      printf("%s => { %d|%c, (%d %d %d) (%d %d %d)}\n", id, rune, rune, fore.r, fore.g, fore.b, back.r, back.g, back.b);
-      RectifyMapIter iter = rectify_map_iter(tags);
-      for (RectifyMapItem item; rectify_map_iter_next(&iter, &item);) {
-        switch (item.type) {
-          case RECTIFY_MAP_TYPE_STRING: {
-            char *const tag = (char *const)item.val;
-            if (strncmp(tag, "wall", 128) == 0) {
-              def.collides = true;
-            }
-          }
-        }
+    case MSG_INPUT_ACTION: {
+      const char *action = rectify_map_get_string(map, "action");
+      if (strncmp(action, "plr_move_uplt", 128) == 0) {
+        scene->p_x = (scene->p_x > 0 ? scene->p_x - 1 : scene->p_x);
+        scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
+      } else if (strncmp(action, "plr_move_up", 128) == 0) {
+        scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
+      } else if (strncmp(action, "plr_move_uprt", 128) == 0) {
+        scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
+        scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
+      } else if (strncmp(action, "plr_move_lt", 128) == 0) {
+        scene->p_x = (scene->p_x > 0 ? scene->p_x - 1 : scene->p_x);
+      } else if (strncmp(action, "plr_move_rt", 128) == 0) {
+        scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
+      } else if (strncmp(action, "plr_move_dnlt", 128) == 0) {
+        scene->p_x = (scene->p_x > 0 ? scene->p_x - 1 : scene->p_x);
+        scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
+      } else if (strncmp(action, "plr_move_dn", 128) == 0) {
+        scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
+      } else if (strncmp(action, "plr_move_dnrt", 128) == 0) {
+        scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
+        scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
       }
-
-      scene->tiledefs = rectify_array_push(scene->tiledefs, &def);
-      break;
     }
-
-    case MSG_MATERIALS_LOADED:
-      scene_game_internal_build_map(scene);
-      break;
   }
 
   Tile *current = &scene->tilemap[(scene->p_y * MAP_X) + scene->p_x];

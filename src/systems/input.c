@@ -71,6 +71,10 @@ RectifyMap *system_input_message(SystemInput *system, uint32_t id, RectifyMap *c
       bool pressed = rectify_map_get_bool(map, "pressed");
       bool released = rectify_map_get_bool(map, "released");
 
+      if (released) {
+        break;
+      }
+
       for (uint32_t t = 0; t < rectify_array_size(system->keybinds); t++) {
         if (system->keybinds[t].key == key) {
           printf("Input: Triggering bind %s\n", system->keybinds[t].action);

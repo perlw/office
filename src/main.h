@@ -193,19 +193,6 @@ Config *const config_get(void);
   MSG(MSG_UI_WINDOW_CLICK)           \
   MSG(MSG_UI_WINDOW_SCROLL)          \
                                      \
-  MSG(MSG_PLAYER_MOVE_UP_LEFT)       \
-  MSG(MSG_PLAYER_MOVE_UP)            \
-  MSG(MSG_PLAYER_MOVE_UP_RIGHT)      \
-  MSG(MSG_PLAYER_MOVE_LEFT)          \
-  MSG(MSG_PLAYER_MOVE_RIGHT)         \
-  MSG(MSG_PLAYER_MOVE_DOWN_LEFT)     \
-  MSG(MSG_PLAYER_MOVE_DOWN)          \
-  MSG(MSG_PLAYER_MOVE_DOWN_RIGHT)    \
-                                     \
-  MSG(MSG_MATERIALS_LOAD)            \
-  MSG(MSG_MATERIALS_LOADED)          \
-  MSG(MSG_MATERIAL_REGISTER)         \
-                                     \
   MSG(MSG_WORLD_EDIT_RUNE_SELECTED)  \
   MSG(MSG_WORLD_EDIT_COLOR_SELECTED) \
                                      \

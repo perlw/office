@@ -1,0 +1,23 @@
+[
+  {
+    "id": "rock",
+    "rune": 178,
+    "fore_color": 10066329,
+    "back_color": 0,
+    "tags": [ "wall" ]
+  },
+  {
+    "id": "dirt",
+    "rune": 46,
+    "fore_color": 6696704,
+    "back_color": 0,
+    "tags": [ "ground" ]
+  },
+  {
+    "id": "water",
+    "rune": 247,
+    "fore_color": 18347,
+    "back_color": 0,
+    "tags": [ "ground", "fluid" ]
+  }
+]

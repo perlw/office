@@ -13,6 +13,13 @@ option (RECTIFY_DEBUG "Debug rectify operations" OFF)
 
 add_subdirectory (src/bedrock)
 
+# cJSON
+option (ENABLE_CJSON_TEST "Enable building the tests" OFF)
+option (BUILD_SHARED_LIBS "Build shared libraries" OFF)
+include_directories ("${PROJECT_SOURCE_DIR}/deps/cJSON")
+add_subdirectory ("${PROJECT_SOURCE_DIR}/deps/cJSON" "${PROJECT_SOURCE_DIR}/deps/cJSON")
+# cJSON
+
 set (
   SOURCES
   "src/main.c"
@@ -45,7 +52,7 @@ if (RECTIFY_DEBUG)
   target_compile_definitions (office PRIVATE RECTIFY_DEBUG)
 endif (RECTIFY_DEBUG)
 
-target_link_libraries (office bedrock)
+target_link_libraries (office bedrock cjson)
 add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets "${CMAKE_BINARY_DIR}/bin")
 if (UNIX)
   add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/deps/fmod/linux/libfmod.so.9 "${CMAKE_BINARY_DIR}/bin")
