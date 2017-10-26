@@ -40,7 +40,6 @@ Systems *systems_start(void) {
   kronos_register(&system_input);
   kronos_register(&system_sound);
   kronos_register(&system_test);
-  kronos_register(&system_lua_bridge);
   kronos_register(&system_ui);
 
   return systems;

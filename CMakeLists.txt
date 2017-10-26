@@ -6,15 +6,10 @@ set (CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 include_directories ("${PROJECT_SOURCE_DIR}/deps")
-include_directories ("${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src")
-
-file(GLOB LUA_SRCS "${PROJECT_SOURCE_DIR}/deps/lua-5.3.3/src/*.c")
-add_library (lua STATIC ${LUA_SRCS})
 
 option (KRONOS_DEBUG "Debug kronos operations" OFF)
 option (OCCULUS_LOG_MEM "Log memory allocations to file" OFF)
 option (RECTIFY_DEBUG "Debug rectify operations" OFF)
-option (LUA_BRIDGE_DEBUG "Use lua bridge debug output" OFF)
 
 add_subdirectory (src/bedrock)
 
@@ -49,13 +44,9 @@ endif (OCCULUS_LOG_MEM)
 if (RECTIFY_DEBUG)
   target_compile_definitions (office PRIVATE RECTIFY_DEBUG)
 endif (RECTIFY_DEBUG)
-if (LUA_BRIDGE_DEBUG)
-  target_compile_definitions (office PRIVATE LUA_BRIDGE_DEBUG)
-endif (LUA_BRIDGE_DEBUG)
 
-target_link_libraries (office bedrock lua)
+target_link_libraries (office bedrock)
 add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets "${CMAKE_BINARY_DIR}/bin")
-add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/lua-src "${CMAKE_BINARY_DIR}/bin")
 if (UNIX)
   add_custom_command (TARGET office POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/deps/fmod/linux/libfmod.so.9 "${CMAKE_BINARY_DIR}/bin")
 endif (UNIX)

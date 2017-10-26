@@ -1,9 +1,6 @@
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "lauxlib.h"
-#include "lua.h"
-#include "lualib.h"
 
 #define USE_KRONOS
 #define USE_PICASSO
@@ -19,569 +16,442 @@ struct {
   uint32_t val;
 } key_names[] = {
   {
-    .name = "KEY_SPACE",
+    .name = "SPACE",
     .val = PICASSO_KEY_SPACE,
   },
   {
-    .name = "KEY_APOSTROPHE",
+    .name = "'",
     .val = PICASSO_KEY_APOSTROPHE,
   },
   {
-    .name = "KEY_COMMA",
+    .name = ",",
     .val = PICASSO_KEY_COMMA,
   },
   {
-    .name = "KEY_MINUS",
+    .name = "-",
     .val = PICASSO_KEY_MINUS,
   },
   {
-    .name = "KEY_PERIOD",
+    .name = ".",
     .val = PICASSO_KEY_PERIOD,
   },
   {
-    .name = "KEY_SLASH",
+    .name = "/",
     .val = PICASSO_KEY_SLASH,
   },
   {
-    .name = "KEY_0",
+    .name = "0",
     .val = PICASSO_KEY_0,
   },
   {
-    .name = "KEY_1",
+    .name = "1",
     .val = PICASSO_KEY_1,
   },
   {
-    .name = "KEY_2",
+    .name = "2",
     .val = PICASSO_KEY_2,
   },
   {
-    .name = "KEY_3",
+    .name = "3",
     .val = PICASSO_KEY_3,
   },
   {
-    .name = "KEY_4",
+    .name = "4",
     .val = PICASSO_KEY_4,
   },
   {
-    .name = "KEY_5",
+    .name = "5",
     .val = PICASSO_KEY_5,
   },
   {
-    .name = "KEY_6",
+    .name = "6",
     .val = PICASSO_KEY_6,
   },
   {
-    .name = "KEY_7",
+    .name = "7",
     .val = PICASSO_KEY_7,
   },
   {
-    .name = "KEY_8",
+    .name = "8",
     .val = PICASSO_KEY_8,
   },
   {
-    .name = "KEY_9",
+    .name = "9",
     .val = PICASSO_KEY_9,
   },
   {
-    .name = "KEY_SEMICOLON",
+    .name = ";",
     .val = PICASSO_KEY_SEMICOLON,
   },
   {
-    .name = "KEY_EQUAL",
+    .name = "=",
     .val = PICASSO_KEY_EQUAL,
   },
   {
-    .name = "KEY_A",
+    .name = "A",
     .val = PICASSO_KEY_A,
   },
   {
-    .name = "KEY_B",
+    .name = "B",
     .val = PICASSO_KEY_B,
   },
   {
-    .name = "KEY_C",
+    .name = "C",
     .val = PICASSO_KEY_C,
   },
   {
-    .name = "KEY_D",
+    .name = "D",
     .val = PICASSO_KEY_D,
   },
   {
-    .name = "KEY_E",
+    .name = "E",
     .val = PICASSO_KEY_E,
   },
   {
-    .name = "KEY_F",
+    .name = "F",
     .val = PICASSO_KEY_F,
   },
   {
-    .name = "KEY_G",
+    .name = "G",
     .val = PICASSO_KEY_G,
   },
   {
-    .name = "KEY_H",
+    .name = "H",
     .val = PICASSO_KEY_H,
   },
   {
-    .name = "KEY_I",
+    .name = "I",
     .val = PICASSO_KEY_I,
   },
   {
-    .name = "KEY_J",
+    .name = "J",
     .val = PICASSO_KEY_J,
   },
   {
-    .name = "KEY_K",
+    .name = "K",
     .val = PICASSO_KEY_K,
   },
   {
-    .name = "KEY_L",
+    .name = "L",
     .val = PICASSO_KEY_L,
   },
   {
-    .name = "KEY_M",
+    .name = "M",
     .val = PICASSO_KEY_M,
   },
   {
-    .name = "KEY_N",
+    .name = "N",
     .val = PICASSO_KEY_N,
   },
   {
-    .name = "KEY_O",
+    .name = "O",
     .val = PICASSO_KEY_O,
   },
   {
-    .name = "KEY_P",
+    .name = "P",
     .val = PICASSO_KEY_P,
   },
   {
-    .name = "KEY_Q",
+    .name = "Q",
     .val = PICASSO_KEY_Q,
   },
   {
-    .name = "KEY_R",
+    .name = "R",
     .val = PICASSO_KEY_R,
   },
   {
-    .name = "KEY_S",
+    .name = "S",
     .val = PICASSO_KEY_S,
   },
   {
-    .name = "KEY_T",
+    .name = "T",
     .val = PICASSO_KEY_T,
   },
   {
-    .name = "KEY_U",
+    .name = "U",
     .val = PICASSO_KEY_U,
   },
   {
-    .name = "KEY_V",
+    .name = "V",
     .val = PICASSO_KEY_V,
   },
   {
-    .name = "KEY_W",
+    .name = "W",
     .val = PICASSO_KEY_W,
   },
   {
-    .name = "KEY_X",
+    .name = "X",
     .val = PICASSO_KEY_X,
   },
   {
-    .name = "KEY_Y",
+    .name = "Y",
     .val = PICASSO_KEY_Y,
   },
   {
-    .name = "KEY_Z",
+    .name = "Z",
     .val = PICASSO_KEY_Z,
   },
   {
-    .name = "KEY_LEFT_BRACKET",
+    .name = "[",
     .val = PICASSO_KEY_LEFT_BRACKET,
   },
   {
-    .name = "KEY_BACKSLASH",
+    .name = "\\",
     .val = PICASSO_KEY_BACKSLASH,
   },
   {
-    .name = "KEY_RIGHT_BRACKET",
+    .name = "]",
     .val = PICASSO_KEY_RIGHT_BRACKET,
   },
   {
-    .name = "KEY_GRAVE_ACCENT",
-    .val = PICASSO_KEY_GRAVE_ACCENT,
-  },
-  {
-    .name = "KEY_WORLD_1",
-    .val = PICASSO_KEY_WORLD_1,
-  },
-  {
-    .name = "KEY_WORLD_2",
-    .val = PICASSO_KEY_WORLD_2,
-  },
-
-  {
-    .name = "KEY_ESCAPE",
+    .name = "ESCAPE",
     .val = PICASSO_KEY_ESCAPE,
   },
   {
-    .name = "KEY_ENTER",
+    .name = "ENTER",
     .val = PICASSO_KEY_ENTER,
   },
   {
-    .name = "KEY_TAB",
+    .name = "TAB",
     .val = PICASSO_KEY_TAB,
   },
   {
-    .name = "KEY_BACKSPACE",
+    .name = "BACKSPACE",
     .val = PICASSO_KEY_BACKSPACE,
   },
   {
-    .name = "KEY_INSERT",
+    .name = "INSERT",
     .val = PICASSO_KEY_INSERT,
   },
   {
-    .name = "KEY_DELETE",
+    .name = "DELETE",
     .val = PICASSO_KEY_DELETE,
   },
   {
-    .name = "KEY_RIGHT",
+    .name = "RIGHT",
     .val = PICASSO_KEY_RIGHT,
   },
   {
-    .name = "KEY_LEFT",
+    .name = "LEFT",
     .val = PICASSO_KEY_LEFT,
   },
   {
-    .name = "KEY_DOWN",
+    .name = "DOWN",
     .val = PICASSO_KEY_DOWN,
   },
   {
-    .name = "KEY_UP",
+    .name = "UP",
     .val = PICASSO_KEY_UP,
   },
   {
-    .name = "KEY_PAGE_UP",
+    .name = "PAGE_UP",
     .val = PICASSO_KEY_PAGE_UP,
   },
   {
-    .name = "KEY_PAGE_DOWN",
+    .name = "PAGE_DOWN",
     .val = PICASSO_KEY_PAGE_DOWN,
   },
   {
-    .name = "KEY_HOME",
+    .name = "HOME",
     .val = PICASSO_KEY_HOME,
   },
   {
-    .name = "KEY_END",
+    .name = "END",
     .val = PICASSO_KEY_END,
   },
   {
-    .name = "KEY_CAPS_LOCK",
+    .name = "CAPS_LOCK",
     .val = PICASSO_KEY_CAPS_LOCK,
   },
   {
-    .name = "KEY_SCROLL_LOCK",
+    .name = "SCROLL_LOCK",
     .val = PICASSO_KEY_SCROLL_LOCK,
   },
   {
-    .name = "KEY_NUM_LOCK",
+    .name = "NUM_LOCK",
     .val = PICASSO_KEY_NUM_LOCK,
   },
   {
-    .name = "KEY_PRINT_SCREEN",
+    .name = "PRINT_SCREEN",
     .val = PICASSO_KEY_PRINT_SCREEN,
   },
   {
-    .name = "KEY_PAUSE",
+    .name = "PAUSE",
     .val = PICASSO_KEY_PAUSE,
   },
   {
-    .name = "KEY_F1",
+    .name = "F1",
     .val = PICASSO_KEY_F1,
   },
   {
-    .name = "KEY_F2",
+    .name = "F2",
     .val = PICASSO_KEY_F2,
   },
   {
-    .name = "KEY_F3",
+    .name = "F3",
     .val = PICASSO_KEY_F3,
   },
   {
-    .name = "KEY_F4",
+    .name = "F4",
     .val = PICASSO_KEY_F4,
   },
   {
-    .name = "KEY_F5",
+    .name = "F5",
     .val = PICASSO_KEY_F5,
   },
   {
-    .name = "KEY_F6",
+    .name = "F6",
     .val = PICASSO_KEY_F6,
   },
   {
-    .name = "KEY_F7",
+    .name = "F7",
     .val = PICASSO_KEY_F7,
   },
   {
-    .name = "KEY_F8",
+    .name = "F8",
     .val = PICASSO_KEY_F8,
   },
   {
-    .name = "KEY_F9",
+    .name = "F9",
     .val = PICASSO_KEY_F9,
   },
   {
-    .name = "KEY_F10",
+    .name = "F10",
     .val = PICASSO_KEY_F10,
   },
   {
-    .name = "KEY_F11",
+    .name = "F11",
     .val = PICASSO_KEY_F11,
   },
   {
-    .name = "KEY_F12",
+    .name = "F12",
     .val = PICASSO_KEY_F12,
   },
   {
-    .name = "KEY_F13",
+    .name = "F13",
     .val = PICASSO_KEY_F13,
   },
   {
-    .name = "KEY_F14",
+    .name = "F14",
     .val = PICASSO_KEY_F14,
   },
   {
-    .name = "KEY_F15",
+    .name = "F15",
     .val = PICASSO_KEY_F15,
   },
   {
-    .name = "KEY_F16",
+    .name = "F16",
     .val = PICASSO_KEY_F16,
   },
   {
-    .name = "KEY_F17",
+    .name = "F17",
     .val = PICASSO_KEY_F17,
   },
   {
-    .name = "KEY_F18",
+    .name = "F18",
     .val = PICASSO_KEY_F18,
   },
   {
-    .name = "KEY_F19",
+    .name = "F19",
     .val = PICASSO_KEY_F19,
   },
   {
-    .name = "KEY_F20",
+    .name = "F20",
     .val = PICASSO_KEY_F20,
   },
   {
-    .name = "KEY_F21",
+    .name = "F21",
     .val = PICASSO_KEY_F21,
   },
   {
-    .name = "KEY_F22",
+    .name = "F22",
     .val = PICASSO_KEY_F22,
   },
   {
-    .name = "KEY_F23",
+    .name = "F23",
     .val = PICASSO_KEY_F23,
   },
   {
-    .name = "KEY_F24",
+    .name = "F24",
     .val = PICASSO_KEY_F24,
   },
   {
-    .name = "KEY_F25",
+    .name = "F25",
     .val = PICASSO_KEY_F25,
   },
   {
-    .name = "KEY_KP_0",
+    .name = "KP0",
     .val = PICASSO_KEY_KP_0,
   },
   {
-    .name = "KEY_KP_1",
+    .name = "KP1",
     .val = PICASSO_KEY_KP_1,
   },
   {
-    .name = "KEY_KP_2",
+    .name = "KP2",
     .val = PICASSO_KEY_KP_2,
   },
   {
-    .name = "KEY_KP_3",
+    .name = "KP3",
     .val = PICASSO_KEY_KP_3,
   },
   {
-    .name = "KEY_KP_4",
+    .name = "KP4",
     .val = PICASSO_KEY_KP_4,
   },
   {
-    .name = "KEY_KP_5",
+    .name = "KP5",
     .val = PICASSO_KEY_KP_5,
   },
   {
-    .name = "KEY_KP_6",
+    .name = "KP6",
     .val = PICASSO_KEY_KP_6,
   },
   {
-    .name = "KEY_KP_7",
+    .name = "KP7",
     .val = PICASSO_KEY_KP_7,
   },
   {
-    .name = "KEY_KP_8",
+    .name = "KP8",
     .val = PICASSO_KEY_KP_8,
   },
   {
-    .name = "KEY_KP_9",
+    .name = "KP9",
     .val = PICASSO_KEY_KP_9,
   },
   {
-    .name = "KEY_KP_DECIMAL",
+    .name = "KPDECIMAL",
     .val = PICASSO_KEY_KP_DECIMAL,
   },
   {
-    .name = "KEY_KP_DIVIDE",
+    .name = "KPDIVIDE",
     .val = PICASSO_KEY_KP_DIVIDE,
   },
   {
-    .name = "KEY_KP_MULTIPLY",
+    .name = "KPMULTIPLY",
     .val = PICASSO_KEY_KP_MULTIPLY,
   },
   {
-    .name = "KEY_KP_SUBTRACT",
+    .name = "KPSUBTRACT",
     .val = PICASSO_KEY_KP_SUBTRACT,
   },
   {
-    .name = "KEY_KP_ADD",
+    .name = "KPADD",
     .val = PICASSO_KEY_KP_ADD,
   },
   {
-    .name = "KEY_KP_ENTER",
+    .name = "KPENTER",
     .val = PICASSO_KEY_KP_ENTER,
   },
   {
-    .name = "KEY_KP_EQUAL",
+    .name = "KPEQUAL",
     .val = PICASSO_KEY_KP_EQUAL,
-  },
-  {
-    .name = "KEY_LEFT_SHIFT",
-    .val = PICASSO_KEY_LEFT_SHIFT,
-  },
-  {
-    .name = "KEY_LEFT_CONTROL",
-    .val = PICASSO_KEY_LEFT_CONTROL,
-  },
-  {
-    .name = "KEY_LEFT_ALT",
-    .val = PICASSO_KEY_LEFT_ALT,
-  },
-  {
-    .name = "KEY_LEFT_SUPER",
-    .val = PICASSO_KEY_LEFT_SUPER,
-  },
-  {
-    .name = "KEY_RIGHT_SHIFT",
-    .val = PICASSO_KEY_RIGHT_SHIFT,
-  },
-  {
-    .name = "KEY_RIGHT_CONTROL",
-    .val = PICASSO_KEY_RIGHT_CONTROL,
-  },
-  {
-    .name = "KEY_RIGHT_ALT",
-    .val = PICASSO_KEY_RIGHT_ALT,
-  },
-  {
-    .name = "KEY_RIGHT_SUPER",
-    .val = PICASSO_KEY_RIGHT_SUPER,
-  },
-  {
-    .name = "KEY_MENU",
-    .val = PICASSO_KEY_MENU,
   },
   {
     .name = NULL,
     .val = 0,
   },
 };
-
-int config_internal_resolution(lua_State *state) {
-  if (lua_gettop(state) < 2) {
-    printf("Config: Too few arguments to function \"resolution\".\n");
-    return 0;
-  }
-
-  Config *config = (Config *)lua_topointer(state, lua_upvalueindex(1));
-  config->res_width = (uint32_t)lua_tonumber(state, 1);
-  config->res_height = (uint32_t)lua_tonumber(state, 2);
-  config->grid_size_width = (double)config->res_width / (double)config->ascii_width;
-  config->grid_size_height = (double)config->res_height / (double)config->ascii_height;
-
-  printf("Config: Resolution set to %dx%d, grid size updated to %.1fx%.1f\n", config->res_width, config->res_height, config->grid_size_width, config->grid_size_height);
-
-  return 0;
-}
-
-int config_internal_fullscreen(lua_State *state) {
-  Config *config = (Config *)lua_topointer(state, lua_upvalueindex(1));
-  config->fullscreen = true;
-  printf("Config: Fullscreen\n");
-  return 0;
-}
-
-int config_internal_gl_debug(lua_State *state) {
-  Config *config = (Config *)lua_topointer(state, lua_upvalueindex(1));
-  config->gl_debug = true;
-  printf("Config: OpenGL debugging\n");
-  return 0;
-}
-
-int config_internal_frame_lock(lua_State *state) {
-  if (lua_gettop(state) < 1) {
-    printf("Config: Too few arguments to function \"frame_lock\".\n");
-    return 0;
-  }
-
-  Config *config = (Config *)lua_topointer(state, lua_upvalueindex(1));
-  config->frame_lock = (uint32_t)lua_tonumber(state, 1);
-  printf("Config: Frame limit set to %d fps\n", config->frame_lock);
-
-  return 0;
-}
-
-int config_internal_bind(lua_State *state) {
-  if (lua_gettop(state) < 2) {
-    printf("Config: Too few arguments to function \"bind\".\n");
-    return 0;
-  }
-
-  if (lua_isinteger(state, 1) != 1) {
-    printf("Config: Incorrect argument type, expected integer, \"bind\".\n");
-    return 0;
-  }
-
-  if (lua_isstring(state, 2) != 1) {
-    printf("Config: Incorrect argument type, expected string, \"bind\".\n");
-    return 0;
-  }
-
-  int32_t key = (int32_t)lua_tointeger(state, 1);
-  const char *action = lua_tostring(state, 2);
-  RectifyMap *map = rectify_map_create();
-  rectify_map_set_uint(map, "key", (uint32_t)key);
-  rectify_map_set_string(map, "action", (char *)action);
-
-  for (uint32_t t = 0; key_names[t].name; t++) {
-    if (key == key_names[t].val) {
-      printf("Config: Binding %s to %s\n", key_names[t].name, action);
-      break;
-    }
-  }
-
-  kronos_post("input", MSG_INPUT_BIND, map, NULL);
-
-  return 0;
-}
 
 Config config_internal = {
   .res_width = 1280,
@@ -595,49 +465,162 @@ Config config_internal = {
   .grid_size_height = 8.0,
 };
 
+typedef void (*ConfigHandleCallback)(void *const userdata, const char *section, const char *key, const char *value);
+void config_internal_read_file(const char *filename, ConfigHandleCallback callback, void *const userdata);
+void config_internal_handle(void *const userdata, const char *section, const char *key, const char *value);
+
 Config *const config_init(void) {
-  lua_State *state = luaL_newstate();
-
-  lua_pushlightuserdata(state, &config_internal);
-  lua_pushcclosure(state, &config_internal_resolution, 1);
-  lua_setglobal(state, "resolution");
-
-  lua_pushlightuserdata(state, &config_internal);
-  lua_pushcclosure(state, &config_internal_fullscreen, 1);
-  lua_setglobal(state, "fullscreen");
-
-  lua_pushlightuserdata(state, &config_internal);
-  lua_pushcclosure(state, &config_internal_gl_debug, 1);
-  lua_setglobal(state, "gl_debug");
-
-  lua_pushlightuserdata(state, &config_internal);
-  lua_pushcclosure(state, &config_internal_frame_lock, 1);
-  lua_setglobal(state, "frame_lock");
-
-  lua_pushlightuserdata(state, &config_internal);
-  lua_pushcclosure(state, &config_internal_bind, 1);
-  lua_setglobal(state, "bind");
-
-  for (uint32_t t = 0; key_names[t].name; t++) {
-    lua_pushinteger(state, key_names[t].val);
-    lua_setglobal(state, key_names[t].name);
-  }
-
-  luaL_loadfile(state, "./config.lua");
-  {
-    int result = lua_pcall(state, 0, LUA_MULTRET, 0);
-    if (result != LUA_OK) {
-      const char *message = lua_tostring(state, -1);
-      printf("LUA: %s: %s\n", __func__, message);
-      lua_pop(state, 1);
-    }
-  }
-
-  lua_close(state);
-
+  config_internal_read_file("config.ini", &config_internal_handle, &config_internal);
   return &config_internal;
 }
 
 Config *const config_get(void) {
   return &config_internal;
+}
+
+void config_internal_read_file(const char *filename, ConfigHandleCallback callback, void *const userdata) {
+  FILE *file = fopen(filename, "r");
+  if (!file) {
+    printf("Failed to open config\n");
+    return;
+  }
+
+  uint32_t line = 0;
+  bool has_section = false;
+  char section[1024] = { 0 };
+  while (!feof(file)) {
+    char buffer[1024] = { 0 };
+    if (!fgets(buffer, 1024, file)) {
+      break;
+    }
+
+    line++;
+    if (buffer[0] == ';') {
+      continue;
+    } else if (buffer[0] == '[') {
+      uint32_t start = 1;
+      uint32_t end = 1;
+      for (uint32_t t = 0; t < 1024; t++, end++) {
+        if (buffer[t] == '\0' || buffer[t] == '\n') {
+          printf("Config: parse error, broken section title on line %d\n", line);
+          break;
+        }
+        if (buffer[t] == ']') {
+          end = t;
+          break;
+        }
+      }
+
+      if (start != end) {
+        memset(section, 0, 1024);
+        strncpy(section, &buffer[1], end - start);
+        has_section = true;
+      }
+    } else if (!has_section) {
+      printf("Config: parse error, missing initial section before line %d\n", line);
+      break;
+    } else {
+      int32_t key_start = -1;
+      int32_t key_end = -1;
+      int32_t value_start = -1;
+      int32_t value_end = -1;
+      bool has_key = false;
+      bool has_value = false;
+      for (uint32_t t = 0; t < 1024; t++) {
+        if (buffer[t] > 32 && buffer[t] < 127 && buffer[t] != '=') {
+          if (!has_key && key_start == -1) {
+            key_start = t;
+          } else if (has_key && !has_value && value_start == -1) {
+            value_start = t;
+          }
+        } else if (buffer[t] == '=') {
+          if (has_key) {
+            printf("Config: parse error, already parsed key on line %d\n", line);
+            break;
+          }
+          key_end = t;
+          has_key = true;
+        } else {
+          if (buffer[t] == '\0' || buffer[t] == '\n') {
+            if (!has_key) {
+              if (key_start < 0) {
+                continue;
+              }
+
+              printf("Config: parse error, broken keyval on line %d\n", line);
+              break;
+            }
+
+            has_value = true;
+            value_end = t;
+            break;
+          }
+        }
+      }
+
+      if (has_key && has_value) {
+        char key[1024] = { 0 };
+        char value[1024] = { 0 };
+        memset(key, 0, 1024);
+        strncpy(key, &buffer[key_start], key_end - key_start);
+        memset(value, 0, 1024);
+        strncpy(value, &buffer[value_start], value_end - value_start);
+
+        callback(userdata, section, key, value);
+      }
+    }
+  }
+
+  fclose(file);
+}
+
+void config_internal_handle(void *const userdata, const char *section, const char *key, const char *value) {
+  Config *const config = (Config *const)userdata;
+
+  // TODO: Break down into section handlers etc
+  if (strncmp(section, "window", 1024) == 0) {
+    if (strncmp(key, "width", 1024) == 0) {
+      int val = atoi(value);
+      if (val == 0) {
+        return;
+      }
+      config->res_width = val;
+      config->grid_size_width = (double)config->res_width / (double)config->ascii_width;
+
+      printf("Config: Resolution width set to %d, grid size width updated to %.1f\n", config->res_width, config->grid_size_width);
+    } else if (strncmp(key, "height", 1024) == 0) {
+      int val = atoi(value);
+      if (val == 0) {
+        return;
+      }
+      config->res_height = val;
+      config->grid_size_height = (double)config->res_height / (double)config->ascii_height;
+
+      printf("Config: Resolution height set to %d, grid size height updated to %.1f\n", config->res_height, config->grid_size_height);
+    } else if (strncmp(key, "fullscreen", 1024) == 0) {
+      int val = atoi(value);
+      config->fullscreen = (val > 0 || strncmp(value, "true", 1024) == 0);
+      printf("Config: Set fullscreen to %s\n", (config->fullscreen ? "on" : "off"));
+    }
+  } else if (strncmp(section, "renderer", 1024) == 0) {
+    if (strncmp(key, "gl_debug", 1024) == 0) {
+      int val = atoi(value);
+      config->gl_debug = (val > 0 || strncmp(value, "true", 1024) == 0);
+      printf("Config: Set OpenGL debugging to %s\n", (config->gl_debug ? "on" : "off"));
+    } else if (strncmp(key, "frame_lock", 1024) == 0) {
+      config->frame_lock = atoi(value);
+      printf("Config: Frame limit set to %d fps\n", config->frame_lock);
+    }
+  } else if (strncmp(section, "binds", 1024) == 0) {
+    for (uint32_t t = 0; key_names[t].name; t++) {
+      if (strncmp(value, key_names[t].name, 1024) == 0) {
+        printf("Config: Binding %s to %s\n", key_names[t].name, key);
+        RectifyMap *map = rectify_map_create();
+        rectify_map_set_uint(map, "key", key_names[t].val);
+        rectify_map_set_string(map, "action", (char *)key);
+        kronos_post("input", MSG_INPUT_BIND, map, "config");
+        break;
+      }
+    }
+  }
 }
