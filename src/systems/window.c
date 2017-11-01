@@ -123,9 +123,15 @@ RectifyMap *system_window_message(SystemWindow *system, uint32_t id, RectifyMap 
   assert(system);
 
   switch (id) {
-    case MSG_GAME_KILL:
+    case MSG_GAME_KILL: {
       system->should_kill = true;
       break;
+    }
+
+    case MSG_CONFIG_UPDATE: {
+      system_window_internal_setup(system);
+      break;
+    }
   }
 
   return NULL;
