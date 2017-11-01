@@ -510,7 +510,7 @@ SceneGame *scene_game_start(void) {
         }
       }
 
-      printf("%s => { %d|%c, (%d %d %d) (%d %d %d)}\n", def.id, def.glyph.rune, def.glyph.rune, def.glyph.fore.r, def.glyph.fore.g, def.glyph.fore.b, def.glyph.back.r, def.glyph.back.g, def.glyph.back.b);
+      printf("%s => { %d|%c, (%d %d %d) (%d %d %d) }\n", def.id, def.glyph.rune, def.glyph.rune, def.glyph.fore.r, def.glyph.fore.g, def.glyph.fore.b, def.glyph.back.r, def.glyph.back.g, def.glyph.back.b);
 
       scene->tiledefs = rectify_array_push(scene->tiledefs, &def);
     }

@@ -1,6 +1,8 @@
 TODO
 ===
 ## Game - Plans
+* Complete graphics, sound, settings
+* Rebuild init of graphics to handle dynamic changes
 * Titlescreen
   - Prototype in rexpaint
 * Options
@@ -11,28 +13,16 @@ TODO
   - Networking needs to be in early, preferably at this stage
 
 ## Game - Tech
-* Kill Tome, atleast this incarnation of it?
-* Ability to choose monitor and sound device
+* Settings, graphics and sound etc
+  - Ability to choose monitor and sound device
+  - Reload graphics on change
+  - Resizable window
 * Logging
   - Log to file aswell as log to console
   - Separate files for different systems
 * Sound
   - Ability to load and play sounds, won't need to define
   - Hook into tome
-* Resolutions
-  - Load higher res font when possible?
-* World edit
-  - Load/save world
-    - Needs more ui widgets, at minimum some kind of lua front for dialogs etc? modals?
-    - Text input widget
-    - File listing widget
-      - Needs list widget
-* Lua
-  * Bridge
-  * Tiles, properties, tags, flags, special actions
-  * UI
-    - Abstract window management
-    - Widgets
 * World file/data format
   - Header with all used ids
   - Map data should be 0-based references to mentioned ids
