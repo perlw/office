@@ -14,7 +14,6 @@
 #define USE_ASCII
 #define USE_CONFIG
 #define USE_MESSAGES
-#define USE_SCREEN
 #include "main.h"
 
 typedef struct {
@@ -41,6 +40,7 @@ typedef struct {
 SceneDrips *scene_drips_start(void);
 void scene_drips_stop(void **scene);
 void scene_drips_update(SceneDrips *scene, double delta);
+RectifyMap *scene_drips_message(SceneDrips *scene, uint32_t id, RectifyMap *const map);
 
 KronosSystem scene_drips = {
   .name = "scene_drips",
@@ -48,10 +48,8 @@ KronosSystem scene_drips = {
   .start = &scene_drips_start,
   .stop = &scene_drips_stop,
   .update = &scene_drips_update,
-  .message = NULL,
+  .message = &scene_drips_message,
 };
-
-void scene_drips_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
 
 SceneDrips *scene_drips_start(void) {
   SceneDrips *scene = calloc(1, sizeof(SceneDrips));
@@ -71,16 +69,12 @@ SceneDrips *scene_drips_start(void) {
 
   scene->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
 
-  screen_hook_render(&scene_drips_internal_render_hook, scene, 0);
-
   return scene;
 }
 
 void scene_drips_stop(void **scene) {
   SceneDrips *ptr = *scene;
   assert(ptr && scene);
-
-  screen_unhook_render(&scene_drips_internal_render_hook, ptr);
 
   for (uint32_t t = 0; t < ptr->num_drips; t++) {
     surface_destroy(&ptr->drips[t].surface);
@@ -199,4 +193,23 @@ void scene_drips_internal_render_hook(AsciiBuffer *const screen, void *const use
       surface_draw(scene->drips[t].surface, screen);
     }
   }
+}
+
+RectifyMap *scene_drips_message(SceneDrips *scene, uint32_t id, RectifyMap *const map) {
+  assert(scene);
+
+  switch (id) {
+    case MSG_SYSTEM_RENDER: {
+      AsciiBuffer *screen = *(AsciiBuffer **)rectify_map_get(map, "screen");
+      surface_draw(scene->surface, screen);
+      for (uint32_t t = 0; t < scene->num_drips; t++) {
+        if (scene->drips[t].alive) {
+          surface_draw(scene->drips[t].surface, screen);
+        }
+      }
+      break;
+    }
+  }
+
+  return NULL;
 }

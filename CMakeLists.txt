@@ -25,7 +25,6 @@ set (
   "src/main.c"
   "src/assets.c"
   "src/config.c"
-  "src/screen.c"
 )
 add_subdirectory (src/ascii)
 add_subdirectory (src/systems)
@@ -45,6 +44,9 @@ endif (WIN32)
 if (KRONOS_DEBUG)
   target_compile_definitions (office PRIVATE KRONOS_DEBUG)
 endif (KRONOS_DEBUG)
+if (KRONOS_DEBUG_IMMEDIATE)
+  target_compile_definitions (office PRIVATE KRONOS_DEBUG_IMMEDIATE)
+endif (KRONOS_DEBUG_IMMEDIATE)
 if (OCCULUS_LOG_MEM)
   target_compile_definitions (office PRIVATE OCCULUS_LOG_MEM)
 endif (OCCULUS_LOG_MEM)

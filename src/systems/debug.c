@@ -9,7 +9,6 @@
 #define USE_CONFIG
 #define USE_MESSAGES
 #define USE_SCENES
-#define USE_SCREEN
 #include "main.h"
 
 typedef struct {
@@ -38,7 +37,6 @@ KronosSystem system_debug = {
 };
 
 void system_debug_internal_scene_changed(const char *group_id, const char *id, void *const subscriberdata, void *const userdata);
-void system_debug_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
 
 DebugOverlay *system_debug_start(void) {
   DebugOverlay *system = calloc(1, sizeof(DebugOverlay));
@@ -59,8 +57,6 @@ DebugOverlay *system_debug_start(void) {
   snprintf(system->scene_buffer, 32, "SCENE: na");
   surface_text(system->surface, config->ascii_width - (uint32_t)strnlen(system->scene_buffer, 32), config->ascii_height - 1, 32, system->scene_buffer, (GlyphColor){ 255, 255, 255 }, (GlyphColor){ 128, 0, 0 });
 
-  screen_hook_render(&system_debug_internal_render_hook, system, 9999);
-
   return system;
 }
 
@@ -68,7 +64,6 @@ void system_debug_stop(void **system) {
   DebugOverlay *ptr = *system;
   assert(system && ptr);
 
-  screen_unhook_render(&system_debug_internal_render_hook, ptr);
   surface_destroy(&ptr->surface);
 
   free(ptr);
@@ -120,15 +115,13 @@ RectifyMap *system_debug_message(DebugOverlay *system, uint32_t id, RectifyMap *
       snprintf(system->scene_buffer, 32, "SCENE: %s", (char *)rectify_map_get(map, "scene"));
       break;
     }
+
+    case MSG_SYSTEM_RENDER_TOP: {
+      surface_draw(system->surface, *(AsciiBuffer **)rectify_map_get(map, "screen"));
+      system->frames++;
+      break;
+    }
   }
 
   return NULL;
-}
-
-void system_debug_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
-  assert(userdata);
-  DebugOverlay *system = userdata;
-
-  surface_draw(system->surface, screen);
-  system->frames++;
 }

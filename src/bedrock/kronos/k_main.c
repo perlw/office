@@ -212,7 +212,7 @@ void kronos_emit(uint32_t id, RectifyMap *const map) {
 }
 
 RectifyMap *kronos_post_immediate(const char *system, uint32_t id, RectifyMap *const map) {
-#ifdef KRONOS_DEBUG
+#ifdef KRONOS_DEBUG_IMMEDIATE
   printf("Kronos: Immediate posting id#%d to \"%s\" ->\n", id, system);
   rectify_map_print(map);
 #endif
@@ -230,6 +230,23 @@ RectifyMap *kronos_post_immediate(const char *system, uint32_t id, RectifyMap *c
   }
 
   return NULL;
+}
+
+void kronos_emit_immediate(uint32_t id, RectifyMap *const map) {
+#ifdef KRONOS_DEBUG_IMMEDIATE
+  printf("Kronos: Immediate emitting id#%d ->\n", id);
+  rectify_map_print(map);
+#endif
+
+  for (uint32_t u = 0; u < rectify_array_size(kronos->systems); u++) {
+    KronosState *state = &kronos->systems[u];
+
+    if (!(state->running && state->system->message)) {
+      continue;
+    }
+
+    state->system->message(state->handle, id, map);
+  }
 }
 
 void kronos_update(double delta) {

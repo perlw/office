@@ -7,9 +7,9 @@
 #define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
+#define USE_ASCII
 #define USE_CONFIG
 #define USE_MESSAGES
-#define USE_SCREEN
 #include "main.h"
 
 typedef struct {
@@ -17,6 +17,8 @@ typedef struct {
   PicassoWindow *window;
   double frame_timing;
   double next_frame;
+
+  AsciiBuffer *ascii;
 } SystemWindow;
 
 SystemWindow *system_window_start(void);
@@ -39,6 +41,7 @@ void system_window_internal_keyboard_callback(const PicassoWindowKeyboardEvent *
 void system_window_internal_mousemove_callback(const PicassoWindowMouseEvent *event);
 void system_window_internal_click_callback(const PicassoWindowMouseEvent *event);
 void system_window_internal_mousescroll_callback(const PicassoWindowMouseScrollEvent *event);
+void system_window_internal_setup(SystemWindow *system);
 
 SystemWindow *system_window_start(void) {
   Config *const config = config_get();
@@ -73,7 +76,8 @@ SystemWindow *system_window_start(void) {
   system->frame_timing = (config->frame_lock > 0 ? 1.0 / (double)config->frame_lock : 0);
   system->next_frame = system->frame_timing;
 
-  screen_init(system->window);
+  system->ascii = NULL;
+  system_window_internal_setup(system);
 
   return system;
 }
@@ -82,8 +86,7 @@ void system_window_stop(void **system) {
   SystemWindow *ptr = *system;
   assert(ptr && system);
 
-  screen_kill();
-
+  ascii_buffer_destroy(&ptr->ascii);
   picasso_window_destroy(&ptr->window);
   picasso_window_kill();
 
@@ -102,7 +105,14 @@ void system_window_update(SystemWindow *system, double delta) {
   if (system->next_frame >= system->frame_timing) {
     system->next_frame = 0.0;
     picasso_window_clear(system->window);
-    screen_render();
+    {
+      RectifyMap *map = rectify_map_create();
+      rectify_map_set(map, "screen", RECTIFY_MAP_TYPE_PTR, sizeof(AsciiBuffer *), &system->ascii);
+      kronos_emit_immediate(MSG_SYSTEM_RENDER, map);
+      kronos_emit_immediate(MSG_SYSTEM_RENDER_TOP, map);
+      rectify_map_destroy(&map);
+    }
+    ascii_buffer_draw(system->ascii);
     picasso_window_swap(system->window);
   }
 
@@ -204,4 +214,15 @@ void system_window_internal_mousescroll_callback(const PicassoWindowMouseScrollE
   rectify_map_set(map, "scroll_x", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t *const) & scroll_x);
   rectify_map_set(map, "scroll_y", RECTIFY_MAP_TYPE_INT, sizeof(int32_t), (int32_t *const) & scroll_y);
   kronos_emit(MSG_INPUT_SCROLL, map);
+}
+
+void system_window_internal_setup(SystemWindow *system) {
+  assert(system);
+
+  Config *const config = config_get();
+
+  if (system->ascii) {
+    ascii_buffer_destroy(&system->ascii);
+  }
+  system->ascii = ascii_buffer_create(system->window, config->res_width, config->res_height, config->ascii_width, config->ascii_height);
 }

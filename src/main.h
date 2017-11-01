@@ -156,10 +156,14 @@ Config *const config_get(void);
 #include <stdio.h>
 
 #define FOREACH_MESSAGE(MSG)         \
+  MSG(MSG_CONFIG_UPDATE)             \
+                                     \
   MSG(MSG_SYSTEM_START)              \
   MSG(MSG_SYSTEM_STOP)               \
   MSG(MSG_SYSTEM_SPUN_UP)            \
   MSG(MSG_SYSTEM_SHUT_DOWN)          \
+  MSG(MSG_SYSTEM_RENDER)             \
+  MSG(MSG_SYSTEM_RENDER_TOP)         \
                                      \
   MSG(MSG_GAME_INIT)                 \
   MSG(MSG_GAME_KILL)                 \
@@ -230,24 +234,6 @@ extern KronosSystem scenes;
 #endif // SCENES_LOADED
 #endif // USE_SCENES
 
-#ifdef USE_SCREEN
-#ifndef SCREEN_LOADED
-#define SCREEN_LOADED
-#define USE_PICASSO
-#include "bedrock/bedrock.h"
-
-typedef void (*ScreenRender)(AsciiBuffer *const screen, void *const userdata);
-
-void screen_init(PicassoWindow *window);
-void screen_kill(void);
-
-void screen_hook_render(ScreenRender render_func, void *const userdata, uint32_t layer);
-void screen_unhook_render(ScreenRender render_func, void *const userdata);
-
-void screen_render(void);
-#endif // SCREEN_LOADED
-#endif // USE_SCREEN
-
 #ifdef USE_SYSTEMS
 #ifndef SYSTEMS_LOADED
 #define SYSTEMS_LOADED
@@ -256,6 +242,7 @@ void screen_render(void);
 #include "bedrock/bedrock.h"
 
 extern KronosSystem system_debug;
+extern KronosSystem system_render;
 extern KronosSystem system_input;
 extern KronosSystem system_lua_bridge;
 extern KronosSystem system_sound;

@@ -10,7 +10,6 @@
 #define USE_ASCII
 #define USE_CONFIG
 #define USE_MESSAGES
-#define USE_SCREEN
 #include "main.h"
 
 typedef struct {
@@ -70,8 +69,6 @@ SceneSoundTest *scene_sound_test_start(void) {
   kronos_post("sound", MSG_SOUND_LIST, NULL, "scene_sound-test");
   surface_rect(scene->spectrum, 0, 31, 10, rectify_array_size(scene->sounds) + 2, rect_tiles, true, (GlyphColor){ 200, 200, 200 }, (GlyphColor){ 0, 0, 0 });
 
-  screen_hook_render(&scene_sound_test_internal_render_hook, scene, 0);
-
   return scene;
 }
 
@@ -79,7 +76,6 @@ void scene_sound_test_stop(void **scene) {
   SceneSoundTest *ptr = *scene;
   assert(ptr && scene);
 
-  screen_unhook_render(&scene_sound_test_internal_render_hook, ptr);
   surface_destroy(&ptr->spectrum);
 
   for (uint32_t t = 0; t < rectify_array_size(ptr->sounds); t++) {
@@ -266,12 +262,12 @@ RectifyMap *scene_sound_test_message(SceneSoundTest *scene, uint32_t id, Rectify
 
       break;
     }
+
+    case MSG_SYSTEM_RENDER: {
+      surface_draw(scene->spectrum, *(AsciiBuffer **)rectify_map_get(map, "screen"));
+      break;
+    }
   }
 
   return NULL;
-}
-
-void scene_sound_test_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
-  SceneSoundTest *scene = userdata;
-  surface_draw(scene->spectrum, screen);
 }

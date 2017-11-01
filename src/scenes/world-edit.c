@@ -8,7 +8,6 @@
 #define USE_CONFIG
 #define USE_MESSAGES
 #define USE_SCENES
-#define USE_SCREEN
 #include "main.h"
 
 typedef struct {
@@ -37,8 +36,6 @@ KronosSystem scene_world_edit = {
   .update = &scene_world_edit_update,
   .message = &scene_world_edit_message,
 };
-
-void scene_world_edit_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
 
 SceneWorldEdit *scene_world_edit_start(void) {
   Config *const config = config_get();
@@ -70,16 +67,12 @@ SceneWorldEdit *scene_world_edit_start(void) {
     scene->chosen_color = 0xffffff;
   }
 
-  screen_hook_render(&scene_world_edit_internal_render_hook, scene, 0);
-
   return scene;
 }
 
 void scene_world_edit_stop(void **scene) {
   SceneWorldEdit *ptr = *scene;
   assert(ptr && scene);
-
-  screen_unhook_render(&scene_world_edit_internal_render_hook, ptr);
 
   surface_destroy(&ptr->overlay);
   surface_destroy(&ptr->world);
@@ -131,10 +124,11 @@ RectifyMap *scene_world_edit_message(SceneWorldEdit *scene, uint32_t id, Rectify
   assert(scene);
 
   switch (id) {
-    case MSG_INPUT_MOUSEMOVE:
+    case MSG_INPUT_MOUSEMOVE: {
       scene->m_x = rectify_map_get_uint(map, "x");
       scene->m_y = rectify_map_get_uint(map, "y");
       break;
+    }
 
     case MSG_INPUT_CLICK: {
       uint32_t x = rectify_map_get_uint(map, "x");
@@ -151,20 +145,23 @@ RectifyMap *scene_world_edit_message(SceneWorldEdit *scene, uint32_t id, Rectify
       break;
     }
 
-    case MSG_WORLD_EDIT_RUNE_SELECTED:
+    case MSG_WORLD_EDIT_RUNE_SELECTED: {
       scene->chosen_rune = rectify_map_get_byte(map, "rune");
       break;
+    }
 
-    case MSG_WORLD_EDIT_COLOR_SELECTED:
+    case MSG_WORLD_EDIT_COLOR_SELECTED: {
       scene->chosen_color = rectify_map_get_uint(map, "color");
       break;
+    }
+
+    case MSG_SYSTEM_RENDER: {
+      AsciiBuffer *screen = *(AsciiBuffer **)rectify_map_get(map, "screen");
+      surface_draw(scene->world, screen);
+      surface_draw(scene->overlay, screen);
+      break;
+    }
   }
 
   return NULL;
-}
-
-void scene_world_edit_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
-  SceneWorldEdit *scene = userdata;
-  surface_draw(scene->world, screen);
-  surface_draw(scene->overlay, screen);
 }

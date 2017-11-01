@@ -7,7 +7,6 @@
 #define USE_ASCII
 #define USE_CONFIG
 #define USE_MESSAGES
-#define USE_SCREEN
 #include "main.h"
 
 typedef struct {
@@ -18,6 +17,7 @@ typedef struct {
 SceneTest *scene_test_start(void);
 void scene_test_stop(void **scene);
 void scene_test_update(SceneTest *scene, double delta);
+RectifyMap *scene_test_message(SceneTest *scene, uint32_t id, RectifyMap *const map);
 
 KronosSystem scene_test = {
   .name = "scene_test",
@@ -25,10 +25,8 @@ KronosSystem scene_test = {
   .start = &scene_test_start,
   .stop = &scene_test_stop,
   .update = &scene_test_update,
-  .message = NULL,
+  .message = &scene_test_message,
 };
-
-void scene_test_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
 
 SceneTest *scene_test_start(void) {
   Config *const config = config_get();
@@ -39,15 +37,12 @@ SceneTest *scene_test_start(void) {
     .surface = surface_create(0, 0, config->ascii_width, config->ascii_height),
   };
 
-  screen_hook_render(&scene_test_internal_render_hook, scene, 0);
-
   return scene;
 }
 
 void scene_test_stop(void **scene) {
   SceneTest *ptr = *scene;
 
-  screen_unhook_render(&scene_test_internal_render_hook, ptr);
   surface_destroy(&ptr->surface);
 
   free(ptr);
@@ -96,7 +91,15 @@ void scene_test_update(SceneTest *scene, double delta) {
   }
 }
 
-void scene_test_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
-  SceneTest *scene = userdata;
-  surface_draw(scene->surface, screen);
+RectifyMap *scene_test_message(SceneTest *scene, uint32_t id, RectifyMap *const map) {
+  assert(scene);
+
+  switch (id) {
+    case MSG_SYSTEM_RENDER: {
+      surface_draw(scene->surface, *(AsciiBuffer **)rectify_map_get(map, "screen"));
+      break;
+    }
+  }
+
+  return NULL;
 }

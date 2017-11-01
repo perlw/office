@@ -8,7 +8,6 @@
 #define USE_ASCII
 #define USE_CONFIG
 #define USE_MESSAGES
-#define USE_SCREEN
 #include "main.h"
 
 typedef struct {
@@ -41,13 +40,10 @@ KronosSystem system_ui = {
 };
 
 void system_ui_internal_window_draw_border(UIWindow *const window);
-void system_ui_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
 
 SystemUI *system_ui_start(void) {
   SystemUI *system = calloc(1, sizeof(SystemUI));
   system->windows = rectify_array_alloc(10, sizeof(UIWindow));
-
-  screen_hook_render(&system_ui_internal_render_hook, system, 1);
 
   return system;
 }
@@ -55,8 +51,6 @@ SystemUI *system_ui_start(void) {
 void system_ui_stop(void **system) {
   SystemUI *ptr = *system;
   assert(ptr && system);
-
-  screen_unhook_render(&system_ui_internal_render_hook, ptr);
 
   for (uint32_t t = 0; t < rectify_array_size(ptr->windows); t++) {
     free(ptr->windows[t].title);
@@ -254,6 +248,14 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
 
       break;
     }
+
+    case MSG_SYSTEM_RENDER: {
+      AsciiBuffer *screen = *(AsciiBuffer **)rectify_map_get(map, "screen");
+      for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
+        surface_draw(system->windows[t].surface, screen);
+      }
+      break;
+    }
   }
 
   return NULL;
@@ -285,12 +287,4 @@ void system_ui_internal_window_draw_border(UIWindow *const window) {
     .back = (GlyphColor){ 0, 0, 0 },
   };
   window->surface->buffer[window->width - 4].rune = 181;
-}
-
-void system_ui_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
-  SystemUI *system = userdata;
-
-  for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
-    surface_draw(system->windows[t].surface, screen);
-  }
 }

@@ -13,7 +13,6 @@
 #define USE_ASCII
 #define USE_CONFIG
 #define USE_MESSAGES
-#define USE_SCREEN
 #include "main.h"
 
 typedef struct {
@@ -461,7 +460,6 @@ const BaseTilemap base_tilemap[MAP_SIZE] = {
 };
 
 void scene_game_internal_build_map(SceneGame *scene);
-void scene_game_internal_render_hook(AsciiBuffer *const screen, void *const userdata);
 
 SceneGame *scene_game_start(void) {
   SceneGame *scene = calloc(1, sizeof(SceneGame));
@@ -476,8 +474,6 @@ SceneGame *scene_game_start(void) {
   scene_game_internal_build_map(scene);
 
   scene->world = surface_create(0, 0, config->ascii_width, config->ascii_height);
-
-  screen_hook_render(&scene_game_internal_render_hook, scene, 0);
 
   {
     size_t num_bytes = 0;
@@ -533,7 +529,6 @@ void scene_game_stop(void **scene) {
   }
   rectify_array_free((void **)&ptr->tiledefs);
 
-  screen_unhook_render(&scene_game_internal_render_hook, ptr);
   surface_destroy(&ptr->world);
 
   free(ptr);
@@ -608,6 +603,13 @@ RectifyMap *scene_game_message(SceneGame *scene, uint32_t id, RectifyMap *const 
         scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
         scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
       }
+
+      break;
+    }
+
+    case MSG_SYSTEM_RENDER: {
+      surface_draw(scene->world, *(AsciiBuffer **)rectify_map_get(map, "screen"));
+      break;
     }
   }
 
@@ -637,9 +639,4 @@ void scene_game_internal_build_map(SceneGame *scene) {
       }
     }
   }
-}
-
-void scene_game_internal_render_hook(AsciiBuffer *const screen, void *const userdata) {
-  SceneGame *scene = userdata;
-  surface_draw(scene->world, screen);
 }
