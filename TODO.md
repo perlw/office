@@ -31,6 +31,7 @@ TODO
 * Remote accesss/debugging of internals (telnet? http?) *Depends on synapse*
   - Send/watch messages
   - See internal states
+* Rendering and message queues, prioritizations, etc
 
 ## Bedrock
 
