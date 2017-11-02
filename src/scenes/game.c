@@ -29,6 +29,9 @@ typedef struct {
   uint32_t p_x;
   uint32_t p_y;
 
+  uint32_t map_x;
+  uint32_t map_y;
+
   TileDef *tiledefs;
   Tile *tilemap;
 
@@ -49,10 +52,6 @@ KronosSystem scene_game = {
   .message = &scene_game_message,
 };
 
-#define MAP_X 20
-#define MAP_Y 20
-#define MAP_SIZE (MAP_X * MAP_Y)
-
 void scene_game_internal_build_map(SceneGame *scene);
 
 SceneGame *scene_game_start(void) {
@@ -63,8 +62,11 @@ SceneGame *scene_game_start(void) {
   scene->p_x = 2;
   scene->p_y = 2;
 
+  scene->map_x = 0;
+  scene->map_y = 0;
+
   scene->tiledefs = rectify_array_alloc(10, sizeof(TileDef));
-  scene->tilemap = calloc(1, sizeof(Tile) * MAP_SIZE);
+  scene->tilemap = NULL;
   scene_game_internal_build_map(scene);
 
   scene->world = surface_create(0, 0, config->ascii_width, config->ascii_height);
@@ -117,7 +119,9 @@ void scene_game_stop(void **scene) {
   SceneGame *ptr = *scene;
   assert(ptr && scene);
 
-  free(ptr->tilemap);
+  if (ptr->tilemap) {
+    free(ptr->tilemap);
+  }
   for (uint32_t t = 0; t < rectify_array_size(ptr->tiledefs); t++) {
     free(ptr->tiledefs[t].id);
   }
@@ -141,19 +145,21 @@ void scene_game_update(SceneGame *scene, double delta) {
   // +Draw world
   uint32_t offset_x = 20;
   uint32_t offset_y = 20;
-  for (uint32_t y = 0; y < MAP_Y; y++) {
-    uint32_t i = (y * MAP_Y);
-    for (uint32_t x = 0; x < MAP_X; x++) {
-      Tile *tile = &scene->tilemap[i + x];
+  if (scene->tilemap) {
+    for (uint32_t y = 0; y < scene->map_y; y++) {
+      uint32_t i = (y * scene->map_x);
+      for (uint32_t x = 0; x < scene->map_x; x++) {
+        Tile *tile = &scene->tilemap[i + x];
 
-      if (tile->def) {
-        surface_glyph(scene->world, x + offset_x, y + offset_y, tile->def->glyph);
-      } else {
-        surface_glyph(scene->world, x + offset_x, y + offset_y, (Glyph){
-                                                                  .rune = '?',
-                                                                  .fore = glyphcolor_hex(0xffffff),
-                                                                  .back = glyphcolor_hex(0xff0000),
-                                                                });
+        if (tile->def) {
+          surface_glyph(scene->world, x + offset_x, y + offset_y, tile->def->glyph);
+        } else {
+          surface_glyph(scene->world, x + offset_x, y + offset_y, (Glyph){
+                                                                    .rune = '?',
+                                                                    .fore = glyphcolor_hex(0xffffff),
+                                                                    .back = glyphcolor_hex(0xff0000),
+                                                                  });
+        }
       }
     }
   }
@@ -182,20 +188,20 @@ RectifyMap *scene_game_message(SceneGame *scene, uint32_t id, RectifyMap *const 
       } else if (strncmp(action, "plr_move_up", 128) == 0) {
         scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
       } else if (strncmp(action, "plr_move_uprt", 128) == 0) {
-        scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
+        scene->p_x = (scene->p_x < scene->map_x - 1 ? scene->p_x + 1 : scene->p_x);
         scene->p_y = (scene->p_y > 0 ? scene->p_y - 1 : scene->p_y);
       } else if (strncmp(action, "plr_move_lt", 128) == 0) {
         scene->p_x = (scene->p_x > 0 ? scene->p_x - 1 : scene->p_x);
       } else if (strncmp(action, "plr_move_rt", 128) == 0) {
-        scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
+        scene->p_x = (scene->p_x < scene->map_x - 1 ? scene->p_x + 1 : scene->p_x);
       } else if (strncmp(action, "plr_move_dnlt", 128) == 0) {
         scene->p_x = (scene->p_x > 0 ? scene->p_x - 1 : scene->p_x);
-        scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
+        scene->p_y = (scene->p_y < scene->map_y - 1 ? scene->p_y + 1 : scene->p_y);
       } else if (strncmp(action, "plr_move_dn", 128) == 0) {
-        scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
+        scene->p_y = (scene->p_y < scene->map_y - 1 ? scene->p_y + 1 : scene->p_y);
       } else if (strncmp(action, "plr_move_dnrt", 128) == 0) {
-        scene->p_x = (scene->p_x < MAP_X - 1 ? scene->p_x + 1 : scene->p_x);
-        scene->p_y = (scene->p_y < MAP_Y - 1 ? scene->p_y + 1 : scene->p_y);
+        scene->p_x = (scene->p_x < scene->map_x - 1 ? scene->p_x + 1 : scene->p_x);
+        scene->p_y = (scene->p_y < scene->map_y - 1 ? scene->p_y + 1 : scene->p_y);
       }
 
       break;
@@ -207,10 +213,12 @@ RectifyMap *scene_game_message(SceneGame *scene, uint32_t id, RectifyMap *const 
     }
   }
 
-  Tile *current = &scene->tilemap[(scene->p_y * MAP_X) + scene->p_x];
-  if (!current->def || current->def->collides) {
-    scene->p_x = o_x;
-    scene->p_y = o_y;
+  if (scene->tilemap) {
+    Tile *current = &scene->tilemap[(scene->p_y * scene->map_x) + scene->p_x];
+    if (!current->def || current->def->collides) {
+      scene->p_x = o_x;
+      scene->p_y = o_y;
+    }
   }
 
   return NULL;
@@ -220,9 +228,12 @@ void scene_game_internal_build_map(SceneGame *scene) {
   assert(scene);
 
   TileDef *tiledefs = scene->tiledefs;
+  if (scene->tilemap) {
+    free(scene->tilemap);
+    scene->tilemap = NULL;
+  }
 
   RectifyMap *tiles = rectify_map_create();
-  uint32_t tilemap[MAP_SIZE] = {};
   {
     size_t num_bytes = 0;
     uint8_t *data = NULL;
@@ -230,6 +241,17 @@ void scene_game_internal_build_map(SceneGame *scene) {
 
     cJSON *root = cJSON_Parse((const char *)data);
     cJSON *ids = cJSON_GetObjectItemCaseSensitive(root, "ids");
+    {
+      cJSON *size = cJSON_GetObjectItemCaseSensitive(root, "size");
+      cJSON *width = cJSON_GetObjectItemCaseSensitive(size, "width");
+      cJSON *height = cJSON_GetObjectItemCaseSensitive(size, "height");
+      uint32_t total = width->valueint * height->valueint;
+      if (total > 0) {
+        scene->tilemap = calloc(total, sizeof(Tile));
+        scene->map_x = width->valueint;
+        scene->map_y = height->valueint;
+      }
+    }
     cJSON *map = cJSON_GetObjectItemCaseSensitive(root, "map");
     for (int32_t t = 0; t < cJSON_GetArraySize(ids); t++) {
       cJSON *item = cJSON_GetArrayItem(ids, t);
@@ -246,7 +268,7 @@ void scene_game_internal_build_map(SceneGame *scene) {
 
     uint32_t num_tiledefs = rectify_array_size(tiledefs);
     Tile *tilemap = scene->tilemap;
-    for (uint32_t t = 0; t < MAP_SIZE; t++) {
+    for (uint32_t t = 0; t < cJSON_GetArraySize(map); t++) {
       cJSON *item = cJSON_GetArrayItem(map, t);
 
       if (num_tiledefs) {
