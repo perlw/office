@@ -268,7 +268,7 @@ void scene_game_internal_build_map(SceneGame *scene) {
 
     uint32_t num_tiledefs = rectify_array_size(tiledefs);
     Tile *tilemap = scene->tilemap;
-    for (uint32_t t = 0; t < cJSON_GetArraySize(map); t++) {
+    for (uint32_t t = 0; t < (uint32_t)cJSON_GetArraySize(map); t++) {
       cJSON *item = cJSON_GetArrayItem(map, t);
 
       if (num_tiledefs) {
