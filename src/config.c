@@ -462,8 +462,8 @@ Config config_internal = {
   .frame_lock = 0,
   .ascii_width = 160,
   .ascii_height = 90,
-  .grid_size_width = 8.0,
-  .grid_size_height = 8.0,
+  .grid_size_width = 8,
+  .grid_size_height = 8,
 };
 
 void config_internal_handle(void *const userdata, const char *section, const char *key, const char *value);
@@ -488,18 +488,18 @@ void config_internal_handle(void *const userdata, const char *section, const cha
         return;
       }
       config->res_width = val;
-      config->grid_size_width = (double)config->res_width / (double)config->ascii_width;
+      config->grid_size_width = config->res_width / config->ascii_width;
 
-      printf("Config: Resolution width set to %d, grid size width updated to %.1f\n", config->res_width, config->grid_size_width);
+      printf("Config: Resolution width set to %d, grid size width updated to %d\n", config->res_width, config->grid_size_width);
     } else if (strncmp(key, "height", 1024) == 0) {
       int val = atoi(value);
       if (val == 0) {
         return;
       }
       config->res_height = val;
-      config->grid_size_height = (double)config->res_height / (double)config->ascii_height;
+      config->grid_size_height = config->res_height / config->ascii_height;
 
-      printf("Config: Resolution height set to %d, grid size height updated to %.1f\n", config->res_height, config->grid_size_height);
+      printf("Config: Resolution height set to %d, grid size height updated to %d\n", config->res_height, config->grid_size_height);
     } else if (strncmp(key, "fullscreen", 1024) == 0) {
       int val = atoi(value);
       config->fullscreen = (val > 0 || strncmp(value, "true", 1024) == 0);
@@ -513,6 +513,24 @@ void config_internal_handle(void *const userdata, const char *section, const cha
     } else if (strncmp(key, "frame_lock", 1024) == 0) {
       config->frame_lock = atoi(value);
       printf("Config: Frame limit set to %d fps\n", config->frame_lock);
+    } else if (strncmp(key, "ascii_width", 1024) == 0) {
+      int val = atoi(value);
+      if (val == 0) {
+        return;
+      }
+      config->grid_size_width = val;
+      config->ascii_width = config->res_width / config->grid_size_width;
+
+      printf("Config: Ascii width set to %d, fit %d characters\n", val, config->ascii_width);
+    } else if (strncmp(key, "ascii_height", 1024) == 0) {
+      int val = atoi(value);
+      if (val == 0) {
+        return;
+      }
+      config->grid_size_height = val;
+      config->ascii_height = config->res_height / config->grid_size_height;
+
+      printf("Config: Ascii height set to %d, fit %d characters\n", val, config->ascii_height);
     }
   } else if (strncmp(section, "binds", 1024) == 0) {
     for (uint32_t t = 0; key_names[t].name; t++) {

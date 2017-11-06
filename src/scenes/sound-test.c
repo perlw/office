@@ -91,7 +91,7 @@ void scene_sound_test_stop(void **scene) {
 void scene_sound_test_update(SceneSoundTest *scene, double delta) {
   assert(scene);
 
-  for (uint32_t t = 0; t < 158; t++) {
+  for (uint32_t t = 0; t < scene->spectrum->width - 2; t++) {
     uint32_t height_l = (uint32_t)(scene->spectrum_left[t] * 14.0f);
     uint32_t height_r = (uint32_t)(scene->spectrum_right[t] * 14.0f);
 
@@ -192,7 +192,7 @@ RectifyMap *scene_sound_test_message(SceneSoundTest *scene, uint32_t id, Rectify
 
           case PICASSO_KEY_S: {
             kronos_post("sound", MSG_SOUND_STOP_SONG, NULL, NULL);
-            for (uint32_t t = 0; t < 158; t++) {
+            for (uint32_t t = 0; t < scene->spectrum->width - 2; t++) {
               scene->spectrum_left[t] = 0.0f;
               scene->spectrum_right[t] = 0.0f;
             }
@@ -224,7 +224,7 @@ RectifyMap *scene_sound_test_message(SceneSoundTest *scene, uint32_t id, Rectify
       scene->song = song;
 
       uint32_t step = 1;
-      for (uint32_t t = 0, u = 0; u < 158; t += step, u++) {
+      for (uint32_t t = 0, u = 0; u < scene->spectrum->width - 2; t += step, u++) {
         float l = 0.0f;
         float r = 0.0f;
         for (uint32_t s = t; s < t + step; s++) {

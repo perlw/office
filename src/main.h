@@ -141,8 +141,8 @@ typedef struct {
   uint32_t frame_lock;
   uint32_t ascii_width;
   uint32_t ascii_height;
-  double grid_size_width;
-  double grid_size_height;
+  uint32_t grid_size_width;
+  uint32_t grid_size_height;
 } Config;
 
 Config *const config_init(void);
@@ -157,6 +157,7 @@ Config *const config_get(void);
 
 #define FOREACH_MESSAGE(MSG)         \
   MSG(MSG_CONFIG_UPDATE)             \
+  MSG(MSG_RENDER_SETTINGS_UPDATE)    \
                                      \
   MSG(MSG_SYSTEM_START)              \
   MSG(MSG_SYSTEM_STOP)               \

@@ -132,6 +132,29 @@ RectifyMap *system_window_message(SystemWindow *system, uint32_t id, RectifyMap 
       system_window_internal_setup(system);
       break;
     }
+
+    case MSG_INPUT_ACTION: {
+      const char *action = rectify_map_get_string(map, "action");
+      if (strncmp(action, "wnd_toggle_font", 128) == 0) {
+        Config *const config = config_get();
+
+        if (config->grid_size_width == 8) {
+          config->grid_size_width = 16;
+          config->grid_size_height = 16;
+        } else {
+          config->grid_size_width = 8;
+          config->grid_size_height = 8;
+        }
+        config->ascii_width = config->res_width / config->grid_size_width;
+        config->ascii_height = config->res_height / config->grid_size_height;
+
+        system_window_internal_setup(system);
+
+        kronos_emit(MSG_RENDER_SETTINGS_UPDATE, NULL);
+      }
+
+      break;
+    }
   }
 
   return NULL;
@@ -168,8 +191,8 @@ void system_window_internal_keyboard_callback(const PicassoWindowKeyboardEvent *
 void system_window_internal_mousemove_callback(const PicassoWindowMouseEvent *event) {
   Config *const config = config_get();
 
-  uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
-  uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
+  uint32_t m_x = event->x / config->grid_size_width;
+  uint32_t m_y = event->y / config->grid_size_height;
   static uint32_t o_x = 0;
   static uint32_t o_y = 0;
 
@@ -187,8 +210,8 @@ void system_window_internal_mousemove_callback(const PicassoWindowMouseEvent *ev
 void system_window_internal_click_callback(const PicassoWindowMouseEvent *event) {
   Config *const config = config_get();
 
-  uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
-  uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
+  uint32_t m_x = event->x / config->grid_size_width;
+  uint32_t m_y = event->y / config->grid_size_height;
   static uint32_t o_x = 0;
   static uint32_t o_y = 0;
 
@@ -209,8 +232,8 @@ void system_window_internal_click_callback(const PicassoWindowMouseEvent *event)
 void system_window_internal_mousescroll_callback(const PicassoWindowMouseScrollEvent *event) {
   Config *const config = config_get();
 
-  uint32_t m_x = (uint32_t)(event->x / config->grid_size_width);
-  uint32_t m_y = (uint32_t)(event->y / config->grid_size_height);
+  uint32_t m_x = event->x / config->grid_size_width;
+  uint32_t m_y = event->y / config->grid_size_height;
   int32_t scroll_x = (int32_t)(event->offset_x < 0.0 ? event->offset_x - 0.5 : event->offset_x + 0.5);
   int32_t scroll_y = (int32_t)(event->offset_y < 0.0 ? event->offset_y - 0.5 : event->offset_y + 0.5);
 

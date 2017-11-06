@@ -86,7 +86,9 @@ AsciiBuffer *ascii_buffer_create(PicassoWindow *window, uint32_t width, uint32_t
   }
 
   {
-    ascii->font_texture = (PicassoTexture *)tome_fetch(ASSET_TEXTURE, "ascii_buffer_font", "fonts/cp437_8x8.png");
+    char buffer[256] = { 0 };
+    snprintf(buffer, 256, "fonts/cp437_%dx%d.png", (int32_t)config->grid_size_width, (int32_t)config->grid_size_height);
+    ascii->font_texture = (PicassoTexture *)tome_fetch(ASSET_TEXTURE, "ascii_buffer_font", buffer);
     if (!ascii->font_texture) {
       printf("Something went wrong when fetching ascii font :(\n");
       exit(-1);
