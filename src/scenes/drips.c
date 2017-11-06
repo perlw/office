@@ -51,6 +51,8 @@ KronosSystem scene_drips = {
   .message = &scene_drips_message,
 };
 
+void scene_drips_internal_setup(SceneDrips *const scene);
+
 SceneDrips *scene_drips_start(void) {
   SceneDrips *scene = calloc(1, sizeof(SceneDrips));
 
@@ -67,7 +69,8 @@ SceneDrips *scene_drips_start(void) {
   }
   scene->next_drip = 2.0 * (double)(rand() % 100) / 100.0;
 
-  scene->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
+  scene->surface = NULL;
+  scene_drips_internal_setup(scene);
 
   return scene;
 }
@@ -199,6 +202,11 @@ RectifyMap *scene_drips_message(SceneDrips *scene, uint32_t id, RectifyMap *cons
   assert(scene);
 
   switch (id) {
+    case MSG_RENDER_SETTINGS_UPDATE: {
+      scene_drips_internal_setup(scene);
+      break;
+    }
+
     case MSG_SYSTEM_RENDER: {
       AsciiBuffer *screen = *(AsciiBuffer **)rectify_map_get(map, "screen");
       surface_draw(scene->surface, screen);
@@ -212,4 +220,15 @@ RectifyMap *scene_drips_message(SceneDrips *scene, uint32_t id, RectifyMap *cons
   }
 
   return NULL;
+}
+
+void scene_drips_internal_setup(SceneDrips *const scene) {
+  assert(scene);
+
+  Config *const config = config_get();
+
+  if (scene->surface) {
+    surface_destroy(&scene->surface);
+  }
+  scene->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
 }

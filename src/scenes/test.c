@@ -34,8 +34,9 @@ SceneTest *scene_test_start(void) {
   SceneTest *scene = calloc(1, sizeof(SceneTest));
   *scene = (SceneTest){
     .offset = 0.0,
-    .surface = surface_create(0, 0, config->ascii_width, config->ascii_height),
+    .surface = NULL,
   };
+  scene_test_internal_setup(scene);
 
   return scene;
 }
@@ -95,6 +96,11 @@ RectifyMap *scene_test_message(SceneTest *scene, uint32_t id, RectifyMap *const 
   assert(scene);
 
   switch (id) {
+    case MSG_RENDER_SETTINGS_UPDATE: {
+      scene_test_internal_setup(scene);
+      break;
+    }
+
     case MSG_SYSTEM_RENDER: {
       surface_draw(scene->surface, *(AsciiBuffer **)rectify_map_get(map, "screen"));
       break;
@@ -102,4 +108,15 @@ RectifyMap *scene_test_message(SceneTest *scene, uint32_t id, RectifyMap *const 
   }
 
   return NULL;
+}
+
+void scene_test_internal_setup(SceneTest *const scene) {
+  assert(scene);
+
+  Config *const config = config_get();
+
+  if (scene->surface) {
+    surface_destroy(&scene->surface);
+  }
+  scene->surface = surface_create(0, 0, config->ascii_width, config->ascii_height);
 }
