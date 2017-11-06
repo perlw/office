@@ -264,7 +264,7 @@ void surface_draw(Surface *const surface, AsciiBuffer *const ascii) {
   assert(surface);
 
   uint32_t max_width = (surface->x + surface->width <= ascii->width ? surface->width : ascii->width);
-  uint32_t max_height = (surface->x + surface->height <= ascii->height ? surface->height : ascii->height);
+  uint32_t max_height = (surface->y + surface->height <= ascii->height ? surface->height : ascii->height);
   for (uint32_t y = 0; y < max_height; y++) {
     for (uint32_t x = 0; x < max_width; x++) {
       uint32_t index = (y * surface->width) + x;
