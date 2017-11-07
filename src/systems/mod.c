@@ -7,6 +7,7 @@
 #include "bedrock/bedrock.h"
 
 #define USE_MESSAGES
+#define USE_QUEUES
 #define USE_SYSTEMS
 #include "main.h"
 
@@ -41,6 +42,9 @@ Systems *systems_start(void) {
   kronos_register(&system_sound);
   kronos_register(&system_test);
   kronos_register(&system_ui);
+
+  kronos_hook_queue("debug", QUEUE_RENDER);
+  kronos_hook_queue("ui", QUEUE_RENDER);
 
   return systems;
 }

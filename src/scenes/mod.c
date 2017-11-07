@@ -8,6 +8,7 @@
 #include "bedrock/bedrock.h"
 
 #define USE_MESSAGES
+#define USE_QUEUES
 #define USE_SCENES
 #include "main.h"
 
@@ -70,6 +71,7 @@ RectifyMap *scenes_message(void *system, uint32_t id, RectifyMap *const map) {
     case MSG_GAME_INIT:
       for (uint32_t t = 0; t < rectify_array_size(scenes_internal->systems); t++) {
         kronos_register(&scenes_internal->systems[t]);
+        kronos_hook_queue(scenes_internal->systems[t].name, QUEUE_RENDER);
       }
       break;
 

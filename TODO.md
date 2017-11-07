@@ -1,8 +1,6 @@
 TODO
 ===
 ## Game - Plans
-* Rebuild init of graphics to handle dynamic changes
-  - Message to trigger rebuild of surfaces?
 * Titlescreen
   - Prototype in rexpaint
 * Options

@@ -19,6 +19,8 @@ void scene_test_stop(void **scene);
 void scene_test_update(SceneTest *scene, double delta);
 RectifyMap *scene_test_message(SceneTest *scene, uint32_t id, RectifyMap *const map);
 
+void scene_test_internal_setup(SceneTest *const scene);
+
 KronosSystem scene_test = {
   .name = "scene_test",
   .frames = 30,

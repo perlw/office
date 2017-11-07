@@ -10,6 +10,7 @@
 #define USE_ASCII
 #define USE_CONFIG
 #define USE_MESSAGES
+#define USE_QUEUES
 #include "main.h"
 
 typedef struct {
@@ -108,8 +109,8 @@ void system_window_update(SystemWindow *system, double delta) {
     {
       RectifyMap *map = rectify_map_create();
       rectify_map_set(map, "screen", RECTIFY_MAP_TYPE_PTR, sizeof(AsciiBuffer *), &system->ascii);
-      kronos_emit_immediate(MSG_SYSTEM_RENDER, map);
-      kronos_emit_immediate(MSG_SYSTEM_RENDER_TOP, map);
+      kronos_emit_queue_immediate(QUEUE_RENDER, MSG_SYSTEM_RENDER, map);
+      kronos_emit_queue_immediate(QUEUE_RENDER, MSG_SYSTEM_RENDER_TOP, map);
       rectify_map_destroy(&map);
     }
     ascii_buffer_draw(system->ascii);

@@ -150,6 +150,9 @@ Config *const config_get(void);
 #endif // CONFIG_LOADED
 #endif // USE_CONFIG
 
+#define GENERATE_ENUM(ENUM) ENUM,
+#define GENERATE_STRING(STRING) #STRING,
+
 #ifdef USE_MESSAGES
 #ifndef MESSAGES_LOADED
 #define MESSAGES_LOADED
@@ -203,9 +206,6 @@ Config *const config_get(void);
                                      \
   MSG(MSG_DEBUG_TEST)
 
-#define GENERATE_ENUM(ENUM) ENUM,
-#define GENERATE_STRING(STRING) #STRING,
-
 typedef enum {
   FOREACH_MESSAGE(GENERATE_ENUM)
 } Messages;
@@ -218,6 +218,27 @@ static char *MSG_NAMES[] = {
 #endif // USE_MESSAGES_NAMES
 #endif // MESSAGES_LOADED
 #endif // USE_MESSAGES
+
+#ifdef USE_QUEUES
+#ifndef QUEUES_LOADED
+#define QUEUES_LOADED
+
+#define FOREACH_QUEUE(QUEUE) \
+  QUEUE(QUEUE_BASE)          \
+  QUEUE(QUEUE_RENDER)
+
+typedef enum {
+  FOREACH_QUEUE(GENERATE_ENUM)
+} Queues;
+
+#ifdef USE_QUEUES_NAMES
+static char *QUEUE_NAMES[] = {
+  FOREACH_QUEUES(GENERATE_STRING)
+    NULL,
+};
+#endif // USE_QUEUES_NAMES
+#endif // QUEUES_LOADED
+#endif // USE_QUEUES
 
 #ifdef USE_SCENES
 #ifndef SCENES_LOADED

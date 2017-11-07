@@ -10,8 +10,14 @@ typedef struct {
   char *system;
   char *caller;
   uint32_t id;
+  uint32_t queue_id;
   RectifyMap *map;
 } QueueItem;
+
+typedef struct {
+  QueueItem *back;
+  QueueItem *front;
+} Queue;
 
 typedef struct {
   KronosSystem *system;
@@ -19,18 +25,149 @@ typedef struct {
   bool running;
   double timing;
   double since_update;
+  uint32_t *queues;
 } KronosState;
 
 typedef struct {
   KronosState *systems;
 
-  QueueItem *queue;
-  QueueItem *active_queue;
+  Queue queue;
 
   bool halt;
 } Kronos;
 
 Kronos *kronos = NULL;
+
+Queue queue_setup(void) {
+  return (Queue){
+    .back = rectify_array_alloc(10, sizeof(QueueItem)),
+    .front = rectify_array_alloc(10, sizeof(QueueItem)),
+  };
+}
+
+void queue_cleanup(Queue *queue) {
+  for (uintmax_t t = 0; t < rectify_array_size(queue->front); t++) {
+    QueueItem *const item = &queue->front[t];
+    if (item->system) {
+      free(item->system);
+      item->system = NULL;
+    }
+    if (item->caller) {
+      free(item->caller);
+      item->caller = NULL;
+    }
+    rectify_map_destroy(&item->map);
+  }
+  rectify_array_free((void **)&queue->front);
+  for (uintmax_t t = 0; t < rectify_array_size(queue->back); t++) {
+    QueueItem *const item = &queue->back[t];
+    if (item->system) {
+      free(item->system);
+      item->system = NULL;
+    }
+    if (item->caller) {
+      free(item->caller);
+      item->caller = NULL;
+    }
+    rectify_map_destroy(&item->map);
+  }
+  rectify_array_free((void **)&queue->back);
+}
+
+void queue_update(Queue *queue) {
+  QueueItem *swp = queue->front;
+  queue->front = queue->back;
+  queue->back = swp;
+
+  uintmax_t queue_size = rectify_array_size(queue->front);
+#ifdef KRONOS_DEBUG
+  if (queue_size > 0) {
+    printf("Kronos: Processing %d queued messages...\n", (uint32_t)queue_size);
+  }
+#endif
+
+  for (uintmax_t t = 0; t < queue_size; t++) {
+    QueueItem *const item = &queue->front[t];
+
+    if (item->system) {
+      for (uint32_t u = 0; u < rectify_array_size(kronos->systems); u++) {
+        KronosState *state = &kronos->systems[u];
+
+        if (!(state->running && state->system->message)) {
+          continue;
+        }
+
+        if (item->queue_id != 0) {
+          bool found = false;
+          for (uint32_t v = 0; v < rectify_array_size(state->queues); v++) {
+            if (item->queue_id == state->queues[v]) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            continue;
+          }
+        }
+
+        if (strncmp(state->system->name, item->system, 128) == 0) {
+          RectifyMap *response = state->system->message(state->handle, item->id, item->map);
+          if (response) {
+            if (item->caller) {
+              kronos_post(item->caller, item->id, response, item->system);
+            } else {
+              printf("Kronos: Post had no caller, deleted... ");
+              rectify_map_print(response);
+              rectify_map_destroy(&response);
+            }
+          }
+          break;
+        }
+      }
+    } else {
+      for (uint32_t u = 0; u < rectify_array_size(kronos->systems); u++) {
+        KronosState *state = &kronos->systems[u];
+
+        if (!(state->running && state->system->message)) {
+          continue;
+        }
+
+        if (item->queue_id != KRONOS_QUEUE) {
+          bool found = false;
+          for (uint32_t v = 0; v < rectify_array_size(state->queues); v++) {
+            if (item->queue_id == state->queues[v]) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            continue;
+          }
+        }
+
+        RectifyMap *response = state->system->message(state->handle, item->id, item->map);
+        if (response) {
+          printf("Kronos: Emit returning a response, deleted... ");
+          rectify_map_print(response);
+          rectify_map_destroy(&response);
+        }
+      }
+    }
+    if (item->system) {
+      free(item->system);
+      item->system = NULL;
+    }
+    if (item->caller) {
+      free(item->caller);
+      item->caller = NULL;
+    }
+
+    rectify_map_destroy(&item->map);
+  }
+
+  rectify_array_free((void **)&queue->front);
+  queue->front = rectify_array_alloc(10, sizeof(QueueItem));
+}
 
 void kronos_init(void) {
   assert(!kronos);
@@ -38,8 +175,7 @@ void kronos_init(void) {
   kronos = calloc(1, sizeof(Kronos));
   *kronos = (Kronos){
     .systems = rectify_array_alloc(10, sizeof(KronosState)),
-    .queue = rectify_array_alloc(10, sizeof(QueueItem)),
-    .active_queue = rectify_array_alloc(10, sizeof(QueueItem)),
+    .queue = queue_setup(),
     .halt = false,
   };
 }
@@ -47,32 +183,7 @@ void kronos_init(void) {
 void kronos_kill(void) {
   assert(kronos);
 
-  for (uintmax_t t = 0; t < rectify_array_size(kronos->queue); t++) {
-    QueueItem *const item = &kronos->queue[t];
-    if (item->system) {
-      free(item->system);
-      item->system = NULL;
-    }
-    if (item->caller) {
-      free(item->caller);
-      item->caller = NULL;
-    }
-    rectify_map_destroy(&item->map);
-  }
-  rectify_array_free((void **)&kronos->queue);
-  for (uintmax_t t = 0; t < rectify_array_size(kronos->active_queue); t++) {
-    QueueItem *const item = &kronos->active_queue[t];
-    if (item->system) {
-      free(item->system);
-      item->system = NULL;
-    }
-    if (item->caller) {
-      free(item->caller);
-      item->caller = NULL;
-    }
-    rectify_map_destroy(&item->map);
-  }
-  rectify_array_free((void **)&kronos->active_queue);
+  queue_cleanup(&kronos->queue);
 
   for (uintmax_t t = 0; t < rectify_array_size(kronos->systems); t++) {
     KronosState *state = &kronos->systems[t];
@@ -81,6 +192,8 @@ void kronos_kill(void) {
       state->system->stop(&state->handle);
       state->running = false;
     }
+
+    rectify_array_free(&state->queues);
 
     free(state->system);
   }
@@ -116,6 +229,7 @@ KronosResult kronos_register(KronosSystem *const system) {
                                                           .timing = 1.0 / (double)system->frames,
                                                           .since_update = 0.0,
                                                           .handle = NULL,
+                                                          .queues = rectify_array_alloc(10, sizeof(uint32_t)),
                                                         });
 
   if (system->autostart) {
@@ -160,19 +274,51 @@ KronosResult kronos_stop_system(const char *name) {
     KronosState *state = &kronos->systems[t];
 
     if (strncmp(state->system->name, name, 128) == 0) {
-      if (state->system->prevent_stop) {
+      if (!state->running) {
+#ifdef KRONOS_DEBUG
+        printf("Kronos: Failed to stop system \"%s\", not running\n", name);
+#endif
+        return KRONOS_SYSTEM_NOT_RUNNING;
+      } else if (state->system->prevent_stop) {
 #ifdef KRONOS_DEBUG
         printf("Kronos: Failed to stop system \"%s\", prevented\n", name);
 #endif
         return KRONOS_SYSTEM_STOP_PREVENTED;
       } else {
+        state->system->stop(&state->handle);
+        state->running = false;
 #ifdef KRONOS_DEBUG
         printf("Kronos: System \"%s\" stopped\n", name);
 #endif
-        state->system->stop(&state->handle);
-        state->running = false;
         return KRONOS_OK;
       }
+    }
+  }
+
+  return KRONOS_SYSTEM_NOT_FOUND;
+}
+
+KronosResult kronos_hook_queue(const char *name, uint32_t queue) {
+  assert(kronos);
+
+  for (uintmax_t t = 0; t < rectify_array_size(kronos->systems); t++) {
+    KronosState *state = &kronos->systems[t];
+
+    if (strncmp(state->system->name, name, 128) == 0) {
+      for (uintmax_t u = 0; u < rectify_array_size(state->queues); u++) {
+        if (state->queues[u] == queue) {
+#ifdef KRONOS_DEBUG
+          printf("Kronos: System \"%s\" already hooked to queue #%d\n", name, queue);
+#endif
+          return KRONOS_SYSTEM_ALREADY_HOOKED;
+        }
+      }
+
+      state->queues = rectify_array_push(state->queues, &queue);
+#ifdef KRONOS_DEBUG
+      printf("Kronos: System \"%s\" hooked to queue #%d\n", name, queue);
+#endif
+      return KRONOS_OK;
     }
   }
 
@@ -187,12 +333,13 @@ void kronos_post(const char *system, uint32_t id, RectifyMap *const map, const c
   rectify_map_print(map);
 #endif
 
-  kronos->active_queue = rectify_array_push(kronos->active_queue, &(QueueItem){
-                                                                    .system = rectify_memory_alloc_copy(system, strnlen(system, 128) + 1),
-                                                                    .caller = (caller ? rectify_memory_alloc_copy(caller, strnlen(caller, 128) + 1) : NULL),
-                                                                    .id = id,
-                                                                    .map = map,
-                                                                  });
+  kronos->queue.back = rectify_array_push(kronos->queue.back, &(QueueItem){
+                                                                .system = rectify_memory_alloc_copy(system, strnlen(system, 128) + 1),
+                                                                .caller = (caller ? rectify_memory_alloc_copy(caller, strnlen(caller, 128) + 1) : NULL),
+                                                                .id = id,
+                                                                .map = map,
+                                                                .queue_id = KRONOS_QUEUE,
+                                                              });
 }
 
 void kronos_emit(uint32_t id, RectifyMap *const map) {
@@ -203,12 +350,47 @@ void kronos_emit(uint32_t id, RectifyMap *const map) {
   rectify_map_print(map);
 #endif
 
-  kronos->active_queue = rectify_array_push(kronos->active_queue, &(QueueItem){
-                                                                    .system = NULL,
-                                                                    .caller = NULL,
-                                                                    .id = id,
-                                                                    .map = map,
-                                                                  });
+  kronos->queue.back = rectify_array_push(kronos->queue.back, &(QueueItem){
+                                                                .system = NULL,
+                                                                .caller = NULL,
+                                                                .id = id,
+                                                                .map = map,
+                                                                .queue_id = KRONOS_QUEUE,
+                                                              });
+}
+
+void kronos_post_queue(uint32_t queue, const char *system, uint32_t id, RectifyMap *const map, const char *caller) {
+  assert(kronos);
+
+#ifdef KRONOS_DEBUG
+  printf("Kronos: System \"%s\" posting id#%d to \"%s\" on queue#%d ->\n", (caller ? caller : "UNK"), id, system, queue);
+  rectify_map_print(map);
+#endif
+
+  kronos->queue.back = rectify_array_push(kronos->queue.back, &(QueueItem){
+                                                                .system = rectify_memory_alloc_copy(system, strnlen(system, 128) + 1),
+                                                                .caller = (caller ? rectify_memory_alloc_copy(caller, strnlen(caller, 128) + 1) : NULL),
+                                                                .id = id,
+                                                                .map = map,
+                                                                .queue_id = queue,
+                                                              });
+}
+
+void kronos_emit_queue(uint32_t queue, uint32_t id, RectifyMap *const map) {
+  assert(kronos);
+
+#ifdef KRONOS_DEBUG
+  printf("Kronos: Emitting id#%d on queue#%d->\n", id, queue);
+  rectify_map_print(map);
+#endif
+
+  kronos->queue.back = rectify_array_push(kronos->queue.back, &(QueueItem){
+                                                                .system = NULL,
+                                                                .caller = NULL,
+                                                                .id = id,
+                                                                .map = map,
+                                                                .queue_id = queue,
+                                                              });
 }
 
 RectifyMap *kronos_post_immediate(const char *system, uint32_t id, RectifyMap *const map) {
@@ -249,6 +431,66 @@ void kronos_emit_immediate(uint32_t id, RectifyMap *const map) {
   }
 }
 
+RectifyMap *kronos_post_queue_immediate(uint32_t queue, const char *system, uint32_t id, RectifyMap *const map) {
+#ifdef KRONOS_DEBUG_IMMEDIATE
+  printf("Kronos: Immediate posting id#%d to \"%s\" on queue#%d ->\n", id, system, queue);
+  rectify_map_print(map);
+#endif
+
+  for (uint32_t u = 0; u < rectify_array_size(kronos->systems); u++) {
+    KronosState *state = &kronos->systems[u];
+
+    if (!(state->running && state->system->message)) {
+      continue;
+    }
+
+    bool found = false;
+    for (uint32_t v = 0; v < rectify_array_size(state->queues); v++) {
+      if (queue == state->queues[v]) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      continue;
+    }
+
+    if (strncmp(state->system->name, system, 128) == 0) {
+      return state->system->message(state->handle, id, map);
+    }
+  }
+
+  return NULL;
+}
+
+void kronos_emit_queue_immediate(uint32_t queue, uint32_t id, RectifyMap *const map) {
+#ifdef KRONOS_DEBUG_IMMEDIATE
+  printf("Kronos: Immediate emitting id#%d on queue#%d ->\n", id, queue);
+  rectify_map_print(map);
+#endif
+
+  for (uint32_t u = 0; u < rectify_array_size(kronos->systems); u++) {
+    KronosState *state = &kronos->systems[u];
+
+    if (!(state->running && state->system->message)) {
+      continue;
+    }
+
+    bool found = false;
+    for (uint32_t v = 0; v < rectify_array_size(state->queues); v++) {
+      if (queue == state->queues[v]) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      continue;
+    }
+
+    state->system->message(state->handle, id, map);
+  }
+}
+
 void kronos_update(double delta) {
   assert(kronos);
 
@@ -271,70 +513,5 @@ void kronos_update(double delta) {
     }
   }
 
-  QueueItem *swp = kronos->queue;
-  kronos->queue = kronos->active_queue;
-  kronos->active_queue = swp;
-
-  uintmax_t queue_size = rectify_array_size(kronos->queue);
-#ifdef KRONOS_DEBUG
-  if (queue_size > 0) {
-    printf("Kronos: Processing %d queued messages...\n", (uint32_t)queue_size);
-  }
-#endif
-
-  for (uintmax_t t = 0; t < queue_size; t++) {
-    QueueItem *const item = &kronos->queue[t];
-
-    if (item->system) {
-      for (uint32_t u = 0; u < rectify_array_size(kronos->systems); u++) {
-        KronosState *state = &kronos->systems[u];
-
-        if (!(state->running && state->system->message)) {
-          continue;
-        }
-
-        if (strncmp(state->system->name, item->system, 128) == 0) {
-          RectifyMap *response = state->system->message(state->handle, item->id, item->map);
-          if (response) {
-            if (item->caller) {
-              kronos_post(item->caller, item->id, response, item->system);
-            } else {
-              printf("Kronos: Post had no caller, deleted... ");
-              rectify_map_print(response);
-              rectify_map_destroy(&response);
-            }
-          }
-          break;
-        }
-      }
-    } else {
-      for (uint32_t u = 0; u < rectify_array_size(kronos->systems); u++) {
-        KronosState *state = &kronos->systems[u];
-
-        if (!(state->running && state->system->message)) {
-          continue;
-        }
-
-        RectifyMap *response = state->system->message(state->handle, item->id, item->map);
-        if (response) {
-          printf("Kronos: Emit returning a response, deleted... ");
-          rectify_map_print(response);
-          rectify_map_destroy(&response);
-        }
-      }
-    }
-    if (item->system) {
-      free(item->system);
-      item->system = NULL;
-    }
-    if (item->caller) {
-      free(item->caller);
-      item->caller = NULL;
-    }
-
-    rectify_map_destroy(&item->map);
-  }
-
-  rectify_array_free((void **)&kronos->queue);
-  kronos->queue = rectify_array_alloc(10, sizeof(QueueItem));
+  queue_update(&kronos->queue);
 }
