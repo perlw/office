@@ -46,6 +46,7 @@ void *scenes_start(void) {
   scenes_internal->systems = rectify_array_push(scenes_internal->systems, &scene_sound_test);
   scenes_internal->systems = rectify_array_push(scenes_internal->systems, &scene_game);
   scenes_internal->systems = rectify_array_push(scenes_internal->systems, &scene_world_edit);
+  scenes_internal->systems = rectify_array_push(scenes_internal->systems, &scene_title);
 
   return scenes_internal;
 }
