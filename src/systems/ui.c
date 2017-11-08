@@ -18,11 +18,46 @@ typedef struct {
   uint32_t height;
   uint32_t handle;
 
+  void *widget;
+
   Surface *surface;
 } UIWindow;
 
 typedef struct {
+  int dummy;
+} RuneSelWidget;
+
+RuneSelWidget *runesel_widget_create(void) {
+  RuneSelWidget *widget = calloc(1, sizeof(RuneSelWidget));
+
+  return widget;
+}
+
+void runesel_widget_destroy(RuneSelWidget **widget) {
+  RuneSelWidget *ptr = *widget;
+  assert(ptr && widget);
+
+  free(ptr);
+  *widget = NULL;
+}
+
+void runesel_widget_draw(RuneSelWidget *widget, UIWindow *const window) {
+  assert(widget && window);
+
+  for (uint32_t y = 0; y < 16; y++) {
+    for (uint32_t x = 0; x < 16; x++) {
+      surface_glyph(window->surface, x + 1, y + 1, (Glyph){
+                                                     .rune = (y * 16) + x,
+                                                     .fore = glyphcolor_hex(0xffffff),
+                                                     .back = glyphcolor_hex(0x0),
+                                                   });
+    }
+  }
+}
+
+typedef struct {
   UIWindow *windows;
+  uint32_t next_handle;
 } SystemUI;
 
 SystemUI *system_ui_start(void);
@@ -44,6 +79,7 @@ void system_ui_internal_window_draw_border(UIWindow *const window);
 SystemUI *system_ui_start(void) {
   SystemUI *system = calloc(1, sizeof(SystemUI));
   system->windows = rectify_array_alloc(10, sizeof(UIWindow));
+  system->next_handle = 0;
 
   return system;
 }
@@ -53,6 +89,10 @@ void system_ui_stop(void **system) {
   assert(ptr && system);
 
   for (uint32_t t = 0; t < rectify_array_size(ptr->windows); t++) {
+    if (ptr->windows[t].widget) {
+      runesel_widget_destroy(&ptr->windows[t].widget);
+    }
+
     free(ptr->windows[t].title);
     surface_destroy(&ptr->windows[t].surface);
   }
@@ -75,13 +115,21 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       uint32_t y = rectify_map_get_uint(map, "y");
       uint32_t width = rectify_map_get_uint(map, "width");
       uint32_t height = rectify_map_get_uint(map, "height");
-      uint32_t handle = rectify_map_get_uint(map, "handle");
+      char *const widget = rectify_map_get_string(map, "widget");
 
       if (!title) {
         printf("UI: Missing title when creating window\n");
         break;
       }
 
+      void *widget_ptr = NULL;
+      if (widget) {
+        if (strncmp(widget, "runesel", 128) == 0) {
+          widget_ptr = runesel_widget_create();
+        }
+      }
+
+      uint32_t handle = system->next_handle++;
       UIWindow window = {
         .title = rectify_memory_alloc_copy(title, sizeof(char) * (strnlen(title, 128) + 1)),
         .x = x,
@@ -89,19 +137,16 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
         .width = width,
         .height = height,
         .handle = handle,
+        .widget = widget_ptr,
         .surface = surface_create(x, y, width, height),
       };
       system_ui_internal_window_draw_border(&window);
 
       system->windows = rectify_array_push(system->windows, &window);
 
-      {
-        RectifyMap *map = rectify_map_create();
-        rectify_map_set_uint(map, "handle", handle);
-        kronos_emit(MSG_UI_WINDOW_CREATED, map);
-      }
-
-      break;
+      RectifyMap *map = rectify_map_create();
+      rectify_map_set_uint(map, "handle", handle);
+      return map;
     }
 
     case MSG_UI_WINDOW_DESTROY: {
@@ -109,7 +154,7 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       break;
     }
 
-    case MSG_UI_WINDOW_GLYPH: {
+      /*case MSG_UI_WINDOW_GLYPH: {
       uint32_t handle = rectify_map_get_uint(map, "handle");
       for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
         UIWindow *window = &system->windows[t];
@@ -177,7 +222,7 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       }
 
       break;
-    }
+    }*/
 
     case MSG_INPUT_MOUSEMOVE: {
       uint32_t x = rectify_map_get_uint(map, "x");
@@ -252,6 +297,10 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
     case MSG_SYSTEM_RENDER: {
       AsciiBuffer *screen = *(AsciiBuffer **)rectify_map_get(map, "screen");
       for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
+        if (system->windows[t].widget) {
+          runesel_widget_draw(system->windows[t].widget, &system->windows[t]);
+        }
+
         surface_draw(system->windows[t].surface, screen);
       }
       break;

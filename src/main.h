@@ -193,7 +193,6 @@ Config *const config_get(void);
   MSG(MSG_SOUND_LIST)                \
                                      \
   MSG(MSG_UI_WINDOW_CREATE)          \
-  MSG(MSG_UI_WINDOW_CREATED)         \
   MSG(MSG_UI_WINDOW_DESTROY)         \
   MSG(MSG_UI_WINDOW_GLYPH)           \
   MSG(MSG_UI_WINDOW_GLYPHS)          \
