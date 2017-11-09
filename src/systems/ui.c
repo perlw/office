@@ -149,7 +149,7 @@ void colsel_widget_draw(ColSelWidget *widget, UIWindow *const window) {
     for (uint32_t x = 0; x < 16; x++) {
       Glyph glyph = {
         .rune = ((y * 16) + x == widget->chosen_color ? '*' : 219),
-        .fore = glyphcolor_hex(0x808080),
+        .fore = glyphcolor_hsl((double)y / 16.0, 1.0, (double)x / 16.0),
         .back = glyphcolor_hex(0x0),
       };
 
@@ -167,7 +167,8 @@ void colsel_widget_event(ColSelWidget *widget, uint32_t id, RectifyMap *const ma
       uint32_t y = rectify_map_get_uint(map, "y");
       widget->chosen_color = (y * 16) + x;
       RectifyMap *map = rectify_map_create();
-      rectify_map_set_uint(map, "color", 0xff0000);
+      GlyphColor color = glyphcolor_hsl((double)(widget->chosen_color / 16.0) / 16.0, 1.0, (double)(widget->chosen_color % 16) / 16.0);
+      rectify_map_set_uint(map, "color", glyphcolor_to_uint(color));
       kronos_emit(MSG_WORLD_EDIT_COLOR_SELECTED, map);
       break;
     }

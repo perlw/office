@@ -33,6 +33,7 @@ typedef struct {
 
 GlyphColor glyphcolor(uint8_t r, uint8_t g, uint8_t b);
 GlyphColor glyphcolor_hex(uint32_t hex);
+GlyphColor glyphcolor_hsl(double h, double s, double l);
 GlyphColor glyphcolor_add(GlyphColor a, GlyphColor b);
 GlyphColor glyphcolor_sub(GlyphColor a, GlyphColor b);
 GlyphColor glyphcolor_adds(GlyphColor c, float s);
@@ -40,6 +41,7 @@ GlyphColor glyphcolor_subs(GlyphColor c, float s);
 GlyphColor glyphcolor_muls(GlyphColor c, float s);
 GlyphColor glyphcolor_divs(GlyphColor c, float s);
 bool glyphcolor_eq(GlyphColor a, GlyphColor b);
+uint32_t glyphcolor_to_uint(GlyphColor c);
 
 typedef struct {
   uint8_t *rune_buffer;
