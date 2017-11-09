@@ -24,11 +24,15 @@ typedef struct {
 } UIWindow;
 
 typedef struct {
-  int dummy;
+  uint32_t chosen_rune;
 } RuneSelWidget;
 
 RuneSelWidget *runesel_widget_create(void) {
   RuneSelWidget *widget = calloc(1, sizeof(RuneSelWidget));
+
+  *widget = (RuneSelWidget){
+    .chosen_rune = 1,
+  };
 
   return widget;
 }
@@ -46,13 +50,31 @@ void runesel_widget_draw(RuneSelWidget *widget, UIWindow *const window) {
 
   for (uint32_t y = 0; y < 16; y++) {
     for (uint32_t x = 0; x < 16; x++) {
-      surface_glyph(window->surface, x + 1, y + 1, (Glyph){
-                                                     .rune = (y * 16) + x,
-                                                     .fore = glyphcolor_hex(0xffffff),
-                                                     .back = glyphcolor_hex(0x0),
-                                                   });
+      Glyph glyph = {
+        .rune = (y * 16) + x,
+        .fore = glyphcolor_hex(0x808080),
+        .back = glyphcolor_hex(0x0),
+      };
+      if (glyph.rune == widget->chosen_rune) {
+        glyph.fore = glyphcolor_hex(0xffffff);
+        glyph.back = glyphcolor_hex(0x999999);
+      } else if ((glyph.rune / 16 == widget->chosen_rune / 16) || (glyph.rune % 16 == widget->chosen_rune % 16)) {
+        glyph.fore = glyphcolor_hex(0x8c8c8c);
+        glyph.back = glyphcolor_hex(0x666666);
+      }
+
+      surface_glyph(window->surface, x + 1, y + 1, glyph);
     }
   }
+}
+
+void runesel_widget_click(RuneSelWidget *widget, uint32_t x, uint32_t y) {
+  assert(widget);
+
+  widget->chosen_rune = (y * 16) + x;
+  RectifyMap *map = rectify_map_create();
+  rectify_map_set_byte(map, "rune", widget->chosen_rune);
+  kronos_emit(MSG_WORLD_EDIT_RUNE_SELECTED, map);
 }
 
 typedef struct {
@@ -224,7 +246,7 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       break;
     }*/
 
-    case MSG_INPUT_MOUSEMOVE: {
+      /*case MSG_INPUT_MOUSEMOVE: {
       uint32_t x = rectify_map_get_uint(map, "x");
       uint32_t y = rectify_map_get_uint(map, "y");
 
@@ -242,7 +264,7 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       }
 
       break;
-    }
+    }*/
 
     case MSG_INPUT_CLICK: {
       uint32_t button = rectify_map_get_uint(map, "button");
@@ -254,23 +276,20 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
         UIWindow *window = &system->windows[t];
 
+        if (!window->widget) {
+          continue;
+        }
+
         if (x > window->x && x < window->x + window->width - 1
             && y > window->y && y < window->y + window->width - 1) {
-          RectifyMap *map = rectify_map_create();
-          rectify_map_set_uint(map, "handle", window->handle);
-          rectify_map_set_uint(map, "button", button);
-          rectify_map_set_uint(map, "x", x - window->x - 1);
-          rectify_map_set_uint(map, "y", y - window->y - 1);
-          rectify_map_set_bool(map, "pressed", pressed);
-          rectify_map_set_bool(map, "released", released);
-          kronos_emit(MSG_UI_WINDOW_CLICK, map);
+          runesel_widget_click(window->widget, x - window->x - 1, y - window->y - 1);
         }
       }
 
       break;
     }
 
-    case MSG_INPUT_SCROLL: {
+      /*case MSG_INPUT_SCROLL: {
       uint32_t x = rectify_map_get_uint(map, "x");
       uint32_t y = rectify_map_get_uint(map, "y");
       int32_t scroll_x = rectify_map_get_int(map, "scroll_x");
@@ -292,7 +311,7 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       }
 
       break;
-    }
+    }*/
 
     case MSG_SYSTEM_RENDER: {
       AsciiBuffer *screen = *(AsciiBuffer **)rectify_map_get(map, "screen");

@@ -189,12 +189,15 @@ void kronos_kill(void) {
     KronosState *state = &kronos->systems[t];
 
     if (state->running) {
-      state->system->stop(&state->handle);
       state->running = false;
+      state->system->stop(&state->handle);
     }
+  }
+
+  for (uintmax_t t = 0; t < rectify_array_size(kronos->systems); t++) {
+    KronosState *state = &kronos->systems[t];
 
     rectify_array_free(&state->queues);
-
     free(state->system);
   }
   rectify_array_free((void **)&kronos->systems);

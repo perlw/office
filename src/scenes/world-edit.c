@@ -81,6 +81,7 @@ SceneWorldEdit *scene_world_edit_start(void) {
   RectifyMap *response = kronos_post_immediate("ui", MSG_UI_WINDOW_CREATE, map);
   rectify_map_print(response);
   rectify_map_destroy(&response);
+  rectify_map_destroy(&map);
 
   return scene;
 }
