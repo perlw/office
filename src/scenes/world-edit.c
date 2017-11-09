@@ -71,17 +71,37 @@ SceneWorldEdit *scene_world_edit_start(void) {
   kronos_start_system("ui");
   // -TEMP
 
-  RectifyMap *map = rectify_map_create();
-  rectify_map_set_string(map, "title", "RuneSel");
-  rectify_map_set_uint(map, "x", 141);
-  rectify_map_set_uint(map, "y", 7);
-  rectify_map_set_uint(map, "width", 18);
-  rectify_map_set_uint(map, "height", 18);
-  rectify_map_set_string(map, "widget", "runesel");
-  RectifyMap *response = kronos_post_immediate("ui", MSG_UI_WINDOW_CREATE, map);
-  rectify_map_print(response);
-  rectify_map_destroy(&response);
-  rectify_map_destroy(&map);
+  // +RuneSel
+  {
+    RectifyMap *map = rectify_map_create();
+    rectify_map_set_string(map, "title", "RuneSel");
+    rectify_map_set_uint(map, "x", 141);
+    rectify_map_set_uint(map, "y", 7);
+    rectify_map_set_uint(map, "width", 18);
+    rectify_map_set_uint(map, "height", 18);
+    rectify_map_set_string(map, "widget", "runesel");
+    RectifyMap *response = kronos_post_immediate("ui", MSG_UI_WINDOW_CREATE, map);
+    rectify_map_print(response);
+    rectify_map_destroy(&response);
+    rectify_map_destroy(&map);
+  }
+  // -RuneSel
+
+  // +ColSel
+  {
+    RectifyMap *map = rectify_map_create();
+    rectify_map_set_string(map, "title", "ColSel");
+    rectify_map_set_uint(map, "x", 141);
+    rectify_map_set_uint(map, "y", 26);
+    rectify_map_set_uint(map, "width", 18);
+    rectify_map_set_uint(map, "height", 18);
+    rectify_map_set_string(map, "widget", "colsel");
+    RectifyMap *response = kronos_post_immediate("ui", MSG_UI_WINDOW_CREATE, map);
+    rectify_map_print(response);
+    rectify_map_destroy(&response);
+    rectify_map_destroy(&map);
+  }
+  // -RuneSel
 
   return scene;
 }

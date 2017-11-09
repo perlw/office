@@ -10,6 +10,8 @@
 #define USE_MESSAGES
 #include "main.h"
 
+typedef struct Widget Widget;
+
 typedef struct {
   char *title;
   uint32_t x;
@@ -18,19 +20,43 @@ typedef struct {
   uint32_t height;
   uint32_t handle;
 
-  void *widget;
+  Widget *widget;
 
   Surface *surface;
 } UIWindow;
 
+typedef void (*WidgetEvent)(Widget *widget, uint32_t id, RectifyMap *const map);
+typedef void (*WidgetDraw)(Widget *widget, UIWindow *const window);
+
+struct Widget {
+  WidgetDraw draw;
+  WidgetEvent event;
+};
+
+#define FOREACH_WIDGET(WIDGET) \
+  WIDGET(WIDGET_EVENT_CLICK)
+
+typedef enum {
+  FOREACH_WIDGET(GENERATE_ENUM)
+} WidgetEvents;
+
+// +RuneSelWidget
 typedef struct {
+  Widget widget;
   uint32_t chosen_rune;
 } RuneSelWidget;
+
+void runesel_widget_draw(RuneSelWidget *widget, UIWindow *const window);
+void runesel_widget_event(RuneSelWidget *widget, uint32_t id, RectifyMap *const map);
 
 RuneSelWidget *runesel_widget_create(void) {
   RuneSelWidget *widget = calloc(1, sizeof(RuneSelWidget));
 
   *widget = (RuneSelWidget){
+    .widget = (Widget){
+      .draw = &runesel_widget_draw,
+      .event = &runesel_widget_event,
+    },
     .chosen_rune = 1,
   };
 
@@ -68,14 +94,86 @@ void runesel_widget_draw(RuneSelWidget *widget, UIWindow *const window) {
   }
 }
 
-void runesel_widget_click(RuneSelWidget *widget, uint32_t x, uint32_t y) {
+void runesel_widget_event(RuneSelWidget *widget, uint32_t id, RectifyMap *const map) {
   assert(widget);
 
-  widget->chosen_rune = (y * 16) + x;
-  RectifyMap *map = rectify_map_create();
-  rectify_map_set_byte(map, "rune", widget->chosen_rune);
-  kronos_emit(MSG_WORLD_EDIT_RUNE_SELECTED, map);
+  switch (id) {
+    case WIDGET_EVENT_CLICK: {
+      uint32_t x = rectify_map_get_uint(map, "x");
+      uint32_t y = rectify_map_get_uint(map, "y");
+      widget->chosen_rune = (y * 16) + x;
+      RectifyMap *map = rectify_map_create();
+      rectify_map_set_byte(map, "rune", widget->chosen_rune);
+      kronos_emit(MSG_WORLD_EDIT_RUNE_SELECTED, map);
+      break;
+    }
+  }
 }
+// -RuneSelWidget
+
+// +ColSelWidget
+typedef struct {
+  Widget widget;
+  uint32_t chosen_color;
+} ColSelWidget;
+
+void colsel_widget_draw(ColSelWidget *widget, UIWindow *const window);
+void colsel_widget_event(ColSelWidget *widget, uint32_t id, RectifyMap *const map);
+
+ColSelWidget *colsel_widget_create(void) {
+  ColSelWidget *widget = calloc(1, sizeof(ColSelWidget));
+
+  *widget = (ColSelWidget){
+    .widget = (Widget){
+      .draw = &colsel_widget_draw,
+      .event = &colsel_widget_event,
+    },
+    .chosen_color = 15,
+  };
+
+  return widget;
+}
+
+void colsel_widget_destroy(ColSelWidget **widget) {
+  ColSelWidget *ptr = *widget;
+  assert(ptr && widget);
+
+  free(ptr);
+  *widget = NULL;
+}
+
+void colsel_widget_draw(ColSelWidget *widget, UIWindow *const window) {
+  assert(widget && window);
+
+  for (uint32_t y = 0; y < 16; y++) {
+    for (uint32_t x = 0; x < 16; x++) {
+      Glyph glyph = {
+        .rune = ((y * 16) + x == widget->chosen_color ? '*' : 219),
+        .fore = glyphcolor_hex(0x808080),
+        .back = glyphcolor_hex(0x0),
+      };
+
+      surface_glyph(window->surface, x + 1, y + 1, glyph);
+    }
+  }
+}
+
+void colsel_widget_event(ColSelWidget *widget, uint32_t id, RectifyMap *const map) {
+  assert(widget);
+
+  switch (id) {
+    case WIDGET_EVENT_CLICK: {
+      uint32_t x = rectify_map_get_uint(map, "x");
+      uint32_t y = rectify_map_get_uint(map, "y");
+      widget->chosen_color = (y * 16) + x;
+      RectifyMap *map = rectify_map_create();
+      rectify_map_set_uint(map, "color", 0xff0000);
+      kronos_emit(MSG_WORLD_EDIT_COLOR_SELECTED, map);
+      break;
+    }
+  }
+}
+// -ColSelWidget
 
 typedef struct {
   UIWindow *windows;
@@ -144,10 +242,12 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
         break;
       }
 
-      void *widget_ptr = NULL;
+      Widget *widget_ptr = NULL;
       if (widget) {
         if (strncmp(widget, "runesel", 128) == 0) {
           widget_ptr = runesel_widget_create();
+        } else if (strncmp(widget, "colsel", 128) == 0) {
+          widget_ptr = colsel_widget_create();
         }
       }
 
@@ -282,7 +382,11 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
 
         if (x > window->x && x < window->x + window->width - 1
             && y > window->y && y < window->y + window->width - 1) {
-          runesel_widget_click(window->widget, x - window->x - 1, y - window->y - 1);
+          RectifyMap *map = rectify_map_create();
+          rectify_map_set_uint(map, "x", x - window->x - 1);
+          rectify_map_set_uint(map, "y", y - window->y - 1);
+          window->widget->event(window->widget, WIDGET_EVENT_CLICK, map);
+          rectify_map_destroy(&map);
         }
       }
 
@@ -317,7 +421,7 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       AsciiBuffer *screen = *(AsciiBuffer **)rectify_map_get(map, "screen");
       for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
         if (system->windows[t].widget) {
-          runesel_widget_draw(system->windows[t].widget, &system->windows[t]);
+          system->windows[t].widget->draw(system->windows[t].widget, &system->windows[t]);
         }
 
         surface_draw(system->windows[t].surface, screen);
