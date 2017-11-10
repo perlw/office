@@ -61,6 +61,7 @@ Asset management
 ### Kronos
 Systems management
 * Profiling
+* Split running systems from dormant systems into different lists?
 
 ## Planned modules
 

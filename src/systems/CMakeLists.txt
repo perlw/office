@@ -1,3 +1,5 @@
+add_subdirectory (ui)
+
 set (
   SOURCES
   ${SOURCES}
@@ -6,7 +8,6 @@ set (
   "${CMAKE_CURRENT_LIST_DIR}/input.c"
   "${CMAKE_CURRENT_LIST_DIR}/sound.c"
   "${CMAKE_CURRENT_LIST_DIR}/test.c"
-  "${CMAKE_CURRENT_LIST_DIR}/ui.c"
   "${CMAKE_CURRENT_LIST_DIR}/window.c"
   PARENT_SCOPE
 )

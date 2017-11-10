@@ -10,181 +10,7 @@
 #define USE_MESSAGES
 #include "main.h"
 
-typedef struct Widget Widget;
-
-typedef struct {
-  char *title;
-  uint32_t x;
-  uint32_t y;
-  uint32_t width;
-  uint32_t height;
-  uint32_t handle;
-
-  Widget *widget;
-
-  Surface *surface;
-} UIWindow;
-
-typedef void (*WidgetDestroy)(Widget **base_widget);
-typedef void (*WidgetEvent)(Widget *const base_widget, uint32_t id, RectifyMap *const map);
-typedef void (*WidgetDraw)(Widget *const base_widget, UIWindow *const window);
-
-struct Widget {
-  WidgetDestroy destroy;
-  WidgetDraw draw;
-  WidgetEvent event;
-};
-
-#define FOREACH_WIDGET(WIDGET) \
-  WIDGET(WIDGET_EVENT_CLICK)
-
-typedef enum {
-  FOREACH_WIDGET(GENERATE_ENUM)
-} WidgetEvents;
-
-// +RuneSelWidget
-typedef struct {
-  Widget widget;
-  uint32_t chosen_rune;
-} RuneSelWidget;
-
-void runesel_widget_destroy(Widget **base_widget);
-void runesel_widget_draw(Widget *const base_widget, UIWindow *const window);
-void runesel_widget_event(Widget *const base_widget, uint32_t id, RectifyMap *const map);
-
-RuneSelWidget *runesel_widget_create(void) {
-  RuneSelWidget *widget = calloc(1, sizeof(RuneSelWidget));
-
-  *widget = (RuneSelWidget){
-    .widget = (Widget){
-      .destroy = &runesel_widget_destroy,
-      .draw = &runesel_widget_draw,
-      .event = &runesel_widget_event,
-    },
-    .chosen_rune = 1,
-  };
-
-  return widget;
-}
-
-void runesel_widget_destroy(Widget **base_widget) {
-  RuneSelWidget *ptr = *(RuneSelWidget **)base_widget;
-  assert(ptr && base_widget);
-
-  free(ptr);
-  *base_widget = NULL;
-}
-
-void runesel_widget_draw(Widget *const base_widget, UIWindow *const window) {
-  assert(base_widget && window);
-  RuneSelWidget *widget = (RuneSelWidget *)base_widget;
-
-  for (uint32_t y = 0; y < 16; y++) {
-    for (uint32_t x = 0; x < 16; x++) {
-      Glyph glyph = {
-        .rune = (y * 16) + x,
-        .fore = glyphcolor_hex(0x808080),
-        .back = glyphcolor_hex(0x0),
-      };
-      if (glyph.rune == widget->chosen_rune) {
-        glyph.fore = glyphcolor_hex(0xffffff);
-        glyph.back = glyphcolor_hex(0x999999);
-      } else if ((glyph.rune / 16 == widget->chosen_rune / 16) || (glyph.rune % 16 == widget->chosen_rune % 16)) {
-        glyph.fore = glyphcolor_hex(0x8c8c8c);
-        glyph.back = glyphcolor_hex(0x666666);
-      }
-
-      surface_glyph(window->surface, x + 1, y + 1, glyph);
-    }
-  }
-}
-
-void runesel_widget_event(Widget *const base_widget, uint32_t id, RectifyMap *const map) {
-  assert(base_widget);
-  RuneSelWidget *widget = (RuneSelWidget *)base_widget;
-
-  switch (id) {
-    case WIDGET_EVENT_CLICK: {
-      uint32_t x = rectify_map_get_uint(map, "x");
-      uint32_t y = rectify_map_get_uint(map, "y");
-      widget->chosen_rune = (y * 16) + x;
-      RectifyMap *map = rectify_map_create();
-      rectify_map_set_byte(map, "rune", widget->chosen_rune);
-      kronos_emit(MSG_WORLD_EDIT_RUNE_SELECTED, map);
-      break;
-    }
-  }
-}
-// -RuneSelWidget
-
-// +ColSelWidget
-typedef struct {
-  Widget widget;
-  uint32_t chosen_color;
-} ColSelWidget;
-
-void colsel_widget_destroy(Widget **base_widget);
-void colsel_widget_draw(Widget *const base_widget, UIWindow *const window);
-void colsel_widget_event(Widget *const base_widget, uint32_t id, RectifyMap *const map);
-
-ColSelWidget *colsel_widget_create(void) {
-  ColSelWidget *widget = calloc(1, sizeof(ColSelWidget));
-
-  *widget = (ColSelWidget){
-    .widget = (Widget){
-      .destroy = &colsel_widget_destroy,
-      .draw = &colsel_widget_draw,
-      .event = &colsel_widget_event,
-    },
-    .chosen_color = 15,
-  };
-
-  return widget;
-}
-
-void colsel_widget_destroy(Widget **base_widget) {
-  ColSelWidget *ptr = *(ColSelWidget **)base_widget;
-  assert(ptr && base_widget);
-
-  free(ptr);
-  *base_widget = NULL;
-}
-
-void colsel_widget_draw(Widget *const base_widget, UIWindow *const window) {
-  assert(base_widget && window);
-  ColSelWidget *widget = (ColSelWidget *)base_widget;
-
-  for (uint32_t y = 0; y < 16; y++) {
-    for (uint32_t x = 0; x < 16; x++) {
-      Glyph glyph = {
-        .rune = ((y * 16) + x == widget->chosen_color ? '*' : 219),
-        .fore = glyphcolor_hsl((double)y / 16.0, 1.0, (double)x / 16.0),
-        .back = glyphcolor_hex(0x0),
-      };
-
-      surface_glyph(window->surface, x + 1, y + 1, glyph);
-    }
-  }
-}
-
-void colsel_widget_event(Widget *const base_widget, uint32_t id, RectifyMap *const map) {
-  assert(base_widget);
-  ColSelWidget *widget = (ColSelWidget *)base_widget;
-
-  switch (id) {
-    case WIDGET_EVENT_CLICK: {
-      uint32_t x = rectify_map_get_uint(map, "x");
-      uint32_t y = rectify_map_get_uint(map, "y");
-      widget->chosen_color = (y * 16) + x;
-      RectifyMap *map = rectify_map_create();
-      GlyphColor color = glyphcolor_hsl((double)(widget->chosen_color / 16.0) / 16.0, 1.0, (double)(widget->chosen_color % 16) / 16.0);
-      rectify_map_set_uint(map, "color", glyphcolor_to_uint(color));
-      kronos_emit(MSG_WORLD_EDIT_COLOR_SELECTED, map);
-      break;
-    }
-  }
-}
-// -ColSelWidget
+#include "internal.h"
 
 typedef struct {
   UIWindow *windows;
@@ -287,7 +113,7 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       break;
     }
 
-    /*case MSG_UI_WINDOW_GLYPH: {
+      /*case MSG_UI_WINDOW_GLYPH: {
       uint32_t handle = rectify_map_get_uint(map, "handle");
       for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
         UIWindow *window = &system->windows[t];
@@ -357,7 +183,7 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       break;
     }*/
 
-    /*case MSG_INPUT_MOUSEMOVE: {
+      /*case MSG_INPUT_MOUSEMOVE: {
       uint32_t x = rectify_map_get_uint(map, "x");
       uint32_t y = rectify_map_get_uint(map, "y");
 
@@ -404,7 +230,7 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
       break;
     }
 
-    /*case MSG_INPUT_SCROLL: {
+      /*case MSG_INPUT_SCROLL: {
       uint32_t x = rectify_map_get_uint(map, "x");
       uint32_t y = rectify_map_get_uint(map, "y");
       int32_t scroll_x = rectify_map_get_int(map, "scroll_x");
