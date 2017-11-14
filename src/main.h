@@ -123,6 +123,7 @@ void surface_draw(Surface *const surface, AsciiBuffer *const tiles);
 typedef enum {
   ASSET_SHADER = 1,
   ASSET_TEXTURE,
+  ASSET_TILEDEFS,
 } AssetTypes;
 
 void setup_asset_loaders(void);

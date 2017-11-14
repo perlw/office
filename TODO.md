@@ -21,15 +21,11 @@ TODO
 * Sound
   - Ability to load and play sounds, won't need to define
   - Hook into tome
-* World file/data format
-  - Header with all used ids
-  - Map data should be 0-based references to mentioned ids
 * Test harness
 * Code documentation and generator
 * Remote accesss/debugging of internals (telnet? http?) *Depends on synapse*
   - Send/watch messages
   - See internal states
-* Rendering and message queues, prioritizations, etc
 
 ## Bedrock
 

@@ -85,6 +85,8 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
           widget_ptr = (Widget *)runesel_widget_create();
         } else if (strncmp(widget, "colsel", 128) == 0) {
           widget_ptr = (Widget *)colsel_widget_create();
+        } else if (strncmp(widget, "tilesel", 128) == 0) {
+          widget_ptr = (Widget *)tilesel_widget_create();
         }
       }
 

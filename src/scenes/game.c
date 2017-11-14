@@ -8,9 +8,11 @@
 #define USE_ARCHIVIST
 #define USE_KRONOS
 #define USE_RECTIFY
+#define USE_TOME
 #include "bedrock/bedrock.h"
 
 #define USE_ASCII
+#define USE_ASSETS
 #define USE_CONFIG
 #define USE_MESSAGES
 #include "main.h"
@@ -65,51 +67,10 @@ SceneGame *scene_game_start(void) {
   scene->map_x = 0;
   scene->map_y = 0;
 
-  scene->tiledefs = rectify_array_alloc(10, sizeof(TileDef));
-  scene->tilemap = NULL;
-  scene_game_internal_build_map(scene);
-
   scene->world = surface_create(0, 0, config->ascii_width, config->ascii_height);
 
-  {
-    size_t num_bytes = 0;
-    uint8_t *data = NULL;
-    archivist_read_file("tiledefs.json", &num_bytes, &data);
-
-    cJSON *root = cJSON_Parse((const char *)data);
-    for (int32_t t = 0; t < cJSON_GetArraySize(root); t++) {
-      cJSON *item = cJSON_GetArrayItem(root, t);
-
-      cJSON *id = cJSON_GetObjectItemCaseSensitive(item, "id");
-      cJSON *rune = cJSON_GetObjectItemCaseSensitive(item, "rune");
-      cJSON *fore_color = cJSON_GetObjectItemCaseSensitive(item, "fore_color");
-      cJSON *back_color = cJSON_GetObjectItemCaseSensitive(item, "back_color");
-      cJSON *tags = cJSON_GetObjectItemCaseSensitive(item, "tags");
-
-      TileDef def = {
-        .id = rectify_memory_alloc_copy(id->valuestring, sizeof(char) * (strnlen(id->valuestring, 128) + 1)),
-        .glyph = (Glyph){
-          .rune = rune->valueint,
-          .fore = glyphcolor_hex(fore_color->valueint),
-          .back = glyphcolor_hex(back_color->valueint),
-        },
-        .collides = false,
-      };
-      for (int32_t u = 0; u < cJSON_GetArraySize(tags); u++) {
-        cJSON *tag = cJSON_GetArrayItem(tags, u);
-        if (strncmp(tag->valuestring, "wall", 128) == 0) {
-          def.collides = true;
-        }
-      }
-
-      printf("%s => { %d|%c, (%d %d %d) (%d %d %d) }\n", def.id, def.glyph.rune, def.glyph.rune, def.glyph.fore.r, def.glyph.fore.g, def.glyph.fore.b, def.glyph.back.r, def.glyph.back.g, def.glyph.back.b);
-
-      scene->tiledefs = rectify_array_push(scene->tiledefs, &def);
-    }
-    cJSON_Delete(root);
-
-    free(data);
-  }
+  scene->tiledefs = (TileDef *)tome_fetch(ASSET_TILEDEFS, "tiledefs", "tiledefs.json");
+  scene->tilemap = NULL;
   scene_game_internal_build_map(scene);
 
   return scene;
@@ -122,10 +83,7 @@ void scene_game_stop(void **scene) {
   if (ptr->tilemap) {
     free(ptr->tilemap);
   }
-  for (uint32_t t = 0; t < rectify_array_size(ptr->tiledefs); t++) {
-    free(ptr->tiledefs[t].id);
-  }
-  rectify_array_free((void **)&ptr->tiledefs);
+  tome_release(ASSET_TILEDEFS, "tiledefs");
 
   surface_destroy(&ptr->world);
 

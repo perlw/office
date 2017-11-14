@@ -55,3 +55,22 @@ void colsel_widget_destroy(Widget **base_widget);
 void colsel_widget_draw(Widget *const base_widget, UIWindow *const window);
 void colsel_widget_event(Widget *const base_widget, uint32_t id, RectifyMap *const map);
 // -ColSelWidget
+
+// +TileSelWidget
+typedef struct {
+  char *id;
+  Glyph glyph;
+  bool collides;
+} TileDef;
+
+typedef struct {
+  Widget widget;
+  uint32_t chosen_tile;
+  TileDef *tiledefs;
+} TileSelWidget;
+
+TileSelWidget *tilesel_widget_create(void);
+void tilesel_widget_destroy(Widget **base_widget);
+void tilesel_widget_draw(Widget *const base_widget, UIWindow *const window);
+void tilesel_widget_event(Widget *const base_widget, uint32_t id, RectifyMap *const map);
+// -TileSelWidget

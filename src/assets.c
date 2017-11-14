@@ -2,8 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "cJSON.h"
+
 #define USE_ARCHIVIST
 #define USE_PICASSO
+#define USE_RECTIFY
 #define USE_TOME
 #include "bedrock/bedrock.h"
 
@@ -83,7 +86,68 @@ void texture_destroyer(void *data) {
   picasso_texture_destroy(&texture);
 }
 
+typedef struct {
+  char *id;
+  Glyph glyph;
+  bool collides;
+} TileDef;
+
+void *tiledefs_loader(const char *name, const char *path) {
+  size_t num_bytes = 0;
+  uint8_t *data = NULL;
+  if (!archivist_read_file(path, &num_bytes, &data)) {
+    return NULL;
+  }
+
+  TileDef *tiledefs = rectify_array_alloc(10, sizeof(TileDef));
+
+  cJSON *root = cJSON_Parse((const char *)data);
+  for (int32_t t = 0; t < cJSON_GetArraySize(root); t++) {
+    cJSON *item = cJSON_GetArrayItem(root, t);
+
+    cJSON *id = cJSON_GetObjectItemCaseSensitive(item, "id");
+    cJSON *rune = cJSON_GetObjectItemCaseSensitive(item, "rune");
+    cJSON *fore_color = cJSON_GetObjectItemCaseSensitive(item, "fore_color");
+    cJSON *back_color = cJSON_GetObjectItemCaseSensitive(item, "back_color");
+    cJSON *tags = cJSON_GetObjectItemCaseSensitive(item, "tags");
+
+    TileDef def = {
+      .id = rectify_memory_alloc_copy(id->valuestring, sizeof(char) * (strnlen(id->valuestring, 128) + 1)),
+      .glyph = (Glyph){
+        .rune = rune->valueint,
+        .fore = glyphcolor_hex(fore_color->valueint),
+        .back = glyphcolor_hex(back_color->valueint),
+      },
+      .collides = false,
+    };
+    for (int32_t u = 0; u < cJSON_GetArraySize(tags); u++) {
+      cJSON *tag = cJSON_GetArrayItem(tags, u);
+      if (strncmp(tag->valuestring, "wall", 128) == 0) {
+        def.collides = true;
+      }
+    }
+
+    printf("%s => { %d|%c, (%d %d %d) (%d %d %d) }\n", def.id, def.glyph.rune, def.glyph.rune, def.glyph.fore.r, def.glyph.fore.g, def.glyph.fore.b, def.glyph.back.r, def.glyph.back.g, def.glyph.back.b);
+
+    tiledefs = rectify_array_push(tiledefs, &def);
+  }
+  cJSON_Delete(root);
+
+  free(data);
+
+  return tiledefs;
+}
+
+void tiledefs_destroyer(void *data) {
+  TileDef *tiledefs = (TileDef *)data;
+  for (uint32_t t = 0; t < rectify_array_size(tiledefs); t++) {
+    free(tiledefs[t].id);
+  }
+  rectify_array_free(&data);
+}
+
 void setup_asset_loaders(void) {
   tome_handler(ASSET_SHADER, &shader_loader, &shader_destroyer);
   tome_handler(ASSET_TEXTURE, &texture_loader, &texture_destroyer);
+  tome_handler(ASSET_TILEDEFS, &tiledefs_loader, &tiledefs_destroyer);
 }
