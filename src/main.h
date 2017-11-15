@@ -4,6 +4,12 @@
 #define USE_ASCII
 #endif
 #endif
+
+#ifdef USE_ASSETS
+#ifndef USE_ASCII
+#define USE_ASCII
+#endif
+#endif
 // -Dependencies
 
 #ifdef USE_ASCII
@@ -125,6 +131,12 @@ typedef enum {
   ASSET_TEXTURE,
   ASSET_TILEDEFS,
 } AssetTypes;
+
+typedef struct {
+  char *id;
+  Glyph glyph;
+  bool collides;
+} TileDef;
 
 void setup_asset_loaders(void);
 #endif // ASSETS_LOADED

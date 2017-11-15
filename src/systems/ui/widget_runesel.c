@@ -4,10 +4,6 @@
 #define USE_RECTIFY
 #include "bedrock/bedrock.h"
 
-#define USE_ASCII
-#define USE_MESSAGES
-#include "main.h"
-
 #include "internal.h"
 
 RuneSelWidget *runesel_widget_create(void) {

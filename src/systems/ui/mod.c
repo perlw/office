@@ -6,7 +6,6 @@
 #include "bedrock/bedrock.h"
 
 #define USE_ASCII
-#define USE_CONFIG
 #define USE_MESSAGES
 #include "main.h"
 

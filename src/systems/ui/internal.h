@@ -1,5 +1,10 @@
 #pragma once
 
+#define USE_ASCII
+#define USE_ASSETS
+#define USE_MESSAGES
+#include "main.h"
+
 typedef struct Widget Widget;
 
 typedef struct {
@@ -57,12 +62,6 @@ void colsel_widget_event(Widget *const base_widget, uint32_t id, RectifyMap *con
 // -ColSelWidget
 
 // +TileSelWidget
-typedef struct {
-  char *id;
-  Glyph glyph;
-  bool collides;
-} TileDef;
-
 typedef struct {
   Widget widget;
   uint32_t chosen_tile;

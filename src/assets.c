@@ -86,12 +86,6 @@ void texture_destroyer(void *data) {
   picasso_texture_destroy(&texture);
 }
 
-typedef struct {
-  char *id;
-  Glyph glyph;
-  bool collides;
-} TileDef;
-
 void *tiledefs_loader(const char *name, const char *path) {
   size_t num_bytes = 0;
   uint8_t *data = NULL;

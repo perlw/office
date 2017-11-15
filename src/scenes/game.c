@@ -18,12 +18,6 @@
 #include "main.h"
 
 typedef struct {
-  char *id;
-  Glyph glyph;
-  bool collides;
-} TileDef;
-
-typedef struct {
   TileDef *def;
 } Tile;
 

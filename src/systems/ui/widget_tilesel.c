@@ -5,11 +5,6 @@
 #define USE_TOME
 #include "bedrock/bedrock.h"
 
-#define USE_ASCII
-#define USE_ASSETS
-#define USE_MESSAGES
-#include "main.h"
-
 #include "internal.h"
 
 TileSelWidget *tilesel_widget_create(void) {
