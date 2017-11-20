@@ -69,16 +69,10 @@ void tilesel_widget_event(Widget *const base_widget, uint32_t id, RectifyMap *co
       }
 
       widget->chosen_tile = i;
-      // TODO: Replace with tile
       {
         RectifyMap *map = rectify_map_create();
-        rectify_map_set_byte(map, "rune", widget->tiledefs[widget->chosen_tile].glyph.rune);
-        kronos_emit(MSG_UI_RUNESEL_CHANGED, map);
-      }
-      {
-        RectifyMap *map = rectify_map_create();
-        rectify_map_set_uint(map, "color", glyphcolor_to_uint(widget->tiledefs[widget->chosen_tile].glyph.fore));
-        kronos_emit(MSG_UI_COLSEL_CHANGED, map);
+        rectify_map_set(map, "tile", RECTIFY_MAP_TYPE_PTR, sizeof(TileDef), &widget->tiledefs[widget->chosen_tile]);
+        kronos_emit(MSG_UI_TILESEL_CHANGED, map);
       }
       break;
     }

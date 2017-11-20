@@ -5,6 +5,7 @@
 #include "bedrock/bedrock.h"
 
 #define USE_ASCII
+#define USE_ASSETS
 #define USE_CONFIG
 #define USE_MESSAGES
 #define USE_SCENES
@@ -176,13 +177,10 @@ RectifyMap *scene_world_edit_message(SceneWorldEdit *scene, uint32_t id, Rectify
       break;
     }
 
-    case MSG_UI_RUNESEL_CHANGED: {
-      scene->chosen_rune = rectify_map_get_byte(map, "rune");
-      break;
-    }
-
-    case MSG_UI_COLSEL_CHANGED: {
-      scene->chosen_color = rectify_map_get_uint(map, "color");
+    case MSG_UI_TILESEL_CHANGED: {
+      TileDef *const def = (TileDef *const)rectify_map_get(map, "tile");
+      scene->chosen_rune = def->glyph.rune;
+      scene->chosen_color = glyphcolor_to_uint(def->glyph.fore);
       break;
     }
 

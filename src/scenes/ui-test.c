@@ -5,6 +5,7 @@
 #include "bedrock/bedrock.h"
 
 #define USE_ASCII
+#define USE_ASSETS
 #define USE_CONFIG
 #define USE_MESSAGES
 #include "main.h"
@@ -278,7 +279,8 @@ RectifyMap *scene_ui_test_message(SceneUITest *scene, uint32_t id, RectifyMap *c
     }
 
     case MSG_UI_TILESEL_CHANGED: {
-      printf("========== TBD ============\n");
+      TileDef *const def = (TileDef *const)rectify_map_get(map, "tile");
+      scene->seldebug_tile_glyph = def->glyph;
       break;
     }
   }
