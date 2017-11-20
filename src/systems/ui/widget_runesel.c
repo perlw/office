@@ -64,7 +64,7 @@ void runesel_widget_event(Widget *const base_widget, uint32_t id, RectifyMap *co
       widget->chosen_rune = (y * 16) + x;
       RectifyMap *map = rectify_map_create();
       rectify_map_set_byte(map, "rune", widget->chosen_rune);
-      kronos_emit(MSG_WORLD_EDIT_RUNE_SELECTED, map);
+      kronos_emit(MSG_UI_RUNESEL_CHANGED, map);
       break;
     }
   }

@@ -14,6 +14,7 @@ typedef struct {
   uint32_t width;
   uint32_t height;
   uint32_t handle;
+  bool close_button;
 
   Widget *widget;
 

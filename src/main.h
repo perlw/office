@@ -173,51 +173,51 @@ Config *const config_get(void);
 #define MESSAGES_LOADED
 #include <stdio.h>
 
-#define FOREACH_MESSAGE(MSG)         \
-  MSG(MSG_CONFIG_UPDATE)             \
-  MSG(MSG_RENDER_SETTINGS_UPDATE)    \
-                                     \
-  MSG(MSG_SYSTEM_START)              \
-  MSG(MSG_SYSTEM_STOP)               \
-  MSG(MSG_SYSTEM_SPUN_UP)            \
-  MSG(MSG_SYSTEM_SHUT_DOWN)          \
-  MSG(MSG_SYSTEM_RENDER)             \
-  MSG(MSG_SYSTEM_RENDER_TOP)         \
-                                     \
-  MSG(MSG_GAME_INIT)                 \
-  MSG(MSG_GAME_KILL)                 \
-                                     \
-  MSG(MSG_INPUT_BIND)                \
-  MSG(MSG_INPUT_ACTION)              \
-  MSG(MSG_INPUT_KEY)                 \
-  MSG(MSG_INPUT_MOUSEMOVE)           \
-  MSG(MSG_INPUT_CLICK)               \
-  MSG(MSG_INPUT_SCROLL)              \
-                                     \
-  MSG(MSG_SCENE_GOTO)                \
-  MSG(MSG_SCENE_PREV)                \
-  MSG(MSG_SCENE_NEXT)                \
-  MSG(MSG_SCENE_SETUP)               \
-  MSG(MSG_SCENE_TEARDOWN)            \
-  MSG(MSG_SCENE_CHANGED)             \
-                                     \
-  MSG(MSG_SOUND_PLAY)                \
-  MSG(MSG_SOUND_PLAY_SONG)           \
-  MSG(MSG_SOUND_STOP_SONG)           \
-  MSG(MSG_SOUND_SPECTRUM)            \
-  MSG(MSG_SOUND_LIST)                \
-                                     \
-  MSG(MSG_UI_WINDOW_CREATE)          \
-  MSG(MSG_UI_WINDOW_DESTROY)         \
-  MSG(MSG_UI_WINDOW_GLYPH)           \
-  MSG(MSG_UI_WINDOW_GLYPHS)          \
-  MSG(MSG_UI_WINDOW_MOUSEMOVE)       \
-  MSG(MSG_UI_WINDOW_CLICK)           \
-  MSG(MSG_UI_WINDOW_SCROLL)          \
-                                     \
-  MSG(MSG_WORLD_EDIT_RUNE_SELECTED)  \
-  MSG(MSG_WORLD_EDIT_COLOR_SELECTED) \
-                                     \
+#define FOREACH_MESSAGE(MSG)      \
+  MSG(MSG_CONFIG_UPDATE)          \
+  MSG(MSG_RENDER_SETTINGS_UPDATE) \
+                                  \
+  MSG(MSG_SYSTEM_START)           \
+  MSG(MSG_SYSTEM_STOP)            \
+  MSG(MSG_SYSTEM_SPUN_UP)         \
+  MSG(MSG_SYSTEM_SHUT_DOWN)       \
+  MSG(MSG_SYSTEM_RENDER)          \
+  MSG(MSG_SYSTEM_RENDER_TOP)      \
+                                  \
+  MSG(MSG_GAME_INIT)              \
+  MSG(MSG_GAME_KILL)              \
+                                  \
+  MSG(MSG_INPUT_BIND)             \
+  MSG(MSG_INPUT_ACTION)           \
+  MSG(MSG_INPUT_KEY)              \
+  MSG(MSG_INPUT_MOUSEMOVE)        \
+  MSG(MSG_INPUT_CLICK)            \
+  MSG(MSG_INPUT_SCROLL)           \
+                                  \
+  MSG(MSG_SCENE_GOTO)             \
+  MSG(MSG_SCENE_PREV)             \
+  MSG(MSG_SCENE_NEXT)             \
+  MSG(MSG_SCENE_SETUP)            \
+  MSG(MSG_SCENE_TEARDOWN)         \
+  MSG(MSG_SCENE_CHANGED)          \
+                                  \
+  MSG(MSG_SOUND_PLAY)             \
+  MSG(MSG_SOUND_PLAY_SONG)        \
+  MSG(MSG_SOUND_STOP_SONG)        \
+  MSG(MSG_SOUND_SPECTRUM)         \
+  MSG(MSG_SOUND_LIST)             \
+                                  \
+  MSG(MSG_UI_WINDOW_CREATE)       \
+  MSG(MSG_UI_WINDOW_DESTROY)      \
+  MSG(MSG_UI_WINDOW_GLYPH)        \
+  MSG(MSG_UI_WINDOW_MOUSEMOVE)    \
+  MSG(MSG_UI_WINDOW_CLICK)        \
+  MSG(MSG_UI_WINDOW_SCROLL)       \
+                                  \
+  MSG(MSG_UI_RUNESEL_CHANGED)     \
+  MSG(MSG_UI_COLSEL_CHANGED)      \
+  MSG(MSG_UI_TILESEL_CHANGED)     \
+                                  \
   MSG(MSG_DEBUG_TEST)
 
 typedef enum {

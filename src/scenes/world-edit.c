@@ -176,12 +176,12 @@ RectifyMap *scene_world_edit_message(SceneWorldEdit *scene, uint32_t id, Rectify
       break;
     }
 
-    case MSG_WORLD_EDIT_RUNE_SELECTED: {
+    case MSG_UI_RUNESEL_CHANGED: {
       scene->chosen_rune = rectify_map_get_byte(map, "rune");
       break;
     }
 
-    case MSG_WORLD_EDIT_COLOR_SELECTED: {
+    case MSG_UI_COLSEL_CHANGED: {
       scene->chosen_color = rectify_map_get_uint(map, "color");
       break;
     }

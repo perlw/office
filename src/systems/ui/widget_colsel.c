@@ -58,7 +58,7 @@ void colsel_widget_event(Widget *const base_widget, uint32_t id, RectifyMap *con
       RectifyMap *map = rectify_map_create();
       GlyphColor color = glyphcolor_hsl((double)(widget->chosen_color / 16.0) / 16.0, 1.0, (double)(widget->chosen_color % 16) / 16.0);
       rectify_map_set_uint(map, "color", glyphcolor_to_uint(color));
-      kronos_emit(MSG_WORLD_EDIT_COLOR_SELECTED, map);
+      kronos_emit(MSG_UI_COLSEL_CHANGED, map);
       break;
     }
   }
