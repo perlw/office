@@ -264,6 +264,7 @@ extern KronosSystem scene_drips;
 extern KronosSystem scene_game;
 extern KronosSystem scene_sound_test;
 extern KronosSystem scene_test;
+extern KronosSystem scene_ui_test;
 extern KronosSystem scene_world_edit;
 extern KronosSystem scene_title;
 

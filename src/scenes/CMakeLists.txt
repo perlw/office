@@ -6,6 +6,7 @@ set (
   "${CMAKE_CURRENT_LIST_DIR}/game.c"
   "${CMAKE_CURRENT_LIST_DIR}/sound-test.c"
   "${CMAKE_CURRENT_LIST_DIR}/test.c"
+  "${CMAKE_CURRENT_LIST_DIR}/ui-test.c"
   "${CMAKE_CURRENT_LIST_DIR}/world-edit.c"
   "${CMAKE_CURRENT_LIST_DIR}/title.c"
   PARENT_SCOPE

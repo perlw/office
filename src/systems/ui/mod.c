@@ -24,6 +24,7 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
 KronosSystem system_ui = {
   .name = "ui",
   .frames = 30,
+  .autostart = true,
   .start = &system_ui_start,
   .stop = &system_ui_stop,
   .update = &system_ui_update,
@@ -35,7 +36,7 @@ void system_ui_internal_window_draw_border(UIWindow *const window);
 SystemUI *system_ui_start(void) {
   SystemUI *system = calloc(1, sizeof(SystemUI));
   system->windows = rectify_array_alloc(10, sizeof(UIWindow));
-  system->next_handle = 0;
+  system->next_handle = 1;
 
   return system;
 }
@@ -106,11 +107,36 @@ RectifyMap *system_ui_message(SystemUI *system, uint32_t id, RectifyMap *const m
 
       RectifyMap *map = rectify_map_create();
       rectify_map_set_uint(map, "handle", handle);
+
+      printf("UI: Window #%d created\n", handle);
       return map;
     }
 
     case MSG_UI_WINDOW_DESTROY: {
-      printf("UI: Destroy window TBD\n");
+      uint32_t handle = rectify_map_get_uint(map, "handle");
+      if (handle == 0) {
+        printf("UI: Invalid or missing handle, can't destroy\n");
+        break;
+      }
+
+      for (uint32_t t = 0; t < rectify_array_size(system->windows); t++) {
+        UIWindow *window = &system->windows[t];
+
+        if (window->handle == handle) {
+          if (window->widget) {
+            window->widget->destroy(&window->widget);
+          }
+
+          free(window->title);
+          surface_destroy(&window->surface);
+
+          rectify_array_delete(system->windows, t);
+
+          printf("UI: Window #%d destroyed\n", handle);
+          break;
+        }
+      }
+
       break;
     }
 

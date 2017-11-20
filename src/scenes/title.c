@@ -43,6 +43,7 @@ SceneTitle *scene_title_start(void) {
 
 void scene_title_stop(void **scene) {
   SceneTitle *ptr = *scene;
+  assert(ptr && scene);
 
   surface_destroy(&ptr->surface);
 
