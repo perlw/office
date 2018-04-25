@@ -3,7 +3,7 @@
 	url = https://github.com/glfw/glfw
 [submodule "deps/stb"]
 	path = deps/stb
-	url = git@github.com:nothings/stb.git
+	url = https://github.com/nothings/stb.git
 [submodule "deps/cJSON"]
 	path = deps/cJSON
 	url = https://github.com/DaveGamble/cJSON.git
